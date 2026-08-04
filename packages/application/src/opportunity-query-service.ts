@@ -7,8 +7,9 @@ import {
   toOpportunityFeedItemDTO,
   toSignalSummaryDTO,
 } from "./mappers";
+import { resolveSkillsById } from "./skill-lookup";
 
-export const OPPORTUNITY_SORT_FIELDS = ["score", "detectedAt", "scoredAt"] as const;
+export const OPPORTUNITY_SORT_FIELDS = ["score", "detectedAt", "scoredAt", "relevance"] as const;
 export type OpportunitySortField = (typeof OPPORTUNITY_SORT_FIELDS)[number];
 
 export const OPPORTUNITY_STATUSES = ["detected", "scored"] as const;
@@ -57,16 +58,18 @@ function buildFeedConditions(query: OpportunityFeedQuery): SQL[] {
 
 function buildOrderBy(sort: OpportunitySortField, direction: "asc" | "desc"): SQL {
   const column =
-    sort === "score"
-      ? schema.opportunity.score
+    sort === "score" || sort === "relevance"
+      ? sort === "relevance"
+        ? schema.match.score
+        : schema.opportunity.score
       : sort === "scoredAt"
         ? schema.opportunity.scoredAt
         : schema.opportunity.detectedAt;
 
-  // Both sortable-but-nullable columns (`score`, `scoredAt`) should push
-  // not-yet-scored Opportunities to the end regardless of direction, so an
-  // explicit NULLS clause is used rather than relying on Postgres's
-  // direction-dependent default.
+  // Sortable-but-nullable columns (`score`, `scoredAt`, a viewer's Match
+  // score) should push not-yet-scored/matched Opportunities to the end
+  // regardless of direction, so an explicit NULLS clause is used rather
+  // than relying on Postgres's direction-dependent default.
   return direction === "asc" ? sql`${column} ASC NULLS LAST` : sql`${column} DESC NULLS LAST`;
 }
 
@@ -75,9 +78,18 @@ function buildOrderBy(sort: OpportunitySortField, direction: "asc" | "desc"): SQ
  * sorted, filtered list of Opportunities for public browsing. This is the
  * only place in the system allowed to compose this query — no API route or
  * UI component queries `packages/db` directly.
+ *
+ * `viewerId` must come from the caller's resolved session — never from a
+ * client-supplied query parameter, since it would let one User read
+ * another's Match data. When present, each item includes that viewer's
+ * Match (score, reasoning, matched Skills) if one has been computed, and
+ * `sort: "relevance"` orders by it. Without a viewer, `"relevance"` falls
+ * back to the default score-based order rather than erroring — there's
+ * nothing to rank by for an anonymous visitor.
  */
 export async function listOpportunityFeed(
   query: OpportunityFeedQuery,
+  viewerId?: string,
 ): Promise<PaginatedResult<OpportunityFeedItemDTO>> {
   const db = getDb();
   const conditions = buildFeedConditions(query);
@@ -89,17 +101,31 @@ export async function listOpportunityFeed(
     .where(whereClause);
   const totalCount = countRow?.value ?? 0;
 
+  const effectiveSort: OpportunitySortField =
+    query.sort === "relevance" && !viewerId ? "score" : query.sort;
+
+  const matchJoinCondition = viewerId
+    ? and(eq(schema.match.opportunityId, schema.opportunity.id), eq(schema.match.userId, viewerId))
+    : sql`false`;
+
   const rows = await db
-    .select({ opportunity: schema.opportunity, company: schema.company })
+    .select({ opportunity: schema.opportunity, company: schema.company, match: schema.match })
     .from(schema.opportunity)
     .innerJoin(schema.company, eq(schema.opportunity.companyId, schema.company.id))
+    .leftJoin(schema.match, matchJoinCondition)
     .where(whereClause)
-    .orderBy(buildOrderBy(query.sort, query.direction))
+    .orderBy(buildOrderBy(effectiveSort, query.direction))
     .limit(query.pageSize)
     .offset((query.page - 1) * query.pageSize);
 
+  const skillById = await resolveSkillsById(
+    rows.flatMap((row) => row.match?.matchedSkillIds ?? []),
+  );
+
   return {
-    items: rows.map((row) => toOpportunityFeedItemDTO(row.opportunity, row.company)),
+    items: rows.map((row) =>
+      toOpportunityFeedItemDTO(row.opportunity, row.company, row.match, skillById),
+    ),
     page: query.page,
     pageSize: query.pageSize,
     totalCount,
@@ -110,11 +136,15 @@ export async function listOpportunityFeed(
 /**
  * The Opportunity Detail read model: everything the explainability UI
  * needs for one Opportunity — score, reasoning, the Signals that produced
- * it, and the Company Intelligence context around it. Returns `null` for
- * an unknown ID rather than throwing, since "not found" is an expected
- * outcome for a public detail page.
+ * it, the Company Intelligence context around it, and (with a `viewerId`)
+ * that viewer's Match. Returns `null` for an unknown ID rather than
+ * throwing, since "not found" is an expected outcome for a public detail
+ * page.
  */
-export async function getOpportunityDetail(id: string): Promise<OpportunityDetailDTO | null> {
+export async function getOpportunityDetail(
+  id: string,
+  viewerId?: string,
+): Promise<OpportunityDetailDTO | null> {
   const db = getDb();
 
   const [row] = await db
@@ -128,7 +158,7 @@ export async function getOpportunityDetail(id: string): Promise<OpportunityDetai
     return null;
   }
 
-  const [signalRows, intelligenceRows] = await Promise.all([
+  const [signalRows, intelligenceRows, matchRows] = await Promise.all([
     db
       .select()
       .from(schema.signal)
@@ -139,14 +169,23 @@ export async function getOpportunityDetail(id: string): Promise<OpportunityDetai
       .from(schema.companyIntelligence)
       .where(eq(schema.companyIntelligence.companyId, row.opportunity.companyId))
       .limit(1),
+    viewerId
+      ? db
+          .select()
+          .from(schema.match)
+          .where(and(eq(schema.match.opportunityId, id), eq(schema.match.userId, viewerId)))
+          .limit(1)
+      : Promise.resolve([]),
   ]);
 
   const companyIntelligence = intelligenceRows[0]
     ? toCompanyIntelligenceSummaryDTO(intelligenceRows[0])
     : null;
+  const matchRow = matchRows[0] ?? null;
+  const skillById = await resolveSkillsById(matchRow?.matchedSkillIds ?? []);
 
   return {
-    ...toOpportunityFeedItemDTO(row.opportunity, row.company),
+    ...toOpportunityFeedItemDTO(row.opportunity, row.company, matchRow, skillById),
     reasoning: row.opportunity.reasoning,
     signals: signalRows.map(toSignalSummaryDTO),
     companyIntelligence,

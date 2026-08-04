@@ -34,6 +34,24 @@ export interface CompanyIntelligenceSummaryDTO {
   asOf: string;
 }
 
+export interface SkillDTO {
+  id: string;
+  slug: string;
+  name: string;
+}
+
+/**
+ * The fit assessment between the viewing User and one Opportunity —
+ * present only when the caller supplied a `viewerId` and a Match has been
+ * computed for that pair (docs/DOMAIN_MODEL.md's *Match ≠ Score*: the
+ * score alone is never returned without the Skills that produced it).
+ */
+export interface MatchSummaryDTO {
+  score: number;
+  reasoning: string;
+  matchedSkills: SkillDTO[];
+}
+
 export interface OpportunityFeedItemDTO {
   id: string;
   company: CompanySummaryDTO;
@@ -43,6 +61,7 @@ export interface OpportunityFeedItemDTO {
   detectionWindow: string;
   detectedAt: string;
   scoredAt: string | null;
+  match: MatchSummaryDTO | null;
 }
 
 export interface OpportunityDetailDTO extends OpportunityFeedItemDTO {
@@ -84,4 +103,10 @@ export interface PaginatedResult<T> {
 export interface SearchResultDTO {
   companies: CompanySummaryDTO[];
   opportunities: OpportunityFeedItemDTO[];
+}
+
+/** The current state of a User's Profile — for pre-filling the profile-editing form. */
+export interface UserProfileSummaryDTO {
+  skills: SkillDTO[];
+  dealBreakerSkills: SkillDTO[];
 }

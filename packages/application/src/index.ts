@@ -4,12 +4,15 @@ export type {
   CompanyProfileDTO,
   CompanySummaryDTO,
   IntelligenceTrendDTO,
+  MatchSummaryDTO,
   OpportunityDetailDTO,
   OpportunityFeedItemDTO,
   OpportunityStatusDTO,
   PaginatedResult,
   SearchResultDTO,
+  SkillDTO,
   SignalSummaryDTO,
+  UserProfileSummaryDTO,
 } from "./dto";
 export {
   getOpportunityDetail,
@@ -21,3 +24,5 @@ export {
   type OpportunitySortField,
 } from "./opportunity-query-service";
 export { search, searchQuerySchema, type SearchQuery } from "./search-service";
+export { listSkills } from "./skill-query-service";
+export { getUserProfileSummary } from "./user-profile-query-service";

@@ -8,8 +8,11 @@ import {
 import {
   seedCompany,
   seedCompanyIntelligence,
+  seedMatch,
   seedOpportunity,
   seedSignal,
+  seedSkill,
+  seedUser,
 } from "./test-support/seed";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -223,6 +226,109 @@ describe("opportunity-query-service (integration)", () => {
 
       expect(detail?.companyIntelligence).toBeNull();
       expect(detail?.freshness).toEqual({ lastSignalAt: null, asOf: null });
+    });
+  });
+
+  describe("viewer-aware reads", () => {
+    it("includes no match for an anonymous visitor", async () => {
+      const company = await seedCompany({ slug: "acme-anon" });
+      const opportunity = await seedOpportunity({
+        companyId: company.id,
+        status: "scored",
+        score: 0.5,
+      });
+
+      const feed = await listOpportunityFeed(
+        feedQuery({ opportunityType: opportunity.opportunityType }),
+      );
+      const item = feed.items.find((i) => i.id === opportunity.id);
+      expect(item?.match).toBeNull();
+
+      const detail = await getOpportunityDetail(opportunity.id);
+      expect(detail?.match).toBeNull();
+    });
+
+    it("includes the viewer's Match, with matched Skills resolved to names, when present", async () => {
+      const company = await seedCompany({ slug: "acme-viewer" });
+      const opportunity = await seedOpportunity({
+        companyId: company.id,
+        status: "scored",
+        score: 0.5,
+      });
+      const userId = await seedUser("viewer-match-user");
+      const solidity = await seedSkill("viewer-solidity", "Solidity");
+      await seedMatch({
+        userId,
+        opportunityId: opportunity.id,
+        score: 0.8,
+        reasoning: "Matches 1 of 1 tagged Skill(s) for this Opportunity.",
+        matchedSkillIds: [solidity.id],
+      });
+
+      const feed = await listOpportunityFeed(
+        feedQuery({ opportunityType: opportunity.opportunityType }),
+        userId,
+      );
+      const item = feed.items.find((i) => i.id === opportunity.id);
+      expect(item?.match).toEqual({
+        score: 0.8,
+        reasoning: "Matches 1 of 1 tagged Skill(s) for this Opportunity.",
+        matchedSkills: [{ id: solidity.id, slug: solidity.slug, name: "Solidity" }],
+      });
+
+      const detail = await getOpportunityDetail(opportunity.id, userId);
+      expect(detail?.match?.score).toBe(0.8);
+      expect(detail?.match?.matchedSkills).toEqual([
+        { id: solidity.id, slug: solidity.slug, name: "Solidity" },
+      ]);
+    });
+
+    it("never returns another viewer's Match", async () => {
+      const company = await seedCompany({ slug: "acme-isolation" });
+      const opportunity = await seedOpportunity({
+        companyId: company.id,
+        status: "scored",
+        score: 0.5,
+      });
+      const owner = await seedUser("isolation-owner");
+      const other = await seedUser("isolation-other");
+      await seedMatch({ userId: owner, opportunityId: opportunity.id, score: 0.9 });
+
+      const detail = await getOpportunityDetail(opportunity.id, other);
+      expect(detail?.match).toBeNull();
+    });
+
+    it("sorts by relevance for a viewer, and falls back to score order without one", async () => {
+      const opportunityType = "test-relevance-sort";
+      const company = await seedCompany({ slug: "acme-relevance" });
+      const low = await seedOpportunity({
+        companyId: company.id,
+        opportunityType,
+        status: "scored",
+        score: 0.5,
+        detectionWindow: "2026-W20",
+      });
+      const high = await seedOpportunity({
+        companyId: company.id,
+        opportunityType,
+        status: "scored",
+        score: 0.1,
+        detectionWindow: "2026-W21",
+      });
+      const userId = await seedUser("relevance-user");
+      await seedMatch({ userId, opportunityId: low.id, score: 0.2 });
+      await seedMatch({ userId, opportunityId: high.id, score: 0.9 });
+
+      const withViewer = await listOpportunityFeed(
+        feedQuery({ opportunityType, sort: "relevance" }),
+        userId,
+      );
+      expect(withViewer.items.map((i) => i.id)).toEqual([high.id, low.id]);
+
+      const withoutViewer = await listOpportunityFeed(
+        feedQuery({ opportunityType, sort: "relevance" }),
+      );
+      expect(withoutViewer.items.map((i) => i.id)).toEqual([low.id, high.id]);
     });
   });
 });

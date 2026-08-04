@@ -4,8 +4,11 @@ import { getCompanyProfile } from "./company-query-service";
 import {
   seedCompany,
   seedCompanyIntelligence,
+  seedMatch,
   seedOpportunity,
   seedSignal,
+  seedSkill,
+  seedUser,
 } from "./test-support/seed";
 
 describe("company-query-service (integration)", () => {
@@ -79,5 +82,30 @@ describe("company-query-service (integration)", () => {
     expect(profile?.intelligence).toBeNull();
     expect(profile?.activeOpportunities).toEqual([]);
     expect(profile?.recentSignals).toEqual([]);
+  });
+
+  it("attaches the viewer's Match to their active Opportunities, when present", async () => {
+    const company = await seedCompany({ slug: "acme-viewer-profile" });
+    const opportunity = await seedOpportunity({
+      companyId: company.id,
+      status: "scored",
+      score: 0.5,
+    });
+    const userId = await seedUser("company-profile-viewer");
+    const rust = await seedSkill("company-profile-rust", "Rust");
+    await seedMatch({
+      userId,
+      opportunityId: opportunity.id,
+      score: 0.7,
+      matchedSkillIds: [rust.id],
+    });
+
+    const profileWithoutViewer = await getCompanyProfile("acme-viewer-profile");
+    expect(profileWithoutViewer?.activeOpportunities[0]?.match).toBeNull();
+
+    const profileWithViewer = await getCompanyProfile("acme-viewer-profile", userId);
+    const item = profileWithViewer?.activeOpportunities.find((o) => o.id === opportunity.id);
+    expect(item?.match?.score).toBe(0.7);
+    expect(item?.match?.matchedSkills).toEqual([{ id: rust.id, slug: rust.slug, name: "Rust" }]);
   });
 });

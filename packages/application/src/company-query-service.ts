@@ -1,5 +1,5 @@
 import { getDb, schema } from "@web3-hunter/db";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import type { CompanyProfileDTO } from "./dto";
 import {
   toCompanyIntelligenceSummaryDTO,
@@ -7,6 +7,7 @@ import {
   toOpportunityFeedItemDTO,
   toSignalSummaryDTO,
 } from "./mappers";
+import { resolveSkillsById } from "./skill-lookup";
 
 /**
  * The Company Radar read model (docs/DATABASE.md §6): a single Company's
@@ -14,10 +15,17 @@ import {
  * activity. `recentSignals` is capped, unlike `getOpportunityDetail`'s
  * full Signal list — this surface is a momentum summary, not the
  * evidence trail for one specific score.
+ *
+ * `viewerId` must come from the caller's resolved session — see
+ * `listOpportunityFeed`'s equivalent note. When present, each Opportunity
+ * includes that viewer's Match, if one has been computed.
  */
 const RECENT_SIGNALS_LIMIT = 20;
 
-export async function getCompanyProfile(slug: string): Promise<CompanyProfileDTO | null> {
+export async function getCompanyProfile(
+  slug: string,
+  viewerId?: string,
+): Promise<CompanyProfileDTO | null> {
   const db = getDb();
 
   const [companyRow] = await db
@@ -49,10 +57,36 @@ export async function getCompanyProfile(slug: string): Promise<CompanyProfileDTO
       .limit(1),
   ]);
 
+  const matchByOpportunityId =
+    viewerId && opportunityRows.length > 0
+      ? new Map(
+          (
+            await db
+              .select()
+              .from(schema.match)
+              .where(
+                and(
+                  eq(schema.match.userId, viewerId),
+                  inArray(
+                    schema.match.opportunityId,
+                    opportunityRows.map((row) => row.id),
+                  ),
+                ),
+              )
+          ).map((row) => [row.opportunityId, row]),
+        )
+      : new Map();
+
+  const skillById = await resolveSkillsById(
+    [...matchByOpportunityId.values()].flatMap((row) => row.matchedSkillIds),
+  );
+
   return {
     company: toCompanySummaryDTO(companyRow),
     intelligence: intelligenceRows[0] ? toCompanyIntelligenceSummaryDTO(intelligenceRows[0]) : null,
-    activeOpportunities: opportunityRows.map((row) => toOpportunityFeedItemDTO(row, companyRow)),
+    activeOpportunities: opportunityRows.map((row) =>
+      toOpportunityFeedItemDTO(row, companyRow, matchByOpportunityId.get(row.id), skillById),
+    ),
     recentSignals: signalRows.map(toSignalSummaryDTO),
   };
 }

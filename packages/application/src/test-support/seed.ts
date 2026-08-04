@@ -91,3 +91,47 @@ export async function seedCompanyIntelligence(input: {
     .returning();
   return row!;
 }
+
+export async function seedUser(label: string) {
+  const db = getDb();
+  const id = crypto.randomUUID();
+  await db.insert(schema.user).values({ id, name: label, email: `${label}@example.test` });
+  return id;
+}
+
+export async function seedSkill(slug: string, name?: string) {
+  const db = getDb();
+  const [row] = await db
+    .insert(schema.skill)
+    .values({ slug, name: name ?? slug })
+    .returning();
+  return row!;
+}
+
+export async function seedUserSkill(userId: string, skillId: string) {
+  await getDb().insert(schema.userSkill).values({ userId, skillId });
+}
+
+export async function seedMatch(input: {
+  userId: string;
+  opportunityId: string;
+  score?: number;
+  reasoning?: string;
+  matchedSkillIds?: string[];
+  computedAt?: Date;
+}) {
+  const db = getDb();
+  const [row] = await db
+    .insert(schema.match)
+    .values({
+      id: crypto.randomUUID(),
+      userId: input.userId,
+      opportunityId: input.opportunityId,
+      score: input.score ?? 0.5,
+      reasoning: input.reasoning ?? "Test match reasoning",
+      matchedSkillIds: input.matchedSkillIds ?? [],
+      computedAt: input.computedAt ?? new Date(),
+    })
+    .returning();
+  return row!;
+}
