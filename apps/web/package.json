@@ -10,19 +10,25 @@
     "lint": "eslint --config ../../eslint.config.mjs .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "collect:greenhouse": "tsx scripts/run-greenhouse.ts"
+    "collect:greenhouse": "tsx scripts/run-greenhouse.ts",
+    "seed:skills": "tsx scripts/seed-skills.ts",
+    "classify:opportunities": "tsx scripts/run-classification.ts",
+    "match:users": "tsx scripts/run-matching.ts"
   },
   "dependencies": {
     "@web3-hunter/application": "workspace:*",
+    "@web3-hunter/classification": "workspace:*",
     "@web3-hunter/collectors": "workspace:*",
     "@web3-hunter/db": "workspace:*",
     "@web3-hunter/ingestion": "workspace:*",
+    "@web3-hunter/matching": "workspace:*",
     "@web3-hunter/shared": "workspace:*",
     "@web3-hunter/ui": "workspace:*",
     "better-auth": "1.6.25",
     "next": "15.5.22",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",

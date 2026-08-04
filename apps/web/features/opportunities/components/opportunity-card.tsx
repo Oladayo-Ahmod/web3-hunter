@@ -24,6 +24,13 @@ export function OpportunityCard({ opportunity }: { opportunity: OpportunityFeedI
         <CardContent className="space-y-1 text-sm text-muted-foreground">
           <p className="capitalize">{opportunity.opportunityType.replaceAll("-", " ")}</p>
           <p>Detected {new Date(opportunity.detectedAt).toLocaleDateString()}</p>
+          {opportunity.match && (
+            <p className="text-primary">
+              {Math.round(opportunity.match.score * 100)}% match
+              {opportunity.match.matchedSkills.length > 0 &&
+                ` · ${opportunity.match.matchedSkills.map((skill) => skill.name).join(", ")}`}
+            </p>
+          )}
         </CardContent>
       </Card>
     </Link>

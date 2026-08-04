@@ -1,6 +1,7 @@
 import { getOpportunityDetail } from "@web3-hunter/application";
 import { notFound } from "next/navigation";
 import { OpportunityDetailView } from "@/features/opportunities/components/opportunity-detail-view";
+import { getCurrentUserId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,8 @@ interface OpportunityDetailPageProps {
 
 export default async function OpportunityDetailPage({ params }: OpportunityDetailPageProps) {
   const { id } = await params;
-  const opportunity = await getOpportunityDetail(id);
+  const viewerId = await getCurrentUserId();
+  const opportunity = await getOpportunityDetail(id, viewerId);
 
   if (!opportunity) {
     notFound();

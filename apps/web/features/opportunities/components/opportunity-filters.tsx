@@ -60,6 +60,7 @@ export function OpportunityFilters({ defaultValues }: OpportunityFiltersProps) {
       <Field label="Sort by" htmlFor="sort">
         <select id="sort" name="sort" defaultValue={defaultValues.sort} className={FIELD_CLASS}>
           <option value="score">Score</option>
+          <option value="relevance">Relevance to me</option>
           <option value="detectedAt">Detected date</option>
           <option value="scoredAt">Scored date</option>
         </select>

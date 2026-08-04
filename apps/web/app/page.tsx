@@ -15,7 +15,7 @@ export default function HomePage() {
           <Link href="/opportunities">Browse Opportunities</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/health">View system health</Link>
+          <Link href="/sign-up">Create your Profile</Link>
         </Button>
       </div>
     </main>

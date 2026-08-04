@@ -2,6 +2,7 @@ import { listOpportunityFeed, opportunityFeedQuerySchema } from "@web3-hunter/ap
 import { OpportunityCard } from "@/features/opportunities/components/opportunity-card";
 import { OpportunityFilters } from "@/features/opportunities/components/opportunity-filters";
 import { PaginationControls } from "@/features/opportunities/components/pagination-controls";
+import { getCurrentUserId } from "@/lib/session";
 
 // The feed reflects live Signal/Opportunity data; it must never be served
 // from a build-time snapshot.
@@ -16,7 +17,11 @@ export default async function OpportunitiesPage({ searchParams }: OpportunitiesP
   const parsed = opportunityFeedQuerySchema.safeParse(rawParams);
   const query = parsed.success ? parsed.data : opportunityFeedQuerySchema.parse({});
 
-  const result = await listOpportunityFeed(query);
+  // A Server Component calls the Application Layer directly — never
+  // through the public API — per the Milestone 4 access-pattern
+  // refinement (docs/ARCHITECTURE.md §9).
+  const viewerId = await getCurrentUserId();
+  const result = await listOpportunityFeed(query, viewerId);
 
   const buildHref = (page: number) => {
     const params = new URLSearchParams();

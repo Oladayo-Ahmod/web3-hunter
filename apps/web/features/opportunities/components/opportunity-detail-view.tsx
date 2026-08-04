@@ -35,6 +35,29 @@ export function OpportunityDetailView({ opportunity }: { opportunity: Opportunit
         </CardContent>
       </Card>
 
+      {opportunity.match && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between gap-2">
+              <span>Your Match</span>
+              <Badge>{Math.round(opportunity.match.score * 100)}%</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm">{opportunity.match.reasoning}</p>
+            {opportunity.match.matchedSkills.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {opportunity.match.matchedSkills.map((skill) => (
+                  <Badge key={skill.id} variant="secondary">
+                    {skill.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {opportunity.companyIntelligence && (
         <Card>
           <CardHeader>
