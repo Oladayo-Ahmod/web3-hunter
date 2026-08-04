@@ -7,6 +7,7 @@ export * from "./match";
 export * from "./opportunity";
 export * from "./opportunity-skill";
 export * from "./raw-record";
+export * from "./recommendation";
 export * from "./signal";
 export * from "./skill";
 export * from "./system";

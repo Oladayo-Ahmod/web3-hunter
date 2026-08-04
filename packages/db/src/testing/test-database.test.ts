@@ -41,6 +41,7 @@ describe("createTestDatabase", () => {
       "opportunity_skill",
       "raw_record",
       "raw_record_ingestion",
+      "recommendation",
       "session",
       "signal",
       "signal_generation_ledger",
