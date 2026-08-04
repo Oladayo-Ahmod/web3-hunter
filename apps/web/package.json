@@ -8,10 +8,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --config ../../eslint.config.mjs .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "collect:greenhouse": "tsx scripts/run-greenhouse.ts"
   },
   "dependencies": {
+    "@web3-hunter/collectors": "workspace:*",
     "@web3-hunter/db": "workspace:*",
+    "@web3-hunter/ingestion": "workspace:*",
     "@web3-hunter/shared": "workspace:*",
     "@web3-hunter/ui": "workspace:*",
     "better-auth": "1.6.25",
@@ -26,6 +30,8 @@
     "@types/react-dom": "19.2.4",
     "eslint-config-next": "15.5.22",
     "tailwindcss": "4.3.3",
-    "typescript": "5.9.3"
+    "tsx": "4.23.5",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
   }
 }
