@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@web3-hunter/db": "workspace:*",
-    "@web3-hunter/events": "workspace:*"
+    "@web3-hunter/events": "workspace:*",
+    "@web3-hunter/shared": "workspace:*"
   },
   "devDependencies": {
     "typescript": "5.9.3",
