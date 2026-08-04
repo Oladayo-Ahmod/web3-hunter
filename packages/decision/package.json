@@ -10,13 +10,19 @@
   },
   "scripts": {
     "lint": "eslint --config ../../eslint.config.mjs .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@web3-hunter/db": "workspace:*",
-    "@web3-hunter/events": "workspace:*"
+    "@web3-hunter/events": "workspace:*",
+    "@web3-hunter/shared": "workspace:*",
+    "drizzle-orm": "0.45.2",
+    "zod": "4.4.3"
   },
   "devDependencies": {
-    "typescript": "5.9.3"
+    "embedded-postgres": "18.4.0-beta.17",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
   }
 }
