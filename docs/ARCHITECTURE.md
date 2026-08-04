@@ -85,7 +85,11 @@ Presentation only. Renders Opportunities, company context, digests, and CRM stat
 
 ### Backend
 
-The application-facing API surface. Owns request/response contracts with the frontend, authorization, and orchestration of user-initiated actions (e.g., "generate outreach for this Opportunity now"). Translates user actions into commands and, where appropriate, into events. Does not perform collection, scoring, decision-making, or AI enrichment itself — it delegates to the relevant engine and reads back persisted results.
+The application-facing API surface. Owns request/response contracts with the frontend, authorization, and orchestration of user-initiated actions (e.g., "generate outreach for this Opportunity now"). Translates user actions into commands and, where appropriate, into events. Does not perform collection, scoring, decision-making, or AI enrichment itself — it delegates to the relevant engine and reads back persisted results. All read orchestration — pagination, filtering, sorting, search, and assembling API-facing DTOs — is delegated to the Application Layer (`packages/application`); the Backend itself never composes a database query.
+
+### Application Layer
+
+Owns every read path between the durable, Opportunity-centric persistence in `packages/db` and everything that consumes it: the public API, and Server Components rendered directly in `apps/web`. Exposes query services (`OpportunityQueryService`, `CompanyQueryService`, `SearchService`) that return stable, API-facing DTOs/View Models — never a raw database row — with pagination, filtering, sorting, and search composed once, here, rather than duplicated per consumer. It is the *only* package permitted to compose a multi-table read query against `packages/db`'s schema; every UI component and every API route calls into it instead of querying directly. See [§6](#6-package-boundaries) for its dependency boundary and [§9](#9-design-constraints) for the access-pattern rule this enables.
 
 ### Collectors
 
@@ -142,6 +146,7 @@ packages/
   scoring/               Scoring Engine: event correlation into Opportunities + explainable scoring.
   decision/              Decision Engine: deterministic business decisions.
   ai/                    AI Layer: enrichment, summarization, content generation.
+  application/            Application Layer: read models, query services, API-facing DTOs.
   events/                Canonical event contracts, the event-type registry, publish, and replay.
   notifications/         Decision delivery: channel mechanics and send tracking.
   shared/                Cross-cutting, domain-agnostic utilities and types.
@@ -159,12 +164,13 @@ packages/
 - **`packages/decision`** depends on `packages/events` and `packages/db` (to read Opportunities/scores and persist decisions). It never depends on `packages/ai` — a deterministic decision must never be able to reach for a non-deterministic dependency — and never depends on `packages/scoring` or `packages/collectors` internals.
 - **`packages/ai`** depends on `packages/events` and `packages/db` (read-only for context, write-only for its own enrichment/content records). It never depends on `packages/decision` or `packages/scoring` internals — it learns what to enrich exclusively by consuming published decision events, and it never writes to Opportunity, score, or decision records.
 - **`packages/notifications`** depends on `packages/events` and `packages/db`. It never depends on `packages/ai` or `packages/decision` internals beyond reading their published, persisted outputs, and it contains no logic that decides *whether* or *how often* to notify.
+- **`packages/application`** depends on `packages/db` and `packages/shared` only — it never depends on `packages/scoring`, `packages/decision`, `packages/ai`, `packages/collectors`, `packages/ingestion`, or `packages/events`, since it only reads already-materialized projections those packages write (Opportunity, Signal, Company Intelligence, Company), never raw events or business logic. It is the sole owner of read-side query composition: pagination, filtering, sorting, search, and the API-facing DTOs/View Models every consumer receives instead of a raw database row. `apps/web` is the only package allowed to depend on it — see [§9](#9-design-constraints) for the access-pattern rule this establishes.
 - **`packages/ui`** depends on nothing but its own primitives (and `packages/shared` for generic types). It has no awareness of collectors, scoring, decisions, AI, or events. This keeps it reusable and trivially testable in isolation.
 - **`packages/shared`** depends on nothing inside the monorepo. It exists for genuinely domain-agnostic code (generic types, formatting utilities). It is the one package every other package is allowed to depend on — but it must never grow domain logic, or it becomes a dumping ground that reintroduces coupling.
 
 ### Rule: dependency direction is one-way
 
-`apps/web → packages/{ai,decision,scoring,notifications,collectors,ingestion,db,ui,shared,events}`, and within `packages/`, dependencies point only toward `events`, `ingestion`, `db`, and `shared` — never sideways between domain packages (`collectors` ↛ `scoring`, `scoring` ↛ `decision`, `decision` ↛ `ai`, etc.) and never back up toward `apps/web`. `packages/events → packages/db` and `packages/ingestion → {packages/events, packages/db}` are the only exceptions to "nothing depends on `db` except through its own layer," and both are one-way and terminal: `packages/db` never depends on `packages/events` or `packages/ingestion`, and `packages/events` never depends on `packages/ingestion`, so no cycle is introduced. Communication between domain packages happens through events, not imports. A circular dependency between any two packages is treated as a design defect, not a lint warning to suppress.
+`apps/web → packages/{ai,decision,scoring,notifications,collectors,ingestion,db,ui,shared,events,application}`, and within `packages/`, dependencies point only toward `events`, `ingestion`, `db`, and `shared` — never sideways between domain packages (`collectors` ↛ `scoring`, `scoring` ↛ `decision`, `decision` ↛ `ai`, etc.) and never back up toward `apps/web`. `packages/application` is a special case of this same rule, not an exception to it: it depends only on `packages/db` and `packages/shared`, exactly like a domain package would. `packages/events → packages/db` and `packages/ingestion → {packages/events, packages/db}` are the only exceptions to "nothing depends on `db` except through its own layer," and both are one-way and terminal: `packages/db` never depends on `packages/events` or `packages/ingestion`, and `packages/events` never depends on `packages/ingestion`, so no cycle is introduced. Communication between domain packages happens through events, not imports. A circular dependency between any two packages is treated as a design defect, not a lint warning to suppress.
 
 **Note:** the pipeline order described in [§5](#5-data-flow) (Scoring → Decision → AI) is a sequence of *event consumption*, not an import chain. `packages/decision` does not import `packages/scoring`, and `packages/ai` does not import `packages/decision` — each depends only on `packages/events` and `packages/db`, and learns what the previous stage did exclusively by consuming the events it published. This is what keeps the pipeline reorderable, independently testable, and free of the sideways coupling a naive "engine calls the next engine directly" implementation would introduce.
 
@@ -262,6 +268,10 @@ The Decision Engine. Consumes Opportunities and their scores and applies determi
 
 The AI Layer. Consumes the Decision Engine's published decisions — not raw scores — to generate summaries, explanations, and personalized outreach drafts. Owns prompt construction, model invocation, and grounding of generated content in cited events. Never decides relevance, priority, or timing; those are already settled by the time this package runs.
 
+### `packages/application`
+
+The Application Layer. Sits between `packages/db` and every consumer of persisted data — the public API and `apps/web`'s Server Components — and owns all read-side orchestration: `OpportunityQueryService`, `CompanyQueryService`, and `SearchService` compose the pagination, filtering, sorting, and search queries a browsable feed and detail pages need, and return stable, API-facing DTOs/View Models (e.g. `OpportunityFeedItemDTO`, `OpportunityDetailDTO`, `CompanyProfileDTO`, `SearchResultDTO`) rather than leaking `packages/db` row shapes to any consumer. Read-only: it never writes to `packages/db` and never publishes an event. This is what makes "no UI component or API route composes a database query" an enforceable rule rather than a convention — see [§9](#9-design-constraints).
+
 ### `packages/shared`
 
 Domain-agnostic types and utilities used across multiple packages (e.g., generic result/error types, date/formatting helpers). Contains no domain concepts (no `Company`, no `Opportunity`, no `Score`). If a type or utility is specific to one domain, it belongs in that domain's package, not here.
@@ -318,6 +328,7 @@ These rules are non-negotiable. A pull request that violates one of these should
 - **Opportunities, not raw company facts, are the unit users act upon.** Every user-facing surface — dashboard, digest, notification, CRM entry — is keyed to an Opportunity, not directly to a raw event or a bare company record.
 - **Business logic never lives in React components.** Components render state and dispatch actions. Correlation, scoring, decision, and enrichment logic live in their respective packages, never in `apps/web`'s component tree.
 - **No package reaches around `packages/db` to access data directly.** There is exactly one system of record and exactly one typed path to it.
+- **No UI component or API route composes a database query.** `packages/application` is the only package allowed to do that. The access pattern is: browser clients consume the public API; API routes call `packages/application`; `apps/web` Server Components may call `packages/application` directly (no same-origin HTTP hop needed for work already happening server-side). What must never happen is a component or route reaching past `packages/application` into `packages/db` itself.
 - **Domain packages do not import each other's internals.** Cross-domain communication happens through `packages/events`, not through direct imports between `collectors`, `scoring`, `decision`, `ai`, and `notifications`.
 - **Events are immutable.** A published event is never edited or deleted. A correction is a new event, not a mutation of history — this is what makes the audit trail and explainability guarantees hold.
 
