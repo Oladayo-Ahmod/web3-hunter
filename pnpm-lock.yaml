@@ -44,6 +44,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@web3-hunter/application':
+        specifier: workspace:*
+        version: link:../../packages/application
       '@web3-hunter/collectors':
         specifier: workspace:*
         version: link:../../packages/collectors
@@ -112,6 +115,28 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+
+  packages/application:
+    dependencies:
+      '@web3-hunter/db':
+        specifier: workspace:*
+        version: link:../db
+      '@web3-hunter/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      embedded-postgres:
+        specifier: 18.4.0-beta.17
+        version: 18.4.0-beta.17
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.10
+        version: 4.1.10(@types/node@26.1.2)(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))
 
   packages/collectors:
     dependencies:

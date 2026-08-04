@@ -7,12 +7,17 @@ export default function HomePage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">Web3 Hunter</h1>
         <p className="text-muted-foreground">
-          Engineering foundation is live. Product functionality begins in Milestone 1.
+          Explainable, deterministic hiring-intent Opportunities for Web3 engineers.
         </p>
       </div>
-      <Button asChild>
-        <Link href="/health">View system health</Link>
-      </Button>
+      <div className="flex gap-3">
+        <Button asChild>
+          <Link href="/opportunities">Browse Opportunities</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/health">View system health</Link>
+        </Button>
+      </div>
     </main>
   );
 }

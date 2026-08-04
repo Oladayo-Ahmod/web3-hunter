@@ -13,6 +13,7 @@
     "collect:greenhouse": "tsx scripts/run-greenhouse.ts"
   },
   "dependencies": {
+    "@web3-hunter/application": "workspace:*",
     "@web3-hunter/collectors": "workspace:*",
     "@web3-hunter/db": "workspace:*",
     "@web3-hunter/ingestion": "workspace:*",
