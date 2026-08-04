@@ -1,3 +1,4 @@
+import { runDecisionPipeline } from "@web3-hunter/decision";
 import { runMatchingPipeline, setDealBreakerSkills, setUserSkills } from "@web3-hunter/matching";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -27,10 +28,12 @@ export async function POST(request: Request) {
   await setUserSkills(userId, parsed.data.skillIds);
   await setDealBreakerSkills(userId, parsed.data.dealBreakerSkillIds);
 
-  // Recompute this User's Matches immediately, so the feed reflects their
-  // updated Profile on the very next page load rather than waiting for a
-  // separate scheduled run.
-  const result = await runMatchingPipeline(userId);
+  // Recompute this User's Matches, then their Recommendations, immediately
+  // — so both the feed and the Recommendation Feed reflect their updated
+  // Profile on the very next page load rather than waiting for a separate
+  // scheduled run.
+  const matchResult = await runMatchingPipeline(userId);
+  const decisionResult = await runDecisionPipeline(userId);
 
-  return NextResponse.json({ ok: true, ...result });
+  return NextResponse.json({ ok: true, match: matchResult, decision: decisionResult });
 }

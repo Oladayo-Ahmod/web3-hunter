@@ -13,13 +13,15 @@
     "collect:greenhouse": "tsx scripts/run-greenhouse.ts",
     "seed:skills": "tsx scripts/seed-skills.ts",
     "classify:opportunities": "tsx scripts/run-classification.ts",
-    "match:users": "tsx scripts/run-matching.ts"
+    "match:users": "tsx scripts/run-matching.ts",
+    "decide:recommendations": "tsx scripts/run-decisions.ts"
   },
   "dependencies": {
     "@web3-hunter/application": "workspace:*",
     "@web3-hunter/classification": "workspace:*",
     "@web3-hunter/collectors": "workspace:*",
     "@web3-hunter/db": "workspace:*",
+    "@web3-hunter/decision": "workspace:*",
     "@web3-hunter/ingestion": "workspace:*",
     "@web3-hunter/matching": "workspace:*",
     "@web3-hunter/shared": "workspace:*",

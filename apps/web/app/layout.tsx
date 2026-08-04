@@ -19,11 +19,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Link href="/opportunities" className="text-muted-foreground hover:text-foreground">
               Opportunities
             </Link>
-            {/* /profile redirects to /sign-in when not signed in, so the
-                layout itself never needs to resolve session state — doing
-                so here would force every page, including statically
-                generated ones like /_not-found, to require a live
-                database/auth configuration at build time. */}
+            <Link href="/recommendations" className="text-muted-foreground hover:text-foreground">
+              Recommendations
+            </Link>
+            {/* /profile and /recommendations redirect to /sign-in when not
+                signed in, so the layout itself never needs to resolve
+                session state — doing so here would force every page,
+                including statically generated ones like /_not-found, to
+                require a live database/auth configuration at build time. */}
             <Link href="/profile" className="text-muted-foreground hover:text-foreground">
               Account
             </Link>
