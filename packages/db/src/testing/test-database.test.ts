@@ -22,10 +22,14 @@ describe("createTestDatabase", () => {
     expect(tables.map((row) => row.table_name)).toEqual([
       "collector",
       "company",
+      "company_intelligence",
       "event",
       "event_provenance",
+      "opportunity",
       "raw_record",
       "raw_record_ingestion",
+      "signal",
+      "signal_generation_ledger",
       "system_health_check",
     ]);
   });

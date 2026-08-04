@@ -10,13 +10,17 @@
   },
   "scripts": {
     "lint": "eslint --config ../../eslint.config.mjs .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@web3-hunter/db": "workspace:*",
-    "@web3-hunter/events": "workspace:*"
+    "@web3-hunter/events": "workspace:*",
+    "@web3-hunter/shared": "workspace:*",
+    "zod": "4.4.3"
   },
   "devDependencies": {
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
   }
 }
