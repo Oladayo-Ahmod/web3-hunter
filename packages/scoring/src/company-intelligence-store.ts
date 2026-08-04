@@ -1,9 +1,9 @@
 import { getDb, schema } from "@web3-hunter/db";
+import { publishEventSafely } from "@web3-hunter/events";
 import { deriveDeterministicId } from "@web3-hunter/shared";
 import { asc, eq } from "drizzle-orm";
 import { IntelligenceUpdated } from "./event-types";
 import { computeCompanyIntelligence, intelligenceStatesEqual } from "./intelligence";
-import { publishEventSafely } from "./publish-safely";
 import type { CompanyIntelligenceState, SignalSummary } from "./types";
 
 async function getCompanySignals(companyId: string): Promise<SignalSummary[]> {

@@ -1,11 +1,11 @@
 import { getDb, schema } from "@web3-hunter/db";
+import { publishEventSafely } from "@web3-hunter/events";
 import { deriveDeterministicId } from "@web3-hunter/shared";
 import { asc, eq } from "drizzle-orm";
 import { computeDetectionWindow } from "./detection-window";
 import { OpportunityDetected, OpportunityScored } from "./event-types";
 import { meetsOpportunityThreshold } from "./opportunity-detection";
 import { ENGINEERING_HIRING_SURGE, deriveOpportunityId } from "./opportunity-id";
-import { publishEventSafely } from "./publish-safely";
 import { computeOpportunityScore } from "./scoring";
 import type { CompanyIntelligenceState, SignalSummary } from "./types";
 

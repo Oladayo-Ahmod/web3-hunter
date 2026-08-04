@@ -1,7 +1,7 @@
 import { getDb, schema } from "@web3-hunter/db";
+import { publishEventSafely } from "@web3-hunter/events";
 import { deriveDeterministicId } from "@web3-hunter/shared";
 import { HiringSignalDetected } from "./event-types";
-import { publishEventSafely } from "./publish-safely";
 import type { RecentCompanyEvent, SignalCandidate } from "./types";
 
 /**
