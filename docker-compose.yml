@@ -1,0 +1,22 @@
+# Local development convenience only. Staging/production use a hosted
+# Supabase Postgres instance instead — see .env.example and docs/DATABASE.md.
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: web3_hunter
+    ports:
+      - "5432:5432"
+    volumes:
+      - web3-hunter-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  web3-hunter-db:

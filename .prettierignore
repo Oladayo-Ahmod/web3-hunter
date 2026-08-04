@@ -1,0 +1,14 @@
+node_modules
+.next
+.turbo
+dist
+build
+coverage
+pnpm-lock.yaml
+packages/db/migrations
+
+# Prose docs are hand-authored and reviewed; Prettier's markdown formatter
+# is not applied to them so approved content is never silently reformatted.
+CLAUDE.md
+README.md
+docs/

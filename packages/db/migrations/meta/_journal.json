@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1785802102761,
+      "tag": "0000_flowery_kat_farrell",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785803757986,
+      "tag": "0001_milky_omega_red",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785803785119,
+      "tag": "0002_revoke_event_mutations",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785834340640,
+      "tag": "0003_fancy_vertigo",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785834377014,
+      "tag": "0004_revoke_raw_record_mutations",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785834733838,
+      "tag": "0005_red_firestar",
+      "breakpoints": true
+    }
+  ]
+}

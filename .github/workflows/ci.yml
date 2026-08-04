@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Placeholder values sufficient for lint/typecheck/build/test — none of
+  # these steps connect to a live database (see docs/ROADMAP.md Milestone 0:
+  # health check routes are `force-dynamic` and the db/auth clients are
+  # constructed lazily, on first real request, not at build time).
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/web3_hunter"
+  BETTER_AUTH_SECRET: "ci-only-secret-not-used-for-anything-real-00000"
+  BETTER_AUTH_URL: "http://localhost:3000"
+  NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+jobs:
+  ci:
+    name: Lint, typecheck, build, test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      - name: Format check
+        run: pnpm format:check

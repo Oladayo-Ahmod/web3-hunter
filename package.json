@@ -1,0 +1,53 @@
+{
+  "name": "web3-hunter",
+  "private": true,
+  "version": "0.0.0",
+  "description": "AI-powered opportunity intelligence platform for Web3 engineers.",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.26.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint && pnpm check:boundaries",
+    "check:boundaries": "node scripts/check-boundaries.mjs",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "turbo run db:generate",
+    "db:migrate": "turbo run db:migrate",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.6",
+    "@types/node": "26.1.2",
+    "eslint": "9.39.5",
+    "eslint-config-next": "15.5.22",
+    "husky": "9.1.7",
+    "lint-staged": "17.3.0",
+    "prettier": "3.9.6",
+    "prettier-plugin-tailwindcss": "0.8.1",
+    "turbo": "2.10.8",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.66.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
+      "eslint --fix"
+    ],
+    "*.{ts,tsx,js,jsx,mjs,cjs,json,md,css}": [
+      "prettier --write"
+    ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@embedded-postgres/linux-x64",
+      "embedded-postgres",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}
