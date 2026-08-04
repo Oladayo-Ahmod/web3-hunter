@@ -135,3 +135,35 @@ export async function seedMatch(input: {
     .returning();
   return row!;
 }
+
+export async function seedRecommendation(input: {
+  userId: string;
+  matchId: string;
+  opportunityId: string;
+  status?: "active" | "dismissed" | "archived" | "expired";
+  priority?: number;
+  reasonCode?: string;
+  reasonDetails?: Record<string, unknown>;
+  reasonVersion?: number;
+  createdAt?: Date;
+  statusChangedAt?: Date;
+}) {
+  const db = getDb();
+  const [row] = await db
+    .insert(schema.recommendation)
+    .values({
+      id: crypto.randomUUID(),
+      userId: input.userId,
+      matchId: input.matchId,
+      opportunityId: input.opportunityId,
+      status: input.status ?? "active",
+      priority: input.priority ?? 0.5,
+      reasonCode: input.reasonCode ?? "eligibility-rules-passed",
+      reasonDetails: input.reasonDetails ?? { matchScore: 0.8, intelligenceConfidence: 0.6 },
+      reasonVersion: input.reasonVersion ?? 1,
+      createdAt: input.createdAt ?? new Date(),
+      statusChangedAt: input.statusChangedAt ?? new Date(),
+    })
+    .returning();
+  return row!;
+}

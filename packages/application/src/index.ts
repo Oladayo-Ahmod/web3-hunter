@@ -9,6 +9,9 @@ export type {
   OpportunityFeedItemDTO,
   OpportunityStatusDTO,
   PaginatedResult,
+  RecommendationDetailDTO,
+  RecommendationStatusDTO,
+  RecommendationSummaryDTO,
   SearchResultDTO,
   SkillDTO,
   SignalSummaryDTO,
@@ -23,6 +26,7 @@ export {
   type OpportunityFeedQuery,
   type OpportunitySortField,
 } from "./opportunity-query-service";
+export { getRecommendationDetail, listRecommendations } from "./recommendation-query-service";
 export { search, searchQuerySchema, type SearchQuery } from "./search-service";
 export { listSkills } from "./skill-query-service";
 export { getUserProfileSummary } from "./user-profile-query-service";

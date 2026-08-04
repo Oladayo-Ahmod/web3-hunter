@@ -110,3 +110,27 @@ export interface UserProfileSummaryDTO {
   skills: SkillDTO[];
   dealBreakerSkills: SkillDTO[];
 }
+
+export type RecommendationStatusDTO = "active" | "dismissed" | "archived" | "expired";
+
+/**
+ * The Decision Engine's determination that a Match is worth surfacing —
+ * authenticated-only, always scoped to the requesting User (never another
+ * User's). `reason` is rendered, human-readable wording assembled here
+ * from the deterministic `reasonCode`/`reasonDetails` `packages/decision`
+ * stores — per the Milestone 6 refinement, the Application Layer owns
+ * presentation, the Decision Engine owns the structured fact.
+ */
+export interface RecommendationSummaryDTO {
+  id: string;
+  status: RecommendationStatusDTO;
+  priority: number;
+  reason: string;
+  createdAt: string;
+  statusChangedAt: string;
+  opportunity: OpportunityFeedItemDTO;
+}
+
+export interface RecommendationDetailDTO extends Omit<RecommendationSummaryDTO, "opportunity"> {
+  opportunity: OpportunityDetailDTO;
+}
