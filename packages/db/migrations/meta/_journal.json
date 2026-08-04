@@ -57,6 +57,20 @@
       "when": 1785838750412,
       "tag": "0007_revoke_signal_mutations",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785865711935,
+      "tag": "0008_aspiring_sphinx",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785865768016,
+      "tag": "0009_revoke_opportunity_skill_mutations",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,15 @@
 import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { collector, event, rawRecord } from "../schema";
+import { seedSkillTaxonomy, SKILL_TAXONOMY } from "../seed/skill-taxonomy";
+import {
+  collector,
+  company,
+  event,
+  opportunity,
+  opportunitySkill,
+  rawRecord,
+  skill,
+} from "../schema";
 import { createTestDatabase, type TestDatabase } from "./test-database";
 
 describe("createTestDatabase", () => {
@@ -20,17 +29,27 @@ describe("createTestDatabase", () => {
     );
 
     expect(tables.map((row) => row.table_name)).toEqual([
+      "account",
+      "classification_ledger",
       "collector",
       "company",
       "company_intelligence",
       "event",
       "event_provenance",
+      "match",
       "opportunity",
+      "opportunity_skill",
       "raw_record",
       "raw_record_ingestion",
+      "session",
       "signal",
       "signal_generation_ledger",
+      "skill",
       "system_health_check",
+      "user",
+      "user_profile",
+      "user_skill",
+      "verification",
     ]);
   });
 
@@ -106,5 +125,65 @@ describe("createTestDatabase", () => {
     expect(String((deleteError as { cause?: unknown }).cause ?? deleteError)).toMatch(
       /append-only/i,
     );
+  });
+
+  it("rejects UPDATE and DELETE against the opportunity_skill table at the database level", async () => {
+    const [testCompany] = await testDb.db
+      .insert(company)
+      .values({ slug: "opportunity-skill-test-co", name: "Opportunity Skill Test Co" })
+      .returning();
+    const [testOpportunity] = await testDb.db
+      .insert(opportunity)
+      .values({
+        id: crypto.randomUUID(),
+        companyId: testCompany!.id,
+        opportunityType: "engineering-hiring-surge",
+        detectionWindow: "2026-W01",
+        reasoning: "test",
+        detectedAt: new Date(),
+      })
+      .returning();
+    const [testSkill] = await testDb.db
+      .insert(skill)
+      .values({ slug: "opportunity-skill-test-skill", name: "Test Skill" })
+      .returning();
+
+    const [row] = await testDb.db
+      .insert(opportunitySkill)
+      .values({
+        id: crypto.randomUUID(),
+        opportunityId: testOpportunity!.id,
+        skillId: testSkill!.id,
+        confidence: 0.6,
+        reasoning: "test",
+        sourceEventIds: [crypto.randomUUID()],
+        detectedAt: new Date(),
+      })
+      .returning();
+
+    const updateError: unknown = await testDb.db
+      .execute(sql`update "opportunity_skill" set "confidence" = 0.9 where "id" = ${row!.id}`)
+      .catch((caught: unknown) => caught);
+    expect(String((updateError as { cause?: unknown }).cause ?? updateError)).toMatch(
+      /append-only/i,
+    );
+
+    const deleteError: unknown = await testDb.db
+      .execute(sql`delete from "opportunity_skill" where "id" = ${row!.id}`)
+      .catch((caught: unknown) => caught);
+    expect(String((deleteError as { cause?: unknown }).cause ?? deleteError)).toMatch(
+      /append-only/i,
+    );
+  });
+
+  it("seeds the Skill taxonomy idempotently", async () => {
+    await seedSkillTaxonomy(testDb.db);
+    await seedSkillTaxonomy(testDb.db);
+
+    const rows = await testDb.db.select().from(skill);
+    const seededSlugs = rows
+      .map((r) => r.slug)
+      .filter((slug) => SKILL_TAXONOMY.some((s) => s.slug === slug));
+    expect(seededSlugs).toHaveLength(SKILL_TAXONOMY.length);
   });
 });
