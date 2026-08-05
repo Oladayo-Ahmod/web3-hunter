@@ -66,6 +66,19 @@ cp .env.example .env            # read by `pnpm db:generate` / `pnpm db:migrate`
 
 Fill in real values in both files.
 
+### Environment variables
+
+| Variable | Required | Notes |
+|---|---|---|
+| `DATABASE_URL` | Yes | Postgres connection string |
+| `BETTER_AUTH_SECRET` | Yes | ≥ 32 characters — generate one with `openssl rand -base64 32`, don't leave the placeholder unchanged |
+| `BETTER_AUTH_URL` | Yes | Base URL Better Auth uses for callback/redirect URLs |
+| `NEXT_PUBLIC_APP_URL` | Yes | The app's own public URL |
+| `AI_PROVIDER` | No | `openai`, `anthropic`, or `mock`. Unset disables the AI Enrichment Layer entirely — every AI-dependent route degrades to "unavailable" rather than erroring |
+| `OPENAI_API_KEY` / `OPENAI_MODEL` | No | Only used when `AI_PROVIDER=openai` |
+| `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` | No | Only used when `AI_PROVIDER=anthropic` |
+| `GITHUB_TOKEN` | No | Raises the GitHub Collector's rate limit from 60/hour (unauthenticated) to 5,000/hour. No scopes required — only public repository data is read |
+
 If you don't have a Supabase project yet, start a local Postgres instead:
 
 ```bash
