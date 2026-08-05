@@ -85,6 +85,7 @@ async function seedMatch(input: {
   opportunityId: string;
   score?: number;
   computedAt?: Date;
+  matchedTechnologySkillIds?: string[];
 }) {
   const db = getDb();
   const [row] = await db
@@ -96,6 +97,7 @@ async function seedMatch(input: {
       score: input.score ?? 0.7,
       reasoning: "test match reasoning",
       matchedSkillIds: [],
+      matchedTechnologySkillIds: input.matchedTechnologySkillIds ?? [],
       computedAt: input.computedAt ?? ASOF,
     })
     .returning();
@@ -167,6 +169,32 @@ describe("runDecisionPipeline (integration)", () => {
       .from(schema.eventProvenance)
       .where(eq(schema.eventProvenance.eventId, createdEventId));
     expect(provenanceRows.length).toBeGreaterThan(0);
+  });
+
+  it("records technologyFitConsidered in reasonDetails when the Match had Technology fit evidence (Milestone 9)", async () => {
+    const userId = await seedUser("decision-technology-fit-user");
+    const { companyId, opportunityId } = await seedCompanyAndOpportunity(
+      "decision-technology-fit-co",
+      { status: "scored", score: 0.9, scoredAt: ASOF },
+    );
+    await seedCompanyIntelligence({ companyId, confidence: 0.9, asOf: ASOF });
+    await seedMatch({
+      userId,
+      opportunityId,
+      score: 0.9,
+      computedAt: ASOF,
+      matchedTechnologySkillIds: [crypto.randomUUID()],
+    });
+
+    await runDecisionPipeline(userId, ASOF);
+
+    const [row] = await getDb()
+      .select()
+      .from(schema.recommendation)
+      .where(eq(schema.recommendation.userId, userId));
+    expect((row?.reasonDetails as Record<string, unknown> | null)?.technologyFitConsidered).toBe(
+      true,
+    );
   });
 
   it("does not create a Recommendation when Match score is below the relevance threshold", async () => {

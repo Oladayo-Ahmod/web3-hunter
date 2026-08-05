@@ -143,6 +143,14 @@ export async function evaluateRecommendationForMatch(
         reasonDetails: {
           matchScore: matchRow.score,
           intelligenceConfidence: intelligenceRow.confidence,
+          // Milestone 9: whether the underlying Match's score reflects any
+          // Technology fit (GitHub-evidenced) alongside Skill fit — the
+          // Application Layer mentions it in rendered reasoning only when
+          // true. Match owns the fact (`matchedTechnologySkillIds`);
+          // Decision only cites whether it was non-empty, not the Skills
+          // themselves, keeping this reasonDetails shape stable regardless
+          // of how many technologies matched.
+          technologyFitConsidered: matchRow.matchedTechnologySkillIds.length > 0,
         },
         reasonVersion: REASON_VERSION,
       },
@@ -167,6 +175,14 @@ export async function evaluateRecommendationForMatch(
         reasonDetails: {
           matchScore: matchRow.score,
           intelligenceConfidence: intelligenceRow.confidence,
+          // Milestone 9: whether the underlying Match's score reflects any
+          // Technology fit (GitHub-evidenced) alongside Skill fit — the
+          // Application Layer mentions it in rendered reasoning only when
+          // true. Match owns the fact (`matchedTechnologySkillIds`);
+          // Decision only cites whether it was non-empty, not the Skills
+          // themselves, keeping this reasonDetails shape stable regardless
+          // of how many technologies matched.
+          technologyFitConsidered: matchRow.matchedTechnologySkillIds.length > 0,
         },
         reasonVersion: REASON_VERSION,
         createdAt: asOf,
