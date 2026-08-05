@@ -1,6 +1,4 @@
-import { getDb, schema } from "@web3-hunter/db";
-import { runMatchingPipeline } from "@web3-hunter/matching";
-import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
+import { matchAllUsers } from "../lib/pipeline/stages";
 
 /**
  * Recomputes Matches for every User with a Profile — the periodic
@@ -8,27 +6,26 @@ import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
  * (apps/web/app/api/profile/route.ts), for picking up newly classified
  * Opportunities against existing Profiles.
  *
+ * The per-entity loop itself lives in `../lib/pipeline/stages.ts`,
+ * shared with `app/api/cron/pipeline/route.ts`.
+ *
  *   pnpm --filter @web3-hunter/web exec tsx scripts/run-matching.ts
  */
 async function main() {
-  const profiles = await getDb()
-    .select({ userId: schema.userProfile.userId })
-    .from(schema.userProfile);
+  const results = await matchAllUsers();
   let hadFailure = false;
 
-  for (const { userId } of profiles) {
-    try {
-      const result = await recordPipelineRun(
-        { pipelineName: "matching", scopeType: "user", scopeId: userId },
-        () => runMatchingPipeline(userId),
-      );
-      console.log(
-        `[match] ${userId}: opportunities considered ${result.opportunitiesConsidered}, matches computed ${result.matchesComputed}`,
-      );
-    } catch (error) {
+  for (const entry of results) {
+    if (entry.status === "error") {
       hadFailure = true;
-      console.error(`[match] ${userId}: FAILED —`, error);
+      console.error(`[match] ${entry.id}: FAILED —`, entry.error);
+      continue;
     }
+
+    const result = entry.result;
+    console.log(
+      `[match] ${entry.id}: opportunities considered ${result.opportunitiesConsidered}, matches computed ${result.matchesComputed}`,
+    );
   }
 
   if (hadFailure) {

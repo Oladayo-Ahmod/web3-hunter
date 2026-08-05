@@ -1,6 +1,4 @@
-import { getDb, schema } from "@web3-hunter/db";
-import { runTechnologyPipeline } from "@web3-hunter/technology";
-import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
+import { detectTechnologyForAllCompanies } from "../lib/pipeline/stages";
 
 /**
  * Runs Technology detection for every Company — the same "no live
@@ -9,25 +7,26 @@ import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
  * Company-scoped, like Scoring, not Opportunity-scoped like
  * Classification — see `packages/technology`'s `runTechnologyPipeline`.
  *
+ * The per-entity loop itself lives in `../lib/pipeline/stages.ts`,
+ * shared with `app/api/cron/pipeline/route.ts`.
+ *
  *   pnpm --filter @web3-hunter/web exec tsx scripts/run-technology.ts
  */
 async function main() {
-  const companies = await getDb().select({ id: schema.company.id }).from(schema.company);
+  const results = await detectTechnologyForAllCompanies();
   let hadFailure = false;
 
-  for (const { id } of companies) {
-    try {
-      const result = await recordPipelineRun(
-        { pipelineName: "technology", scopeType: "company", scopeId: id },
-        () => runTechnologyPipeline(id),
-      );
-      console.log(
-        `[technology] ${id}: events processed ${result.eventsProcessed}, detections produced ${result.detectionsProduced}, profile updated ${result.profileUpdated}`,
-      );
-    } catch (error) {
+  for (const entry of results) {
+    if (entry.status === "error") {
       hadFailure = true;
-      console.error(`[technology] ${id}: FAILED —`, error);
+      console.error(`[technology] ${entry.id}: FAILED —`, entry.error);
+      continue;
     }
+
+    const result = entry.result;
+    console.log(
+      `[technology] ${entry.id}: events processed ${result.eventsProcessed}, detections produced ${result.detectionsProduced}, profile updated ${result.profileUpdated}`,
+    );
   }
 
   if (hadFailure) {

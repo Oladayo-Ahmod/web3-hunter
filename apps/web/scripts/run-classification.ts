@@ -1,35 +1,30 @@
-import { runClassificationPipeline } from "@web3-hunter/classification";
-import { getDb, schema } from "@web3-hunter/db";
-import { eq } from "drizzle-orm";
-import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
+import { classifyAllOpportunities } from "../lib/pipeline/stages";
 
 /**
  * Classifies every `scored` Opportunity that hasn't been classified yet —
  * the same "no live event-bus consumer, invoke on a schedule" pattern
  * `collect:greenhouse` uses (docs/ROADMAP.md Milestone 2).
  *
+ * The per-entity loop itself lives in `../lib/pipeline/stages.ts`,
+ * shared with `app/api/cron/pipeline/route.ts`.
+ *
  *   pnpm --filter @web3-hunter/web exec tsx scripts/run-classification.ts
  */
 async function main() {
-  const opportunities = await getDb()
-    .select({ id: schema.opportunity.id })
-    .from(schema.opportunity)
-    .where(eq(schema.opportunity.status, "scored"));
+  const results = await classifyAllOpportunities();
   let hadFailure = false;
 
-  for (const { id } of opportunities) {
-    try {
-      const result = await recordPipelineRun(
-        { pipelineName: "classification", scopeType: "opportunity", scopeId: id },
-        () => runClassificationPipeline(id),
-      );
-      console.log(
-        `[classify] ${id}: events processed ${result.eventsProcessed}, classifications produced ${result.classificationsProduced}`,
-      );
-    } catch (error) {
+  for (const entry of results) {
+    if (entry.status === "error") {
       hadFailure = true;
-      console.error(`[classify] ${id}: FAILED —`, error);
+      console.error(`[classify] ${entry.id}: FAILED —`, entry.error);
+      continue;
     }
+
+    const result = entry.result;
+    console.log(
+      `[classify] ${entry.id}: events processed ${result.eventsProcessed}, classifications produced ${result.classificationsProduced}`,
+    );
   }
 
   if (hadFailure) {

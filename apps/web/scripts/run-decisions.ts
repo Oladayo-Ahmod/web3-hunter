@@ -1,6 +1,4 @@
-import { getDb, schema } from "@web3-hunter/db";
-import { runDecisionPipeline } from "@web3-hunter/decision";
-import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
+import { decideForAllUsers } from "../lib/pipeline/stages";
 
 /**
  * Evaluates Recommendation creation, priority refresh, and staleness
@@ -8,28 +6,27 @@ import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
  * the API route's on-save recompute (apps/web/app/api/profile/route.ts),
  * for picking up newly recomputed Matches against existing Profiles.
  *
+ * The per-entity loop itself lives in `../lib/pipeline/stages.ts`,
+ * shared with `app/api/cron/pipeline/route.ts`.
+ *
  *   pnpm --filter @web3-hunter/web exec tsx scripts/run-decisions.ts
  */
 async function main() {
-  const profiles = await getDb()
-    .select({ userId: schema.userProfile.userId })
-    .from(schema.userProfile);
+  const results = await decideForAllUsers();
   let hadFailure = false;
 
-  for (const { userId } of profiles) {
-    try {
-      const result = await recordPipelineRun(
-        { pipelineName: "decision", scopeType: "user", scopeId: userId },
-        () => runDecisionPipeline(userId),
-      );
-      console.log(
-        `[decide] ${userId}: matches considered ${result.matchesConsidered}, created ${result.recommendationsCreated}, ` +
-          `refreshed ${result.recommendationsRefreshed}, expired ${result.recommendationsExpired}`,
-      );
-    } catch (error) {
+  for (const entry of results) {
+    if (entry.status === "error") {
       hadFailure = true;
-      console.error(`[decide] ${userId}: FAILED —`, error);
+      console.error(`[decide] ${entry.id}: FAILED —`, entry.error);
+      continue;
     }
+
+    const result = entry.result;
+    console.log(
+      `[decide] ${entry.id}: matches considered ${result.matchesConsidered}, created ${result.recommendationsCreated}, ` +
+        `refreshed ${result.recommendationsRefreshed}, expired ${result.recommendationsExpired}`,
+    );
   }
 
   if (hadFailure) {
