@@ -126,4 +126,4 @@ Signing up and saving a Profile at `/profile` runs Matching and Decision automat
 
 ## Status
 
-This project is at **Milestone 0 — Repository Foundation** (see [docs/ROADMAP.md](docs/ROADMAP.md)): the engineering foundation exists; no product functionality has been built yet.
+The full deterministic pipeline is implemented and working end-to-end — Collectors, Scoring, Classification, Technology Detection, Matching, and Decision — along with the AI Enrichment Layer and Pipeline Run Observability. See [docs/ROADMAP.md](docs/ROADMAP.md) for how this was originally sequenced; note that document predates Pipeline Run Observability and isn't maintained as a live status tracker. Of the ATS sources it names, Greenhouse is the only one currently wired to a runnable collector command — Lever and Ashby collector logic exists in `packages/collectors`, but has no tracked-company configuration or `collect:*` script yet.
