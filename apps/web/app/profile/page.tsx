@@ -1,5 +1,6 @@
 import { getUserProfileSummary, listSkills } from "@web3-hunter/application";
 import { redirect } from "next/navigation";
+import { AIContentSection } from "@/features/ai/components/ai-content-section";
 import { ProfileForm } from "@/features/profile/components/profile-form";
 import { getCurrentUserId } from "@/lib/session";
 
@@ -32,6 +33,13 @@ export default async function ProfilePage() {
           profileSummary?.dealBreakerSkills.map((skill) => skill.id) ?? []
         }
       />
+      {profileSummary && (
+        <AIContentSection
+          title="AI Profile Insight"
+          endpoint="/api/profile/insight"
+          initialArtifact={profileSummary.aiInsight}
+        />
+      )}
     </main>
   );
 }

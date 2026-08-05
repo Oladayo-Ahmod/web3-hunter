@@ -1,6 +1,7 @@
 import type { OpportunityDetailDTO } from "@web3-hunter/application";
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@web3-hunter/ui";
 import Link from "next/link";
+import { AIContentSection } from "@/features/ai/components/ai-content-section";
 
 export function OpportunityDetailView({ opportunity }: { opportunity: OpportunityDetailDTO }) {
   return (
@@ -109,6 +110,12 @@ export function OpportunityDetailView({ opportunity }: { opportunity: Opportunit
           ))}
         </CardContent>
       </Card>
+
+      <AIContentSection
+        title="AI Summary"
+        endpoint={`/api/opportunities/${opportunity.id}/summarize`}
+        initialArtifact={opportunity.aiSummary}
+      />
     </div>
   );
 }

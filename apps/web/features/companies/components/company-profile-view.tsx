@@ -1,5 +1,6 @@
 import type { CompanyProfileDTO } from "@web3-hunter/application";
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@web3-hunter/ui";
+import { AIContentSection } from "@/features/ai/components/ai-content-section";
 import { OpportunityCard } from "../../opportunities/components/opportunity-card";
 
 export function CompanyProfileView({ profile }: { profile: CompanyProfileDTO }) {
@@ -63,6 +64,12 @@ export function CompanyProfileView({ profile }: { profile: CompanyProfileDTO }) 
           </div>
         )}
       </section>
+
+      <AIContentSection
+        title="AI Summary"
+        endpoint={`/api/companies/${profile.company.slug}/summarize`}
+        initialArtifact={profile.aiSummary}
+      />
     </div>
   );
 }

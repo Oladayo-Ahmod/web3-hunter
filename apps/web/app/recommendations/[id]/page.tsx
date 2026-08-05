@@ -1,6 +1,7 @@
 import { getRecommendationDetail } from "@web3-hunter/application";
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@web3-hunter/ui";
 import { notFound, redirect } from "next/navigation";
+import { AIContentSection } from "@/features/ai/components/ai-content-section";
 import { OpportunityDetailView } from "@/features/opportunities/components/opportunity-detail-view";
 import { RecommendationActions } from "@/features/recommendations/components/recommendation-actions";
 import { getCurrentUserId } from "@/lib/session";
@@ -41,6 +42,18 @@ export default async function RecommendationDetailPage({ params }: Recommendatio
           />
         </CardContent>
       </Card>
+
+      <AIContentSection
+        title="AI Explanation"
+        endpoint={`/api/recommendations/${recommendation.id}/explain`}
+        initialArtifact={recommendation.aiExplanation}
+      />
+
+      <AIContentSection
+        title="AI Outreach Draft"
+        endpoint={`/api/recommendations/${recommendation.id}/outreach-draft`}
+        initialArtifact={recommendation.aiOutreachDraft}
+      />
 
       <OpportunityDetailView opportunity={recommendation.opportunity} />
     </main>

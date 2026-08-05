@@ -17,6 +17,7 @@
     "decide:recommendations": "tsx scripts/run-decisions.ts"
   },
   "dependencies": {
+    "@web3-hunter/ai": "workspace:*",
     "@web3-hunter/application": "workspace:*",
     "@web3-hunter/classification": "workspace:*",
     "@web3-hunter/collectors": "workspace:*",
