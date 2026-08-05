@@ -10,13 +10,20 @@
   },
   "scripts": {
     "lint": "eslint --config ../../eslint.config.mjs .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.71.1",
     "@web3-hunter/db": "workspace:*",
-    "@web3-hunter/events": "workspace:*"
+    "@web3-hunter/events": "workspace:*",
+    "@web3-hunter/shared": "workspace:*",
+    "openai": "6.9.0",
+    "zod": "4.4.3"
   },
   "devDependencies": {
-    "typescript": "5.9.3"
+    "embedded-postgres": "18.4.0-beta.17",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
   }
 }
