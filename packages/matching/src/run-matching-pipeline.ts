@@ -15,8 +15,15 @@ export interface MatchingPipelineResult {
  * this User's Matches," which is the natural unit of work here, the same
  * way `runScoringPipeline` is Company-scoped because "all of this
  * Company's Signals" is its natural unit.
+ *
+ * `asOf` defaults to wall-clock "now" for real callers but can be supplied
+ * explicitly for deterministic replay — the same optional-parameter shape
+ * `runDecisionPipeline` uses, per Milestone 8's replay-determinism tests.
  */
-export async function runMatchingPipeline(userId: string): Promise<MatchingPipelineResult> {
+export async function runMatchingPipeline(
+  userId: string,
+  asOf: Date = new Date(),
+): Promise<MatchingPipelineResult> {
   const db = getDb();
 
   const scoredOpportunities = await db
@@ -29,7 +36,6 @@ export async function runMatchingPipeline(userId: string): Promise<MatchingPipel
     matchesComputed: 0,
   };
 
-  const asOf = new Date();
   for (const opportunityRow of scoredOpportunities) {
     const evaluation = await evaluateMatch(userId, opportunityRow.id, asOf);
     if (evaluation?.computed) {
