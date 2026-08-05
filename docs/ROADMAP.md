@@ -228,7 +228,7 @@ Four sequencing decisions shape every milestone below, and are worth stating onc
 **Features:**
 - **GitHub is prioritized first among these additions**, ahead of the others in this milestone: per [Milestone 2](#milestone-2--first-collector-the-walking-skeleton)'s decision to reposition it as an enrichment source rather than the founding one, GitHub activity directly strengthens the confidence and evidence behind Opportunities already being detected from hiring-intent sources — it's the highest-leverage addition specifically because the Scoring Engine and its Companies already exist to enrich.
 - Additional Collectors added one at a time thereafter, each following the exact pattern established in Milestone 2.
-- Entity resolution hardening as multiple sources start describing the same Company (per [DATABASE.md Open Question #4](./DATABASE.md#9-open-questions)).
+- Every additional Collector extends `company_source_identity` (per [ARCHITECTURE.md §10, item 4](./ARCHITECTURE.md#10-open-questions), resolved in Milestone 8) with its own explicit source-identifier-to-Company mappings — no new entity-resolution design needed, just configuration.
 - Expanded Signal vocabulary as new Event categories (Repository, Funding, Grant, Release, Founder — already named in [EVENT_MODEL.md §Event Categories](./EVENT_MODEL.md#event-categories)) start actually flowing.
 
 **Dependencies:** Milestones 1–8 (the pattern is established once, then replicated).
