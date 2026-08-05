@@ -57,14 +57,14 @@ See [docs/ARCHITECTURE.md §3](docs/ARCHITECTURE.md#3-monorepo-structure) for th
 pnpm install
 ```
 
-Copy the example env file into **both** locations it's needed — Next.js only reads `.env` from `apps/web/`, its own working directory when `pnpm dev` runs, while the `db:generate`/`db:migrate` commands below run from the repo root and read the root `.env`:
+Copy the example env file into **both** locations it's needed — each reads its own copy from its own working directory, not the repo root:
 
 ```bash
-cp .env.example apps/web/.env   # read by `pnpm dev`
-cp .env.example .env            # read by `pnpm db:generate` / `pnpm db:migrate`
+cp .env.example apps/web/.env    # read by `pnpm dev` and every `pnpm --filter @web3-hunter/web <script>`
+cp .env.example packages/db/.env # read by `pnpm db:generate` / `pnpm db:migrate`
 ```
 
-Fill in real values in both files.
+Fill in real values in both files. A repo-root `.env` is not read by anything — Turborepo's `globalDependencies: [".env"]` only uses it as a cache-hash input, not an environment source, so don't rely on one existing at the root.
 
 ### Environment variables
 
@@ -85,7 +85,7 @@ If you don't have a Supabase project yet, start a local Postgres instead:
 docker compose up -d db
 ```
 
-and point `DATABASE_URL` in both `.env` files at `postgresql://postgres:postgres@localhost:5432/web3_hunter`.
+and point `DATABASE_URL` in both `apps/web/.env` and `packages/db/.env` at `postgresql://postgres:postgres@localhost:5432/web3_hunter`.
 
 Apply the database schema:
 
@@ -104,7 +104,7 @@ Visit `http://localhost:3000` and `http://localhost:3000/health` to confirm the 
 
 ### Populating data
 
-`pnpm dev` starts an app with an empty Opportunity Feed — nothing runs automatically, there is no scheduler anywhere in this system. Seed the Skill taxonomy once, then run each pipeline stage by hand, in this order:
+`pnpm dev` starts an app with an empty Opportunity Feed — nothing runs automatically, there is no scheduler anywhere in this system. Seed the Skill taxonomy once, then run each pipeline stage by hand, in this order. Every script below reads `apps/web/.env` automatically (via `tsx --env-file`) — no manual `export` needed, as long as that file exists:
 
 ```bash
 pnpm --filter @web3-hunter/web seed:skills              # once — seeds the Skill taxonomy

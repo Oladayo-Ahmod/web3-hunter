@@ -10,14 +10,14 @@
     "lint": "eslint --config ../../eslint.config.mjs .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "collect:greenhouse": "tsx scripts/run-greenhouse.ts",
-    "collect:github": "tsx scripts/run-github.ts",
-    "seed:skills": "tsx scripts/seed-skills.ts",
-    "score:companies": "tsx scripts/run-scoring.ts",
-    "classify:opportunities": "tsx scripts/run-classification.ts",
-    "match:users": "tsx scripts/run-matching.ts",
-    "decide:recommendations": "tsx scripts/run-decisions.ts",
-    "detect:technology": "tsx scripts/run-technology.ts"
+    "collect:greenhouse": "tsx --env-file=.env scripts/run-greenhouse.ts",
+    "collect:github": "tsx --env-file=.env scripts/run-github.ts",
+    "seed:skills": "tsx --env-file=.env scripts/seed-skills.ts",
+    "score:companies": "tsx --env-file=.env scripts/run-scoring.ts",
+    "classify:opportunities": "tsx --env-file=.env scripts/run-classification.ts",
+    "match:users": "tsx --env-file=.env scripts/run-matching.ts",
+    "decide:recommendations": "tsx --env-file=.env scripts/run-decisions.ts",
+    "detect:technology": "tsx --env-file=.env scripts/run-technology.ts"
   },
   "dependencies": {
     "@web3-hunter/ai": "workspace:*",
