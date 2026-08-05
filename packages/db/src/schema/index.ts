@@ -1,3 +1,4 @@
+export * from "./ai-artifact";
 export * from "./auth";
 export * from "./collector";
 export * from "./company";
