@@ -55,8 +55,16 @@ See [docs/ARCHITECTURE.md §3](docs/ARCHITECTURE.md#3-monorepo-structure) for th
 
 ```bash
 pnpm install
-cp .env.example .env   # then fill in real values
 ```
+
+Copy the example env file into **both** locations it's needed — Next.js only reads `.env` from `apps/web/`, its own working directory when `pnpm dev` runs, while the `db:generate`/`db:migrate` commands below run from the repo root and read the root `.env`:
+
+```bash
+cp .env.example apps/web/.env   # read by `pnpm dev`
+cp .env.example .env            # read by `pnpm db:generate` / `pnpm db:migrate`
+```
+
+Fill in real values in both files.
 
 If you don't have a Supabase project yet, start a local Postgres instead:
 
@@ -64,7 +72,7 @@ If you don't have a Supabase project yet, start a local Postgres instead:
 docker compose up -d db
 ```
 
-and point `DATABASE_URL` in `.env` at `postgresql://postgres:postgres@localhost:5432/web3_hunter`.
+and point `DATABASE_URL` in both `.env` files at `postgresql://postgres:postgres@localhost:5432/web3_hunter`.
 
 Apply the database schema:
 
