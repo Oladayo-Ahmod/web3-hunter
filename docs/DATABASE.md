@@ -97,6 +97,10 @@ An aggregate is a cluster of data with one root entity that owns transactional c
 
 **Root:** Collector. **Owns:** its own configuration and health/status state (Configured → Active → Degraded → Disabled). A small, operational aggregate, but a real one — every Event's Source reference points at a row here.
 
+### Pipeline Run Aggregate
+
+**Root:** Pipeline Run (Milestone 10). **Owns:** one record per invocation of a deterministic pipeline (Scoring, Classification, Technology, Matching, Decision) — its status, timing, and either its result metrics or its error message. Structurally a log, not a snapshot: unlike the Collector Aggregate (one singular entity, one health row, continuously overwritten), these pipelines run once *per* Company/Opportunity/User, repeatedly, so each invocation gets its own row rather than sharing one mutable slot. Deliberately outside the four-axis classification in [§2](#2-storage-strategy) — like Collector Health, this is operational telemetry about *how* the system ran, not a business fact about the world, so it is neither Canonical nor Derived from the event log: no Event is published when a Pipeline Run is recorded, and this table is intentionally excluded from every replay-determinism guarantee (`startedAt`/`completedAt`/`durationMs` are wall-clock-bound and can never be reproduced by replaying the same business data twice).
+
 ---
 
 ## 4. Database Schema Principles

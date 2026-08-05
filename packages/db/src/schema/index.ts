@@ -8,6 +8,7 @@ export * from "./event";
 export * from "./match";
 export * from "./opportunity";
 export * from "./opportunity-skill";
+export * from "./pipeline-run";
 export * from "./raw-record";
 export * from "./recommendation";
 export * from "./signal";

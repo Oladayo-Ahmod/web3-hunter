@@ -44,6 +44,7 @@ describe("createTestDatabase", () => {
       "opportunity_skill",
       "opportunity_summary",
       "outreach_draft",
+      "pipeline_run",
       "profile_insight",
       "raw_record",
       "raw_record_ingestion",
