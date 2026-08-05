@@ -34,6 +34,7 @@ describe("createTestDatabase", () => {
       "collector",
       "company",
       "company_intelligence",
+      "company_source_identity",
       "company_summary",
       "event",
       "event_provenance",

@@ -1,4 +1,4 @@
-import { jsonb, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../columns";
 
 /**
@@ -36,8 +36,20 @@ export const collector = pgTable("collector", {
   sourceType: text("source_type").notNull(),
   status: collectorStatus("status").notNull().default("configured"),
   config: jsonb("config").notNull().default({}),
+  // "Last successful run" — only ever updated when a run completes
+  // without error, per the existing (pre-Milestone 8) convention.
   lastRunAt: timestamp("last_run_at", { withTimezone: true }),
+  // "Last failed run" and its message.
   lastErrorAt: timestamp("last_error_at", { withTimezone: true }),
   lastErrorMessage: text("last_error_message"),
+  // Milestone 8: Collector health. All four describe the *most recent*
+  // run (success or failure) as one coherent snapshot, recorded once per
+  // full run rather than clobbered per company mid-run — see
+  // docs/ROADMAP.md Milestone 8's Definition of Ready ("Collector
+  // Health") for why the previous per-company update pattern was a bug.
+  consecutiveFailures: integer("consecutive_failures").notNull().default(0),
+  lastRunRecordsProcessed: integer("last_run_records_processed"),
+  lastRunRecordsPublished: integer("last_run_records_published"),
+  lastRunDurationMs: integer("last_run_duration_ms"),
   ...timestamps(),
 });

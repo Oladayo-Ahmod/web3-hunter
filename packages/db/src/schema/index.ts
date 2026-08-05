@@ -3,6 +3,7 @@ export * from "./auth";
 export * from "./collector";
 export * from "./company";
 export * from "./company-intelligence";
+export * from "./company-source-identity";
 export * from "./event";
 export * from "./match";
 export * from "./opportunity";
