@@ -234,6 +234,54 @@ describe("packages/matching (integration)", () => {
       expect(after?.reasoning).toBe(before?.reasoning);
       expect(after?.matchedSkillIds).toEqual(before?.matchedSkillIds);
     });
+
+    it("blends in Technology fit when the Opportunity's Company has a Technology Profile (Milestone 9)", async () => {
+      const userId = await seedUser("technology-fit-user");
+      const solidity = await seedSkill("technology-fit-solidity");
+      const rust = await seedSkill("technology-fit-rust");
+      await setUserSkills(userId, [solidity.id, rust.id]);
+
+      const db = getDb();
+      const [company] = await db
+        .insert(schema.company)
+        .values({ slug: "technology-fit-co", name: "technology-fit-co" })
+        .returning();
+      const [opportunity] = await db
+        .insert(schema.opportunity)
+        .values({
+          id: crypto.randomUUID(),
+          companyId: company!.id,
+          opportunityType: "engineering-hiring-surge",
+          detectionWindow: "2026-W01",
+          status: "scored",
+          score: 0.7,
+          reasoning: "test",
+          detectedAt: new Date("2026-01-01T00:00:00Z"),
+          scoredAt: new Date("2026-01-01T00:00:00Z"),
+        })
+        .returning();
+      await tagOpportunitySkill(opportunity!.id, solidity.id);
+
+      await db.insert(schema.companyTechnologyProfile).values({
+        companyId: company!.id,
+        skillIds: [rust.id],
+        evidenceCount: 1,
+        asOf: new Date("2026-01-01T00:00:00Z"),
+      });
+
+      const result = await evaluateMatch(userId, opportunity!.id, new Date("2026-02-01T00:00:00Z"));
+      expect(result?.computed).toBe(true);
+
+      const [row] = await getDb()
+        .select()
+        .from(schema.match)
+        .where(eq(schema.match.id, result!.matchId));
+      // Skill fit 1/1 * 0.7 + Technology fit 1/1 * 0.3 = 1.0
+      expect(row?.score).toBe(1);
+      expect(row?.matchedSkillIds).toEqual([solidity.id]);
+      expect(row?.matchedTechnologySkillIds).toEqual([rust.id]);
+      expect(row?.reasoning).toContain("GitHub");
+    });
   });
 
   describe("runMatchingPipeline", () => {

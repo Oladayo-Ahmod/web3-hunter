@@ -17,5 +17,12 @@ export const MatchComputed = registerEventType({
     score: z.number().min(0).max(1),
     reasoning: z.string(),
     matchedSkillIds: z.array(z.string().uuid()),
+    // Milestone 9's technology-fit component. Additive per
+    // docs/EVENT_MODEL.md §Event Versioning ("additive changes do not
+    // require a new version") — optional so metadata from any hypothetical
+    // pre-Milestone-9 event (none exist in practice, since replay never
+    // re-validates stored metadata against the current schema) would still
+    // parse.
+    matchedTechnologySkillIds: z.array(z.string().uuid()).optional().default([]),
   }),
 });

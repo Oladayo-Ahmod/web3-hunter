@@ -67,7 +67,24 @@ export async function evaluateMatch(
     return null;
   }
 
-  const computation = computeMatch(profile.skillIds, opportunitySkillIds);
+  // Milestone 9: the Opportunity's Company's GitHub-evidenced technology
+  // stack, if any — read directly from `packages/technology`'s
+  // projection via `packages/db`, never by importing that package (the
+  // same "read the projection, not the producer" pattern this function
+  // already uses for `opportunity_skill`). Absent, not empty-and-scored,
+  // when the Company has no Technology Profile yet.
+  const [technologyProfileRow] = await db
+    .select()
+    .from(schema.companyTechnologyProfile)
+    .where(eq(schema.companyTechnologyProfile.companyId, opportunityRow.companyId))
+    .limit(1);
+  const companyTechnologySkillIds = technologyProfileRow?.skillIds ?? [];
+
+  const computation = computeMatch(
+    profile.skillIds,
+    opportunitySkillIds,
+    companyTechnologySkillIds,
+  );
   const matchId = deriveMatchId({ userId, opportunityId });
 
   const [existing] = await db
@@ -80,7 +97,8 @@ export async function evaluateMatch(
   }
 
   const eventId = deriveDeterministicId(
-    `web3-hunter:matching:match-computed:${matchId}:${asOf.toISOString()}:${computation.matchedSkillIds.length}`,
+    `web3-hunter:matching:match-computed:${matchId}:${asOf.toISOString()}:` +
+      `${computation.matchedSkillIds.length}:${computation.matchedTechnologySkillIds.length}`,
   );
 
   await publishEventSafely({
@@ -91,6 +109,7 @@ export async function evaluateMatch(
       score: computation.score,
       reasoning: computation.reasoning,
       matchedSkillIds: [...computation.matchedSkillIds],
+      matchedTechnologySkillIds: [...computation.matchedTechnologySkillIds],
     },
     occurredAt: asOf,
     confidence: computation.score,
@@ -100,7 +119,10 @@ export async function evaluateMatch(
     // The full set of this Opportunity's classified Skills considered —
     // not only the matched subset — so provenance stays non-empty even
     // for a zero-overlap Match, and honestly reflects everything the
-    // computation weighed.
+    // computation weighed. Company Technology Profile evidence is
+    // deliberately not added here: `technology_detection` rows are
+    // Company-scoped, not Opportunity-scoped, and citing them would mix
+    // two different evidentiary chains under one Match Event.
     provenance: opportunitySkillRows.map((row) => row.id),
   });
 
@@ -113,6 +135,7 @@ export async function evaluateMatch(
       score: computation.score,
       reasoning: computation.reasoning,
       matchedSkillIds: [...computation.matchedSkillIds],
+      matchedTechnologySkillIds: [...computation.matchedTechnologySkillIds],
       computedAt: asOf,
     })
     .onConflictDoUpdate({
@@ -121,6 +144,7 @@ export async function evaluateMatch(
         score: computation.score,
         reasoning: computation.reasoning,
         matchedSkillIds: [...computation.matchedSkillIds],
+        matchedTechnologySkillIds: [...computation.matchedTechnologySkillIds],
         computedAt: asOf,
         updatedAt: new Date(),
       },

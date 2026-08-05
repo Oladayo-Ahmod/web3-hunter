@@ -1,3 +1,4 @@
+export { SKILL_FIT_WEIGHT, TECHNOLOGY_FIT_WEIGHT } from "./constants";
 export { MatchComputed } from "./event-types";
 export { deriveMatchId, type MatchIdentity } from "./match-id";
 export { evaluateMatch, type MatchEvaluationResult } from "./match-store";
