@@ -89,6 +89,28 @@ pnpm dev
 
 Visit `http://localhost:3000` and `http://localhost:3000/health` to confirm the app and database are both reachable.
 
+### Populating data
+
+`pnpm dev` starts an app with an empty Opportunity Feed — nothing runs automatically, there is no scheduler anywhere in this system. Seed the Skill taxonomy once, then run each pipeline stage by hand, in this order:
+
+```bash
+pnpm --filter @web3-hunter/web seed:skills              # once — seeds the Skill taxonomy
+
+pnpm --filter @web3-hunter/web collect:greenhouse        # ingest job postings
+pnpm --filter @web3-hunter/web collect:github            # ingest repository data
+
+pnpm --filter @web3-hunter/web score:companies           # detect Signals, score Opportunities
+pnpm --filter @web3-hunter/web classify:opportunities    # tag Opportunities with Skills
+pnpm --filter @web3-hunter/web detect:technology         # tag Companies' Technology Profile
+                                                           # (depends only on collect:github — order-
+                                                           #  independent of the two commands above)
+
+pnpm --filter @web3-hunter/web match:users                # match every existing User Profile against current Opportunities
+pnpm --filter @web3-hunter/web decide:recommendations     # regenerate every existing User's Recommendations
+```
+
+Signing up and saving a Profile at `/profile` runs Matching and Decision automatically, but only for that one User, against whatever Opportunities exist at that moment. Re-run `match:users` and `decide:recommendations` to bring already-registered Users' Recommendations up to date with newly collected or reclassified data.
+
 ### Common commands
 
 | Command | Description |
