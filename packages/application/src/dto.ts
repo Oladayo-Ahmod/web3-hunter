@@ -159,3 +159,28 @@ export interface RecommendationDetailDTO extends Omit<RecommendationSummaryDTO, 
   /** AI-generated, supplemental — see `OpportunityDetailDTO.aiSummary`. */
   aiOutreachDraft: AIArtifactSummaryDTO | null;
 }
+
+export type CollectorStatusDTO = "configured" | "active" | "degraded" | "disabled";
+
+/**
+ * Collector Health, per Milestone 8: a read-only operational snapshot of
+ * one Collector's most recent run — storage + read API only, no dashboard.
+ * `lastRunAt`/`lastErrorAt` describe the last *successful* and last
+ * *failed* run respectively (independent timestamps, since the most
+ * recent run of each kind isn't necessarily the same run); the
+ * `lastRun*` fields describe the single most recent run regardless of
+ * outcome.
+ */
+export interface CollectorHealthDTO {
+  id: string;
+  slug: string;
+  sourceType: string;
+  status: CollectorStatusDTO;
+  consecutiveFailures: number;
+  lastRunAt: string | null;
+  lastErrorAt: string | null;
+  lastErrorMessage: string | null;
+  lastRunRecordsProcessed: number | null;
+  lastRunRecordsPublished: number | null;
+  lastRunDurationMs: number | null;
+}

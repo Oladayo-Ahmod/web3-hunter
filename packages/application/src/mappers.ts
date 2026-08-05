@@ -1,5 +1,6 @@
 import { schema } from "@web3-hunter/db";
 import type {
+  CollectorHealthDTO,
   CompanyIntelligenceSummaryDTO,
   CompanySummaryDTO,
   MatchSummaryDTO,
@@ -14,6 +15,7 @@ type SignalRow = typeof schema.signal.$inferSelect;
 type CompanyIntelligenceRow = typeof schema.companyIntelligence.$inferSelect;
 type MatchRow = typeof schema.match.$inferSelect;
 type SkillRow = typeof schema.skill.$inferSelect;
+type CollectorRow = typeof schema.collector.$inferSelect;
 
 export function toCompanySummaryDTO(row: CompanyRow): CompanySummaryDTO {
   return { id: row.id, slug: row.slug, name: row.name };
@@ -80,5 +82,21 @@ export function toOpportunityFeedItemDTO(
     detectedAt: opportunity.detectedAt.toISOString(),
     scoredAt: opportunity.scoredAt ? opportunity.scoredAt.toISOString() : null,
     match: match ? toMatchSummaryDTO(match, skillById ?? new Map()) : null,
+  };
+}
+
+export function toCollectorHealthDTO(row: CollectorRow): CollectorHealthDTO {
+  return {
+    id: row.id,
+    slug: row.slug,
+    sourceType: row.sourceType,
+    status: row.status,
+    consecutiveFailures: row.consecutiveFailures,
+    lastRunAt: row.lastRunAt ? row.lastRunAt.toISOString() : null,
+    lastErrorAt: row.lastErrorAt ? row.lastErrorAt.toISOString() : null,
+    lastErrorMessage: row.lastErrorMessage,
+    lastRunRecordsProcessed: row.lastRunRecordsProcessed,
+    lastRunRecordsPublished: row.lastRunRecordsPublished,
+    lastRunDurationMs: row.lastRunDurationMs,
   };
 }

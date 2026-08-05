@@ -1,6 +1,9 @@
+export { listCollectorHealth } from "./collector-query-service";
 export { getCompanyProfile } from "./company-query-service";
 export type {
   AIArtifactSummaryDTO,
+  CollectorHealthDTO,
+  CollectorStatusDTO,
   CompanyIntelligenceSummaryDTO,
   CompanyProfileDTO,
   CompanySummaryDTO,
