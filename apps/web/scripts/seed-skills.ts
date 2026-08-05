@@ -11,7 +11,9 @@ async function main() {
   console.log("[seed-skills] Skill taxonomy seeded.");
 }
 
-main().catch((error: unknown) => {
-  console.error("[seed-skills] Fatal error seeding the Skill taxonomy:", error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(process.exitCode ?? 0))
+  .catch((error: unknown) => {
+    console.error("[seed-skills] Fatal error seeding the Skill taxonomy:", error);
+    process.exit(1);
+  });
