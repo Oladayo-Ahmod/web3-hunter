@@ -55,6 +55,20 @@ export function OpportunityDetailView({ opportunity }: { opportunity: Opportunit
                 ))}
               </div>
             )}
+            {opportunity.match.matchedTechnologySkills.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  Also matched via this Company&apos;s GitHub-evidenced technologies:
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {opportunity.match.matchedTechnologySkills.map((skill) => (
+                    <Badge key={skill.id} variant="outline">
+                      {skill.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

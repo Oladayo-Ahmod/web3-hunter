@@ -11,10 +11,12 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "collect:greenhouse": "tsx scripts/run-greenhouse.ts",
+    "collect:github": "tsx scripts/run-github.ts",
     "seed:skills": "tsx scripts/seed-skills.ts",
     "classify:opportunities": "tsx scripts/run-classification.ts",
     "match:users": "tsx scripts/run-matching.ts",
-    "decide:recommendations": "tsx scripts/run-decisions.ts"
+    "decide:recommendations": "tsx scripts/run-decisions.ts",
+    "detect:technology": "tsx scripts/run-technology.ts"
   },
   "dependencies": {
     "@web3-hunter/ai": "workspace:*",
@@ -27,6 +29,7 @@
     "@web3-hunter/matching": "workspace:*",
     "@web3-hunter/scoring": "workspace:*",
     "@web3-hunter/shared": "workspace:*",
+    "@web3-hunter/technology": "workspace:*",
     "@web3-hunter/ui": "workspace:*",
     "better-auth": "1.6.25",
     "next": "15.5.22",

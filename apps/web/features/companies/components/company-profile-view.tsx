@@ -31,6 +31,28 @@ export function CompanyProfileView({ profile }: { profile: CompanyProfileDTO }) 
         </CardContent>
       </Card>
 
+      {profile.technologyProfile && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Technology Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {profile.technologyProfile.technologies.map((technology) => (
+                <Badge key={technology.id} variant="secondary">
+                  {technology.name}
+                </Badge>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Deterministically evidenced by this Company&apos;s public GitHub activity —{" "}
+              {profile.technologyProfile.evidenceCount} detection(s) as of{" "}
+              {new Date(profile.technologyProfile.asOf).toLocaleDateString()}.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <section className="space-y-3">
         <h2 className="text-lg font-medium">Active Opportunities</h2>
         {profile.activeOpportunities.length === 0 ? (
