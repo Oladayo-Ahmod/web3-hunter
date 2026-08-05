@@ -14,6 +14,8 @@ export type {
   OpportunityFeedItemDTO,
   OpportunityStatusDTO,
   PaginatedResult,
+  PipelineRunDTO,
+  PipelineRunStatusDTO,
   RecommendationDetailDTO,
   RecommendationStatusDTO,
   RecommendationSummaryDTO,
@@ -31,6 +33,11 @@ export {
   type OpportunityFeedQuery,
   type OpportunitySortField,
 } from "./opportunity-query-service";
+export {
+  listPipelineRuns,
+  pipelineRunQuerySchema,
+  type PipelineRunQuery,
+} from "./pipeline-run-query-service";
 export { getRecommendationDetail, listRecommendations } from "./recommendation-query-service";
 export { search, searchQuerySchema, type SearchQuery } from "./search-service";
 export { listSkills } from "./skill-query-service";

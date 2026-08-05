@@ -215,3 +215,28 @@ export interface CollectorHealthDTO {
   lastRunRecordsPublished: number | null;
   lastRunDurationMs: number | null;
 }
+
+export type PipelineRunStatusDTO = "succeeded" | "failed";
+
+/**
+ * Pipeline Run — the execution-history counterpart to
+ * `CollectorHealthDTO`, per Milestone 10: a read-only record of one
+ * invocation of Scoring/Classification/Technology/Matching/Decision —
+ * storage + read API only, no dashboard. Unlike Collector Health (one
+ * mutable snapshot per Collector), this is a log entry: one row per
+ * invocation, since these pipelines run once per Company/Opportunity/User,
+ * repeatedly, not once per singular source. `metrics` is `null` on
+ * failure; `errorMessage` is `null` on success.
+ */
+export interface PipelineRunDTO {
+  id: string;
+  pipelineName: string;
+  scopeType: string;
+  scopeId: string;
+  status: PipelineRunStatusDTO;
+  startedAt: string;
+  completedAt: string;
+  durationMs: number;
+  metrics: Record<string, unknown> | null;
+  errorMessage: string | null;
+}

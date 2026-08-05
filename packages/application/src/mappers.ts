@@ -6,6 +6,7 @@ import type {
   CompanyTechnologyProfileDTO,
   MatchSummaryDTO,
   OpportunityFeedItemDTO,
+  PipelineRunDTO,
   SignalSummaryDTO,
   SkillDTO,
 } from "./dto";
@@ -18,6 +19,7 @@ type MatchRow = typeof schema.match.$inferSelect;
 type SkillRow = typeof schema.skill.$inferSelect;
 type CollectorRow = typeof schema.collector.$inferSelect;
 type CompanyTechnologyProfileRow = typeof schema.companyTechnologyProfile.$inferSelect;
+type PipelineRunRow = typeof schema.pipelineRun.$inferSelect;
 
 export function toCompanySummaryDTO(row: CompanyRow): CompanySummaryDTO {
   return { id: row.id, slug: row.slug, name: row.name };
@@ -117,5 +119,20 @@ export function toCollectorHealthDTO(row: CollectorRow): CollectorHealthDTO {
     lastRunRecordsProcessed: row.lastRunRecordsProcessed,
     lastRunRecordsPublished: row.lastRunRecordsPublished,
     lastRunDurationMs: row.lastRunDurationMs,
+  };
+}
+
+export function toPipelineRunDTO(row: PipelineRunRow): PipelineRunDTO {
+  return {
+    id: row.id,
+    pipelineName: row.pipelineName,
+    scopeType: row.scopeType,
+    scopeId: row.scopeId,
+    status: row.status,
+    startedAt: row.startedAt.toISOString(),
+    completedAt: row.completedAt.toISOString(),
+    durationMs: row.durationMs,
+    metrics: row.metrics as Record<string, unknown> | null,
+    errorMessage: row.errorMessage,
   };
 }

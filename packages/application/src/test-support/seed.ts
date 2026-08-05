@@ -189,3 +189,37 @@ export async function seedRecommendation(input: {
     .returning();
   return row!;
 }
+
+/** Milestone 10: a Pipeline Run — see `packages/db`'s `pipeline_run`. */
+export async function seedPipelineRun(input: {
+  pipelineName: string;
+  scopeType: string;
+  scopeId: string;
+  status?: "succeeded" | "failed";
+  startedAt?: Date;
+  completedAt?: Date;
+  durationMs?: number;
+  metrics?: Record<string, unknown> | null;
+  errorMessage?: string | null;
+  recordedAt?: Date;
+}) {
+  const db = getDb();
+  const startedAt = input.startedAt ?? new Date();
+  const completedAt = input.completedAt ?? new Date();
+  const [row] = await db
+    .insert(schema.pipelineRun)
+    .values({
+      pipelineName: input.pipelineName,
+      scopeType: input.scopeType,
+      scopeId: input.scopeId,
+      status: input.status ?? "succeeded",
+      startedAt,
+      completedAt,
+      durationMs: input.durationMs ?? completedAt.getTime() - startedAt.getTime(),
+      metrics: input.metrics ?? (input.status === "failed" ? null : { processed: 1 }),
+      errorMessage: input.errorMessage ?? (input.status === "failed" ? "test failure" : null),
+      recordedAt: input.recordedAt,
+    })
+    .returning();
+  return row!;
+}
