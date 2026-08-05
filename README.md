@@ -124,6 +124,15 @@ pnpm --filter @web3-hunter/web decide:recommendations     # regenerate every exi
 
 Signing up and saving a Profile at `/profile` runs Matching and Decision automatically, but only for that one User, against whatever Opportunities exist at that moment. Re-run `match:users` and `decide:recommendations` to bring already-registered Users' Recommendations up to date with newly collected or reclassified data.
 
+### Tracked companies
+
+`collect:greenhouse` and `collect:github` only ingest data for the companies explicitly listed in source — there is no watchlist UI or database-driven configuration yet:
+
+- `apps/web/lib/collectors/tracked-companies.ts` — Greenhouse board tokens (`TRACKED_GREENHOUSE_COMPANIES`), currently ConsenSys, Coinbase, and Paradigm.
+- `apps/web/lib/collectors/tracked-github-orgs.ts` — GitHub organizations (`TRACKED_GITHUB_ORGS`), the same three companies' orgs. `companySlug` is deliberately shared with the Greenhouse list so both sources resolve to the same Company row via `company_source_identity`.
+
+To track a different or additional company, add an entry to the relevant file (both, if it has data from both sources) and re-run the corresponding `collect:*` command — no other code changes are required.
+
 ### Common commands
 
 | Command | Description |
