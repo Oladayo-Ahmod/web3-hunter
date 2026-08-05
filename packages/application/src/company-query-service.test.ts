@@ -4,6 +4,7 @@ import { getCompanyProfile } from "./company-query-service";
 import {
   seedCompany,
   seedCompanyIntelligence,
+  seedCompanyTechnologyProfile,
   seedMatch,
   seedOpportunity,
   seedSignal,
@@ -82,6 +83,25 @@ describe("company-query-service (integration)", () => {
     expect(profile?.intelligence).toBeNull();
     expect(profile?.activeOpportunities).toEqual([]);
     expect(profile?.recentSignals).toEqual([]);
+    expect(profile?.technologyProfile).toBeNull();
+  });
+
+  it("surfaces the Technology Profile when GitHub evidence exists (Milestone 9)", async () => {
+    const company = await seedCompany({ slug: "acme-tech-profile" });
+    const rust = await seedSkill("tech-profile-rust", "Rust");
+    const typescript = await seedSkill("tech-profile-typescript", "TypeScript");
+    await seedCompanyTechnologyProfile({
+      companyId: company.id,
+      skillIds: [rust.id, typescript.id],
+      evidenceCount: 3,
+    });
+
+    const profile = await getCompanyProfile("acme-tech-profile");
+
+    expect(profile?.technologyProfile?.evidenceCount).toBe(3);
+    expect(profile?.technologyProfile?.technologies.map((t) => t.id).sort()).toEqual(
+      [rust.id, typescript.id].sort(),
+    );
   });
 
   it("attaches the viewer's Match to their active Opportunities, when present", async () => {

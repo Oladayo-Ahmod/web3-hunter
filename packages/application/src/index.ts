@@ -7,6 +7,7 @@ export type {
   CompanyIntelligenceSummaryDTO,
   CompanyProfileDTO,
   CompanySummaryDTO,
+  CompanyTechnologyProfileDTO,
   IntelligenceTrendDTO,
   MatchSummaryDTO,
   OpportunityDetailDTO,

@@ -45,11 +45,31 @@ export interface SkillDTO {
  * present only when the caller supplied a `viewerId` and a Match has been
  * computed for that pair (docs/DOMAIN_MODEL.md's *Match ≠ Score*: the
  * score alone is never returned without the Skills that produced it).
+ * `matchedTechnologySkills` (Milestone 9) is the subset of the
+ * Opportunity's Company's GitHub-evidenced technologies the viewer also
+ * declared — empty both when there was no overlap and when the Company
+ * has no Technology Profile yet; `reasoning` is what distinguishes those
+ * two cases in words.
  */
 export interface MatchSummaryDTO {
   score: number;
   reasoning: string;
   matchedSkills: SkillDTO[];
+  matchedTechnologySkills: SkillDTO[];
+}
+
+/**
+ * A Company's current, deterministic Technology Profile (Milestone 9):
+ * the Skills its own GitHub activity evidences. `null` at every call site
+ * that surfaces it means "no Technology Profile yet" — never an empty
+ * list standing in for that, so the UI can distinguish "no GitHub
+ * evidence collected" from "collected, evidences nothing in our
+ * taxonomy."
+ */
+export interface CompanyTechnologyProfileDTO {
+  technologies: SkillDTO[];
+  evidenceCount: number;
+  asOf: string;
 }
 
 export interface OpportunityFeedItemDTO {
@@ -93,6 +113,15 @@ export interface OpportunityDetailDTO extends OpportunityFeedItemDTO {
     lastSignalAt: string | null;
     asOf: string | null;
   };
+  /**
+   * Milestone 9: this Opportunity's Company's current Technology Profile,
+   * surfaced in the Opportunity's context — not independent evidence of
+   * its own. Per the approved Milestone 9 design, an Opportunity has no
+   * per-opportunity technology evidence yet (that would require parsing
+   * job descriptions), so this is always exactly its Company's profile,
+   * never a distinct computation.
+   */
+  companyTechnologyProfile: CompanyTechnologyProfileDTO | null;
   /** AI-generated, supplemental — the deterministic fields above remain authoritative whether or not this is present (docs/ROADMAP.md Milestone 7). */
   aiSummary: AIArtifactSummaryDTO | null;
 }
@@ -107,6 +136,8 @@ export interface CompanyProfileDTO {
    */
   activeOpportunities: OpportunityFeedItemDTO[];
   recentSignals: SignalSummaryDTO[];
+  /** Milestone 9: see `OpportunityDetailDTO.companyTechnologyProfile` — the same projection, read directly here rather than via an Opportunity. */
+  technologyProfile: CompanyTechnologyProfileDTO | null;
   /** AI-generated, supplemental — see `OpportunityDetailDTO.aiSummary`. */
   aiSummary: AIArtifactSummaryDTO | null;
 }

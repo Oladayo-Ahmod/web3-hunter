@@ -3,6 +3,7 @@ import type {
   CollectorHealthDTO,
   CompanyIntelligenceSummaryDTO,
   CompanySummaryDTO,
+  CompanyTechnologyProfileDTO,
   MatchSummaryDTO,
   OpportunityFeedItemDTO,
   SignalSummaryDTO,
@@ -16,6 +17,7 @@ type CompanyIntelligenceRow = typeof schema.companyIntelligence.$inferSelect;
 type MatchRow = typeof schema.match.$inferSelect;
 type SkillRow = typeof schema.skill.$inferSelect;
 type CollectorRow = typeof schema.collector.$inferSelect;
+type CompanyTechnologyProfileRow = typeof schema.companyTechnologyProfile.$inferSelect;
 
 export function toCompanySummaryDTO(row: CompanyRow): CompanySummaryDTO {
   return { id: row.id, slug: row.slug, name: row.name };
@@ -63,6 +65,23 @@ export function toMatchSummaryDTO(
     matchedSkills: row.matchedSkillIds
       .map((skillId) => skillById.get(skillId))
       .filter((skill): skill is SkillDTO => skill !== undefined),
+    matchedTechnologySkills: row.matchedTechnologySkillIds
+      .map((skillId) => skillById.get(skillId))
+      .filter((skill): skill is SkillDTO => skill !== undefined),
+  };
+}
+
+/** `asOf` is required by the row type but `null` is accepted defensively, mirroring `toCompanyIntelligenceSummaryDTO`'s shape. */
+export function toCompanyTechnologyProfileDTO(
+  row: CompanyTechnologyProfileRow,
+  skillById: ReadonlyMap<string, SkillDTO>,
+): CompanyTechnologyProfileDTO {
+  return {
+    technologies: row.skillIds
+      .map((skillId) => skillById.get(skillId))
+      .filter((skill): skill is SkillDTO => skill !== undefined),
+    evidenceCount: row.evidenceCount,
+    asOf: row.asOf.toISOString(),
   };
 }
 

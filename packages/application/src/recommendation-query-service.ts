@@ -74,7 +74,9 @@ export async function listRecommendations(
     .orderBy(desc(schema.recommendation.priority));
 
   const [skillById, aiExplanationById] = await Promise.all([
-    resolveSkillsById(rows.flatMap((row) => row.match.matchedSkillIds)),
+    resolveSkillsById(
+      rows.flatMap((row) => [...row.match.matchedSkillIds, ...row.match.matchedTechnologySkillIds]),
+    ),
     getLatestRecommendationExplanationsByIds(rows.map((row) => row.recommendation.id)),
   ]);
 

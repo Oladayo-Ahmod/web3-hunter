@@ -274,6 +274,7 @@ describe("opportunity-query-service (integration)", () => {
         score: 0.8,
         reasoning: "Matches 1 of 1 tagged Skill(s) for this Opportunity.",
         matchedSkills: [{ id: solidity.id, slug: solidity.slug, name: "Solidity" }],
+        matchedTechnologySkills: [],
       });
 
       const detail = await getOpportunityDetail(opportunity.id, userId);

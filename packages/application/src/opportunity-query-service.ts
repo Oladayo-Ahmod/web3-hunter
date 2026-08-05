@@ -5,6 +5,7 @@ import { getLatestOpportunitySummary } from "./ai-artifact-lookup";
 import type { OpportunityDetailDTO, OpportunityFeedItemDTO, PaginatedResult } from "./dto";
 import {
   toCompanyIntelligenceSummaryDTO,
+  toCompanyTechnologyProfileDTO,
   toOpportunityFeedItemDTO,
   toSignalSummaryDTO,
 } from "./mappers";
@@ -120,7 +121,10 @@ export async function listOpportunityFeed(
     .offset((query.page - 1) * query.pageSize);
 
   const skillById = await resolveSkillsById(
-    rows.flatMap((row) => row.match?.matchedSkillIds ?? []),
+    rows.flatMap((row) => [
+      ...(row.match?.matchedSkillIds ?? []),
+      ...(row.match?.matchedTechnologySkillIds ?? []),
+    ]),
   );
 
   return {
@@ -159,32 +163,43 @@ export async function getOpportunityDetail(
     return null;
   }
 
-  const [signalRows, intelligenceRows, matchRows, aiSummary] = await Promise.all([
-    db
-      .select()
-      .from(schema.signal)
-      .where(eq(schema.signal.companyId, row.opportunity.companyId))
-      .orderBy(desc(schema.signal.detectedAt)),
-    db
-      .select()
-      .from(schema.companyIntelligence)
-      .where(eq(schema.companyIntelligence.companyId, row.opportunity.companyId))
-      .limit(1),
-    viewerId
-      ? db
-          .select()
-          .from(schema.match)
-          .where(and(eq(schema.match.opportunityId, id), eq(schema.match.userId, viewerId)))
-          .limit(1)
-      : Promise.resolve([]),
-    getLatestOpportunitySummary(id),
-  ]);
+  const [signalRows, intelligenceRows, matchRows, technologyProfileRows, aiSummary] =
+    await Promise.all([
+      db
+        .select()
+        .from(schema.signal)
+        .where(eq(schema.signal.companyId, row.opportunity.companyId))
+        .orderBy(desc(schema.signal.detectedAt)),
+      db
+        .select()
+        .from(schema.companyIntelligence)
+        .where(eq(schema.companyIntelligence.companyId, row.opportunity.companyId))
+        .limit(1),
+      viewerId
+        ? db
+            .select()
+            .from(schema.match)
+            .where(and(eq(schema.match.opportunityId, id), eq(schema.match.userId, viewerId)))
+            .limit(1)
+        : Promise.resolve([]),
+      db
+        .select()
+        .from(schema.companyTechnologyProfile)
+        .where(eq(schema.companyTechnologyProfile.companyId, row.opportunity.companyId))
+        .limit(1),
+      getLatestOpportunitySummary(id),
+    ]);
 
   const companyIntelligence = intelligenceRows[0]
     ? toCompanyIntelligenceSummaryDTO(intelligenceRows[0])
     : null;
   const matchRow = matchRows[0] ?? null;
-  const skillById = await resolveSkillsById(matchRow?.matchedSkillIds ?? []);
+  const technologyProfileRow = technologyProfileRows[0] ?? null;
+  const skillById = await resolveSkillsById([
+    ...(matchRow?.matchedSkillIds ?? []),
+    ...(matchRow?.matchedTechnologySkillIds ?? []),
+    ...(technologyProfileRow?.skillIds ?? []),
+  ]);
 
   return {
     ...toOpportunityFeedItemDTO(row.opportunity, row.company, matchRow, skillById),
@@ -195,6 +210,9 @@ export async function getOpportunityDetail(
       lastSignalAt: companyIntelligence?.lastSignalAt ?? null,
       asOf: companyIntelligence?.asOf ?? null,
     },
+    companyTechnologyProfile: technologyProfileRow
+      ? toCompanyTechnologyProfileDTO(technologyProfileRow, skillById)
+      : null,
     aiSummary,
   };
 }

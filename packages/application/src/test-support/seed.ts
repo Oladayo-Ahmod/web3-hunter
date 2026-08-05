@@ -118,6 +118,7 @@ export async function seedMatch(input: {
   score?: number;
   reasoning?: string;
   matchedSkillIds?: string[];
+  matchedTechnologySkillIds?: string[];
   computedAt?: Date;
 }) {
   const db = getDb();
@@ -130,7 +131,28 @@ export async function seedMatch(input: {
       score: input.score ?? 0.5,
       reasoning: input.reasoning ?? "Test match reasoning",
       matchedSkillIds: input.matchedSkillIds ?? [],
+      matchedTechnologySkillIds: input.matchedTechnologySkillIds ?? [],
       computedAt: input.computedAt ?? new Date(),
+    })
+    .returning();
+  return row!;
+}
+
+/** Milestone 9: a Company's Technology Profile — see `packages/technology`'s `company_technology_profile`. */
+export async function seedCompanyTechnologyProfile(input: {
+  companyId: string;
+  skillIds?: string[];
+  evidenceCount?: number;
+  asOf?: Date;
+}) {
+  const db = getDb();
+  const [row] = await db
+    .insert(schema.companyTechnologyProfile)
+    .values({
+      companyId: input.companyId,
+      skillIds: input.skillIds ?? [],
+      evidenceCount: input.evidenceCount ?? input.skillIds?.length ?? 0,
+      asOf: input.asOf ?? new Date(),
     })
     .returning();
   return row!;

@@ -5,6 +5,7 @@ import type { CompanyProfileDTO } from "./dto";
 import {
   toCompanyIntelligenceSummaryDTO,
   toCompanySummaryDTO,
+  toCompanyTechnologyProfileDTO,
   toOpportunityFeedItemDTO,
   toSignalSummaryDTO,
 } from "./mappers";
@@ -39,25 +40,31 @@ export async function getCompanyProfile(
     return null;
   }
 
-  const [opportunityRows, signalRows, intelligenceRows, aiSummary] = await Promise.all([
-    db
-      .select()
-      .from(schema.opportunity)
-      .where(eq(schema.opportunity.companyId, companyRow.id))
-      .orderBy(desc(schema.opportunity.detectedAt)),
-    db
-      .select()
-      .from(schema.signal)
-      .where(eq(schema.signal.companyId, companyRow.id))
-      .orderBy(desc(schema.signal.detectedAt))
-      .limit(RECENT_SIGNALS_LIMIT),
-    db
-      .select()
-      .from(schema.companyIntelligence)
-      .where(eq(schema.companyIntelligence.companyId, companyRow.id))
-      .limit(1),
-    getLatestCompanySummary(companyRow.id),
-  ]);
+  const [opportunityRows, signalRows, intelligenceRows, technologyProfileRows, aiSummary] =
+    await Promise.all([
+      db
+        .select()
+        .from(schema.opportunity)
+        .where(eq(schema.opportunity.companyId, companyRow.id))
+        .orderBy(desc(schema.opportunity.detectedAt)),
+      db
+        .select()
+        .from(schema.signal)
+        .where(eq(schema.signal.companyId, companyRow.id))
+        .orderBy(desc(schema.signal.detectedAt))
+        .limit(RECENT_SIGNALS_LIMIT),
+      db
+        .select()
+        .from(schema.companyIntelligence)
+        .where(eq(schema.companyIntelligence.companyId, companyRow.id))
+        .limit(1),
+      db
+        .select()
+        .from(schema.companyTechnologyProfile)
+        .where(eq(schema.companyTechnologyProfile.companyId, companyRow.id))
+        .limit(1),
+      getLatestCompanySummary(companyRow.id),
+    ]);
 
   const matchByOpportunityId =
     viewerId && opportunityRows.length > 0
@@ -79,9 +86,12 @@ export async function getCompanyProfile(
         )
       : new Map();
 
-  const skillById = await resolveSkillsById(
-    [...matchByOpportunityId.values()].flatMap((row) => row.matchedSkillIds),
-  );
+  const technologyProfileRow = technologyProfileRows[0] ?? null;
+  const skillById = await resolveSkillsById([
+    ...[...matchByOpportunityId.values()].flatMap((row) => row.matchedSkillIds),
+    ...[...matchByOpportunityId.values()].flatMap((row) => row.matchedTechnologySkillIds),
+    ...(technologyProfileRow?.skillIds ?? []),
+  ]);
 
   return {
     company: toCompanySummaryDTO(companyRow),
@@ -90,6 +100,9 @@ export async function getCompanyProfile(
       toOpportunityFeedItemDTO(row, companyRow, matchByOpportunityId.get(row.id), skillById),
     ),
     recentSignals: signalRows.map(toSignalSummaryDTO),
+    technologyProfile: technologyProfileRow
+      ? toCompanyTechnologyProfileDTO(technologyProfileRow, skillById)
+      : null,
     aiSummary,
   };
 }
