@@ -1,5 +1,6 @@
 export { getCompanyProfile } from "./company-query-service";
 export type {
+  AIArtifactSummaryDTO,
   CompanyIntelligenceSummaryDTO,
   CompanyProfileDTO,
   CompanySummaryDTO,

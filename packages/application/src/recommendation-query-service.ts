@@ -1,6 +1,12 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { and, desc, eq } from "drizzle-orm";
+import {
+  getLatestOutreachDraft,
+  getLatestRecommendationExplanation,
+  getLatestRecommendationExplanationsByIds,
+} from "./ai-artifact-lookup";
 import type {
+  AIArtifactSummaryDTO,
   RecommendationDetailDTO,
   RecommendationStatusDTO,
   RecommendationSummaryDTO,
@@ -18,6 +24,7 @@ function toRecommendationSummaryDTO(
   company: Parameters<typeof toOpportunityFeedItemDTO>[1],
   match: Parameters<typeof toOpportunityFeedItemDTO>[2],
   skillById: Parameters<typeof toOpportunityFeedItemDTO>[3],
+  aiExplanation: AIArtifactSummaryDTO | null,
 ): RecommendationSummaryDTO {
   return {
     id: row.id,
@@ -31,6 +38,7 @@ function toRecommendationSummaryDTO(
     createdAt: row.createdAt.toISOString(),
     statusChangedAt: row.statusChangedAt.toISOString(),
     opportunity: toOpportunityFeedItemDTO(opportunity, company, match, skillById),
+    aiExplanation,
   };
 }
 
@@ -65,7 +73,10 @@ export async function listRecommendations(
     .where(and(...conditions))
     .orderBy(desc(schema.recommendation.priority));
 
-  const skillById = await resolveSkillsById(rows.flatMap((row) => row.match.matchedSkillIds));
+  const [skillById, aiExplanationById] = await Promise.all([
+    resolveSkillsById(rows.flatMap((row) => row.match.matchedSkillIds)),
+    getLatestRecommendationExplanationsByIds(rows.map((row) => row.recommendation.id)),
+  ]);
 
   return rows.map((row) =>
     toRecommendationSummaryDTO(
@@ -74,6 +85,7 @@ export async function listRecommendations(
       row.company,
       row.match,
       skillById,
+      aiExplanationById.get(row.recommendation.id) ?? null,
     ),
   );
 }
@@ -101,7 +113,11 @@ export async function getRecommendationDetail(
     return null;
   }
 
-  const opportunity = await getOpportunityDetail(row.opportunityId, userId);
+  const [opportunity, aiExplanation, aiOutreachDraft] = await Promise.all([
+    getOpportunityDetail(row.opportunityId, userId),
+    getLatestRecommendationExplanation(row.id),
+    getLatestOutreachDraft(row.id),
+  ]);
   if (!opportunity) {
     return null;
   }
@@ -118,5 +134,7 @@ export async function getRecommendationDetail(
     createdAt: row.createdAt.toISOString(),
     statusChangedAt: row.statusChangedAt.toISOString(),
     opportunity,
+    aiExplanation,
+    aiOutreachDraft,
   };
 }

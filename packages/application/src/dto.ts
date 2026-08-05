@@ -64,6 +64,21 @@ export interface OpportunityFeedItemDTO {
   match: MatchSummaryDTO | null;
 }
 
+/**
+ * A cached AI-generated artifact, as surfaced to a consumer — `null`
+ * means no artifact has been generated yet (AI unavailable, or simply
+ * never requested), never an error. Deliberately thin: version/model
+ * metadata is included so the UI can label content as AI-generated, but
+ * `packages/application` never re-renders or re-interprets the content
+ * itself — that's `packages/ai`'s job, this is a read of what it already
+ * produced.
+ */
+export interface AIArtifactSummaryDTO {
+  content: string;
+  version: number;
+  generatedAt: string;
+}
+
 export interface OpportunityDetailDTO extends OpportunityFeedItemDTO {
   reasoning: string;
   /**
@@ -78,6 +93,8 @@ export interface OpportunityDetailDTO extends OpportunityFeedItemDTO {
     lastSignalAt: string | null;
     asOf: string | null;
   };
+  /** AI-generated, supplemental — the deterministic fields above remain authoritative whether or not this is present (docs/ROADMAP.md Milestone 7). */
+  aiSummary: AIArtifactSummaryDTO | null;
 }
 
 export interface CompanyProfileDTO {
@@ -90,6 +107,8 @@ export interface CompanyProfileDTO {
    */
   activeOpportunities: OpportunityFeedItemDTO[];
   recentSignals: SignalSummaryDTO[];
+  /** AI-generated, supplemental — see `OpportunityDetailDTO.aiSummary`. */
+  aiSummary: AIArtifactSummaryDTO | null;
 }
 
 export interface PaginatedResult<T> {
@@ -109,6 +128,8 @@ export interface SearchResultDTO {
 export interface UserProfileSummaryDTO {
   skills: SkillDTO[];
   dealBreakerSkills: SkillDTO[];
+  /** AI-generated, supplemental — see `OpportunityDetailDTO.aiSummary`. */
+  aiInsight: AIArtifactSummaryDTO | null;
 }
 
 export type RecommendationStatusDTO = "active" | "dismissed" | "archived" | "expired";
@@ -129,8 +150,12 @@ export interface RecommendationSummaryDTO {
   createdAt: string;
   statusChangedAt: string;
   opportunity: OpportunityFeedItemDTO;
+  /** AI-generated, supplemental — see `OpportunityDetailDTO.aiSummary`. */
+  aiExplanation: AIArtifactSummaryDTO | null;
 }
 
 export interface RecommendationDetailDTO extends Omit<RecommendationSummaryDTO, "opportunity"> {
   opportunity: OpportunityDetailDTO;
+  /** AI-generated, supplemental — see `OpportunityDetailDTO.aiSummary`. */
+  aiOutreachDraft: AIArtifactSummaryDTO | null;
 }

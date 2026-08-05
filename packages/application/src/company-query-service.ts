@@ -1,5 +1,6 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { and, desc, eq, inArray } from "drizzle-orm";
+import { getLatestCompanySummary } from "./ai-artifact-lookup";
 import type { CompanyProfileDTO } from "./dto";
 import {
   toCompanyIntelligenceSummaryDTO,
@@ -38,7 +39,7 @@ export async function getCompanyProfile(
     return null;
   }
 
-  const [opportunityRows, signalRows, intelligenceRows] = await Promise.all([
+  const [opportunityRows, signalRows, intelligenceRows, aiSummary] = await Promise.all([
     db
       .select()
       .from(schema.opportunity)
@@ -55,6 +56,7 @@ export async function getCompanyProfile(
       .from(schema.companyIntelligence)
       .where(eq(schema.companyIntelligence.companyId, companyRow.id))
       .limit(1),
+    getLatestCompanySummary(companyRow.id),
   ]);
 
   const matchByOpportunityId =
@@ -88,5 +90,6 @@ export async function getCompanyProfile(
       toOpportunityFeedItemDTO(row, companyRow, matchByOpportunityId.get(row.id), skillById),
     ),
     recentSignals: signalRows.map(toSignalSummaryDTO),
+    aiSummary,
   };
 }

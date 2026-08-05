@@ -1,5 +1,6 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { eq } from "drizzle-orm";
+import { getLatestProfileInsight } from "./ai-artifact-lookup";
 import type { SkillDTO, UserProfileSummaryDTO } from "./dto";
 import { toSkillDTO } from "./mappers";
 
@@ -24,9 +25,10 @@ export async function getUserProfileSummary(userId: string): Promise<UserProfile
     return null;
   }
 
-  const [skillRows, allSkills] = await Promise.all([
+  const [skillRows, allSkills, aiInsight] = await Promise.all([
     db.select().from(schema.userSkill).where(eq(schema.userSkill.userId, userId)),
     db.select().from(schema.skill),
+    getLatestProfileInsight(userId),
   ]);
 
   const skillById = new Map(allSkills.map((row) => [row.id, toSkillDTO(row)]));
@@ -38,5 +40,6 @@ export async function getUserProfileSummary(userId: string): Promise<UserProfile
     dealBreakerSkills: profileRow.dealBreakerSkillIds
       .map((skillId) => skillById.get(skillId))
       .filter(isSkill),
+    aiInsight,
   };
 }
