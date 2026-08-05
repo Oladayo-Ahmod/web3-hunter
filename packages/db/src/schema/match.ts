@@ -41,6 +41,14 @@ export const match = pgTable(
     score: doublePrecision("score").notNull(),
     reasoning: text("reasoning").notNull(),
     matchedSkillIds: uuid("matched_skill_ids").array().notNull().default([]),
+    // The subset of the Opportunity's Company's `company_technology_profile`
+    // Skills the User also declared — Milestone 9's technology-fit
+    // component, kept as its own column (not folded into
+    // `matchedSkillIds`) since the two draw from structurally different
+    // evidence: an Opportunity's job-posting-derived tags versus its
+    // Company's GitHub-evidenced tech stack. Empty when the Company has no
+    // Technology Profile yet — absence, not zero overlap.
+    matchedTechnologySkillIds: uuid("matched_technology_skill_ids").array().notNull().default([]),
     // When this Match's User Profile x Opportunity comparison was
     // evaluated. Unlike Company Intelligence/Opportunity's `asOf` (which
     // reflects a specific historical Event's time, since those are

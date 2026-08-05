@@ -13,4 +13,5 @@ export * from "./recommendation";
 export * from "./signal";
 export * from "./skill";
 export * from "./system";
+export * from "./technology";
 export * from "./user-profile";
