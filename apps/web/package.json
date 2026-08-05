@@ -25,6 +25,7 @@
     "@web3-hunter/decision": "workspace:*",
     "@web3-hunter/ingestion": "workspace:*",
     "@web3-hunter/matching": "workspace:*",
+    "@web3-hunter/scoring": "workspace:*",
     "@web3-hunter/shared": "workspace:*",
     "@web3-hunter/ui": "workspace:*",
     "better-auth": "1.6.25",

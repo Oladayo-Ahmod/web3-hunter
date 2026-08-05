@@ -68,6 +68,9 @@ importers:
       '@web3-hunter/matching':
         specifier: workspace:*
         version: link:../../packages/matching
+      '@web3-hunter/scoring':
+        specifier: workspace:*
+        version: link:../../packages/scoring
       '@web3-hunter/shared':
         specifier: workspace:*
         version: link:../../packages/shared

@@ -2,7 +2,7 @@ import { getDb, schema } from "@web3-hunter/db";
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { runGreenhouseCollector, type TrackedCompany } from "./run-greenhouse";
+import { runGreenhouseCollector, type GreenhouseTrackedCompany } from "./run-greenhouse";
 
 interface MockJob {
   id: number;
@@ -36,8 +36,16 @@ function stubFetch() {
   );
 }
 
-const ACME: TrackedCompany = { slug: "acme", name: "Acme", boardToken: "acme" };
-const BROKEN: TrackedCompany = { slug: "broken", name: "Broken Co", boardToken: "broken" };
+const ACME: GreenhouseTrackedCompany = {
+  companySlug: "acme",
+  companyName: "Acme",
+  boardToken: "acme",
+};
+const BROKEN: GreenhouseTrackedCompany = {
+  companySlug: "broken",
+  companyName: "Broken Co",
+  boardToken: "broken",
+};
 
 describe("runGreenhouseCollector (integration)", () => {
   let testDb: TestDatabase;
