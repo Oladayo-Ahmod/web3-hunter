@@ -2,6 +2,7 @@ import { runDecisionPipeline } from "@web3-hunter/decision";
 import { runMatchingPipeline, setDealBreakerSkills, setUserSkills } from "@web3-hunter/matching";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { recordPipelineRun } from "@/lib/observability/record-pipeline-run";
 import { getCurrentUserId } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -31,9 +32,18 @@ export async function POST(request: Request) {
   // Recompute this User's Matches, then their Recommendations, immediately
   // — so both the feed and the Recommendation Feed reflect their updated
   // Profile on the very next page load rather than waiting for a separate
-  // scheduled run.
-  const matchResult = await runMatchingPipeline(userId);
-  const decisionResult = await runDecisionPipeline(userId);
+  // scheduled run. Wrapped in the same recordPipelineRun instrumentation
+  // the periodic scripts use (scripts/run-matching.ts, run-decisions.ts)
+  // so this, the only automatic trigger point in the system, is no longer
+  // invisible to Pipeline Run history.
+  const matchResult = await recordPipelineRun(
+    { pipelineName: "matching", scopeType: "user", scopeId: userId },
+    () => runMatchingPipeline(userId),
+  );
+  const decisionResult = await recordPipelineRun(
+    { pipelineName: "decision", scopeType: "user", scopeId: userId },
+    () => runDecisionPipeline(userId),
+  );
 
   return NextResponse.json({ ok: true, match: matchResult, decision: decisionResult });
 }
