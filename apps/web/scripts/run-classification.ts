@@ -1,6 +1,7 @@
 import { runClassificationPipeline } from "@web3-hunter/classification";
 import { getDb, schema } from "@web3-hunter/db";
 import { eq } from "drizzle-orm";
+import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
 
 /**
  * Classifies every `scored` Opportunity that hasn't been classified yet —
@@ -14,12 +15,25 @@ async function main() {
     .select({ id: schema.opportunity.id })
     .from(schema.opportunity)
     .where(eq(schema.opportunity.status, "scored"));
+  let hadFailure = false;
 
   for (const { id } of opportunities) {
-    const result = await runClassificationPipeline(id);
-    console.log(
-      `[classify] ${id}: events processed ${result.eventsProcessed}, classifications produced ${result.classificationsProduced}`,
-    );
+    try {
+      const result = await recordPipelineRun(
+        { pipelineName: "classification", scopeType: "opportunity", scopeId: id },
+        () => runClassificationPipeline(id),
+      );
+      console.log(
+        `[classify] ${id}: events processed ${result.eventsProcessed}, classifications produced ${result.classificationsProduced}`,
+      );
+    } catch (error) {
+      hadFailure = true;
+      console.error(`[classify] ${id}: FAILED —`, error);
+    }
+  }
+
+  if (hadFailure) {
+    process.exitCode = 1;
   }
 }
 

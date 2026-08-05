@@ -13,6 +13,7 @@
     "collect:greenhouse": "tsx scripts/run-greenhouse.ts",
     "collect:github": "tsx scripts/run-github.ts",
     "seed:skills": "tsx scripts/seed-skills.ts",
+    "score:companies": "tsx scripts/run-scoring.ts",
     "classify:opportunities": "tsx scripts/run-classification.ts",
     "match:users": "tsx scripts/run-matching.ts",
     "decide:recommendations": "tsx scripts/run-decisions.ts",

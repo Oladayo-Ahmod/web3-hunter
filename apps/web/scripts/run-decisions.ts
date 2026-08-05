@@ -1,5 +1,6 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { runDecisionPipeline } from "@web3-hunter/decision";
+import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
 
 /**
  * Evaluates Recommendation creation, priority refresh, and staleness
@@ -13,12 +14,26 @@ async function main() {
   const profiles = await getDb()
     .select({ userId: schema.userProfile.userId })
     .from(schema.userProfile);
+  let hadFailure = false;
 
   for (const { userId } of profiles) {
-    const result = await runDecisionPipeline(userId);
-    console.log(
-      `[decide] ${userId}: matches considered ${result.matchesConsidered}, created ${result.recommendationsCreated}, refreshed ${result.recommendationsRefreshed}, expired ${result.recommendationsExpired}`,
-    );
+    try {
+      const result = await recordPipelineRun(
+        { pipelineName: "decision", scopeType: "user", scopeId: userId },
+        () => runDecisionPipeline(userId),
+      );
+      console.log(
+        `[decide] ${userId}: matches considered ${result.matchesConsidered}, created ${result.recommendationsCreated}, ` +
+          `refreshed ${result.recommendationsRefreshed}, expired ${result.recommendationsExpired}`,
+      );
+    } catch (error) {
+      hadFailure = true;
+      console.error(`[decide] ${userId}: FAILED —`, error);
+    }
+  }
+
+  if (hadFailure) {
+    process.exitCode = 1;
   }
 }
 

@@ -1,5 +1,6 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { runMatchingPipeline } from "@web3-hunter/matching";
+import { recordPipelineRun } from "../lib/observability/record-pipeline-run";
 
 /**
  * Recomputes Matches for every User with a Profile — the periodic
@@ -13,12 +14,25 @@ async function main() {
   const profiles = await getDb()
     .select({ userId: schema.userProfile.userId })
     .from(schema.userProfile);
+  let hadFailure = false;
 
   for (const { userId } of profiles) {
-    const result = await runMatchingPipeline(userId);
-    console.log(
-      `[match] ${userId}: opportunities considered ${result.opportunitiesConsidered}, matches computed ${result.matchesComputed}`,
-    );
+    try {
+      const result = await recordPipelineRun(
+        { pipelineName: "matching", scopeType: "user", scopeId: userId },
+        () => runMatchingPipeline(userId),
+      );
+      console.log(
+        `[match] ${userId}: opportunities considered ${result.opportunitiesConsidered}, matches computed ${result.matchesComputed}`,
+      );
+    } catch (error) {
+      hadFailure = true;
+      console.error(`[match] ${userId}: FAILED —`, error);
+    }
+  }
+
+  if (hadFailure) {
+    process.exitCode = 1;
   }
 }
 
