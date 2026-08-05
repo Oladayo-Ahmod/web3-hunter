@@ -1,29 +1,28 @@
 import { describe, expect, it } from "vitest";
 import { JobPosted, JobUpdated } from "../hiring-events";
-import { createGreenhouseJobClosedNormalizer, createGreenhouseJobNormalizer } from "./normalize";
+import { createLeverJobClosedNormalizer, createLeverJobNormalizer } from "./normalize";
 
 const COMPANY_ID = "019474b4-9a3e-7c3e-9c3e-9c3e9c3e9c3e";
 
-function job(overrides: Record<string, unknown> = {}) {
+function posting(overrides: Record<string, unknown> = {}) {
   return {
-    id: 42,
-    title: "Solidity Engineer",
-    updated_at: "2026-01-01T00:00:00-00:00",
-    absolute_url: "https://example.com/jobs/42",
-    location: { name: "Remote" },
-    departments: [{ name: "Engineering" }],
+    id: "251d8ee5-abcd-ef01-2345-6789abcdef01",
+    text: "Solidity Engineer",
+    createdAt: 1_735_689_600_000,
+    hostedUrl: "https://jobs.lever.co/acme/251d8ee5",
+    categories: { department: "Engineering", location: "Remote" },
     ...overrides,
   };
 }
 
-describe("createGreenhouseJobNormalizer", () => {
-  const normalize = createGreenhouseJobNormalizer(COMPANY_ID);
+describe("createLeverJobNormalizer", () => {
+  const normalize = createLeverJobNormalizer(COMPANY_ID);
 
   it("produces a JobPosted event when there is no previous payload", () => {
     const result = normalize({
       rawRecordId: "raw-1",
       collectorId: "collector-1",
-      payload: job(),
+      payload: posting(),
       fetchedAt: new Date(),
       previousPayload: null,
     });
@@ -32,7 +31,7 @@ describe("createGreenhouseJobNormalizer", () => {
     expect(result?.relatedEntityType).toBe("company");
     expect(result?.relatedEntityId).toBe(COMPANY_ID);
     expect(result?.metadata).toMatchObject({
-      externalId: "42",
+      externalId: "251d8ee5-abcd-ef01-2345-6789abcdef01",
       title: "Solidity Engineer",
       locationName: "Remote",
       departmentNames: ["Engineering"],
@@ -43,9 +42,9 @@ describe("createGreenhouseJobNormalizer", () => {
     const result = normalize({
       rawRecordId: "raw-2",
       collectorId: "collector-1",
-      payload: job(),
+      payload: posting(),
       fetchedAt: new Date(),
-      previousPayload: job(),
+      previousPayload: posting(),
     });
 
     expect(result).toBeNull();
@@ -55,9 +54,9 @@ describe("createGreenhouseJobNormalizer", () => {
     const result = normalize({
       rawRecordId: "raw-3",
       collectorId: "collector-1",
-      payload: job({ title: "Senior Solidity Engineer" }),
+      payload: posting({ text: "Senior Solidity Engineer" }),
       fetchedAt: new Date(),
-      previousPayload: job(),
+      previousPayload: posting(),
     });
 
     expect(result?.type).toBe(JobUpdated.name);
@@ -67,30 +66,44 @@ describe("createGreenhouseJobNormalizer", () => {
     });
   });
 
-  it("does not report unrelated fields as changed", () => {
+  it("falls back to the team category when department is absent", () => {
     const result = normalize({
       rawRecordId: "raw-4",
       collectorId: "collector-1",
-      payload: job({ location: { name: "New York" } }),
+      payload: posting({ categories: { team: "Platform" } }),
       fetchedAt: new Date(),
-      previousPayload: job(),
+      previousPayload: null,
     });
 
-    const changedFrom = (result?.metadata as { changedFrom: Record<string, unknown> }).changedFrom;
-    expect(Object.keys(changedFrom)).toEqual(["locationName"]);
+    expect(result?.metadata).toMatchObject({ departmentNames: ["Platform"] });
+  });
+
+  it("prefers the updatedAt timestamp over createdAt when present", () => {
+    const result = normalize({
+      rawRecordId: "raw-5",
+      collectorId: "collector-1",
+      payload: posting({ updatedAt: 1_735_776_000_000 }),
+      fetchedAt: new Date(),
+      previousPayload: null,
+    });
+
+    expect(result?.occurredAt).toEqual(new Date(1_735_776_000_000));
   });
 });
 
-describe("createGreenhouseJobClosedNormalizer", () => {
+describe("createLeverJobClosedNormalizer", () => {
   it("produces a JobClosed event from the last known payload", () => {
-    const normalize = createGreenhouseJobClosedNormalizer(COMPANY_ID);
+    const normalize = createLeverJobClosedNormalizer(COMPANY_ID);
 
-    const result = normalize({ externalId: "42", lastKnownPayload: job() });
+    const result = normalize({
+      externalId: "251d8ee5-abcd-ef01-2345-6789abcdef01",
+      lastKnownPayload: posting(),
+    });
 
     expect(result?.metadata).toEqual({
-      externalId: "42",
+      externalId: "251d8ee5-abcd-ef01-2345-6789abcdef01",
       title: "Solidity Engineer",
-      absoluteUrl: "https://example.com/jobs/42",
+      absoluteUrl: "https://jobs.lever.co/acme/251d8ee5",
     });
     expect(result?.relatedEntityId).toBe(COMPANY_ID);
   });

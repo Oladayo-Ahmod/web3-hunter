@@ -1,23 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { JobPosted, JobUpdated } from "../hiring-events";
-import { createGreenhouseJobClosedNormalizer, createGreenhouseJobNormalizer } from "./normalize";
+import { createAshbyJobClosedNormalizer, createAshbyJobNormalizer } from "./normalize";
 
 const COMPANY_ID = "019474b4-9a3e-7c3e-9c3e-9c3e9c3e9c3e";
 
 function job(overrides: Record<string, unknown> = {}) {
   return {
-    id: 42,
+    id: "job-42",
     title: "Solidity Engineer",
-    updated_at: "2026-01-01T00:00:00-00:00",
-    absolute_url: "https://example.com/jobs/42",
-    location: { name: "Remote" },
-    departments: [{ name: "Engineering" }],
+    department: "Engineering",
+    location: "Remote",
+    publishedAt: "2026-01-01T00:00:00.000Z",
+    jobUrl: "https://jobs.ashbyhq.com/acme/job-42",
     ...overrides,
   };
 }
 
-describe("createGreenhouseJobNormalizer", () => {
-  const normalize = createGreenhouseJobNormalizer(COMPANY_ID);
+describe("createAshbyJobNormalizer", () => {
+  const normalize = createAshbyJobNormalizer(COMPANY_ID);
 
   it("produces a JobPosted event when there is no previous payload", () => {
     const result = normalize({
@@ -32,7 +32,7 @@ describe("createGreenhouseJobNormalizer", () => {
     expect(result?.relatedEntityType).toBe("company");
     expect(result?.relatedEntityId).toBe(COMPANY_ID);
     expect(result?.metadata).toMatchObject({
-      externalId: "42",
+      externalId: "job-42",
       title: "Solidity Engineer",
       locationName: "Remote",
       departmentNames: ["Engineering"],
@@ -67,30 +67,41 @@ describe("createGreenhouseJobNormalizer", () => {
     });
   });
 
-  it("does not report unrelated fields as changed", () => {
+  it("falls back to the team field when department is absent", () => {
     const result = normalize({
       rawRecordId: "raw-4",
       collectorId: "collector-1",
-      payload: job({ location: { name: "New York" } }),
+      payload: job({ department: null, team: "Platform" }),
       fetchedAt: new Date(),
-      previousPayload: job(),
+      previousPayload: null,
     });
 
-    const changedFrom = (result?.metadata as { changedFrom: Record<string, unknown> }).changedFrom;
-    expect(Object.keys(changedFrom)).toEqual(["locationName"]);
+    expect(result?.metadata).toMatchObject({ departmentNames: ["Platform"] });
+  });
+
+  it("prefers the updatedAt timestamp over publishedAt when present", () => {
+    const result = normalize({
+      rawRecordId: "raw-5",
+      collectorId: "collector-1",
+      payload: job({ updatedAt: "2026-02-01T00:00:00.000Z" }),
+      fetchedAt: new Date(),
+      previousPayload: null,
+    });
+
+    expect(result?.occurredAt).toEqual(new Date("2026-02-01T00:00:00.000Z"));
   });
 });
 
-describe("createGreenhouseJobClosedNormalizer", () => {
+describe("createAshbyJobClosedNormalizer", () => {
   it("produces a JobClosed event from the last known payload", () => {
-    const normalize = createGreenhouseJobClosedNormalizer(COMPANY_ID);
+    const normalize = createAshbyJobClosedNormalizer(COMPANY_ID);
 
-    const result = normalize({ externalId: "42", lastKnownPayload: job() });
+    const result = normalize({ externalId: "job-42", lastKnownPayload: job() });
 
     expect(result?.metadata).toEqual({
-      externalId: "42",
+      externalId: "job-42",
       title: "Solidity Engineer",
-      absoluteUrl: "https://example.com/jobs/42",
+      absoluteUrl: "https://jobs.ashbyhq.com/acme/job-42",
     });
     expect(result?.relatedEntityId).toBe(COMPANY_ID);
   });
