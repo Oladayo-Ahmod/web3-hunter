@@ -7,28 +7,29 @@ import { matchAllUsers } from "../lib/pipeline/stages";
  * Opportunities against existing Profiles.
  *
  * The per-entity loop itself lives in `../lib/pipeline/stages.ts`,
- * shared with `app/api/cron/pipeline/route.ts`.
+ * shared with `app/api/cron/pipeline/route.ts`. Prints as each User
+ * starts and finishes — against a remote database this can take a
+ * while, and silent output is indistinguishable from a hang.
  *
  *   pnpm --filter @web3-hunter/web exec tsx scripts/run-matching.ts
  */
 async function main() {
-  const results = await matchAllUsers();
-  let hadFailure = false;
+  const results = await matchAllUsers({
+    onStart: (id) => console.log(`[match] ${id}: starting…`),
+    onComplete: (entry) => {
+      if (entry.status === "error") {
+        console.error(`[match] ${entry.id}: FAILED —`, entry.error);
+        return;
+      }
 
-  for (const entry of results) {
-    if (entry.status === "error") {
-      hadFailure = true;
-      console.error(`[match] ${entry.id}: FAILED —`, entry.error);
-      continue;
-    }
+      const result = entry.result;
+      console.log(
+        `[match] ${entry.id}: opportunities considered ${result.opportunitiesConsidered}, matches computed ${result.matchesComputed}`,
+      );
+    },
+  });
 
-    const result = entry.result;
-    console.log(
-      `[match] ${entry.id}: opportunities considered ${result.opportunitiesConsidered}, matches computed ${result.matchesComputed}`,
-    );
-  }
-
-  if (hadFailure) {
+  if (results.some((entry) => entry.status === "error")) {
     process.exitCode = 1;
   }
 }

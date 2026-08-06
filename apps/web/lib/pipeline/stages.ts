@@ -25,22 +25,41 @@ import {
 export type StageEntityResult<T> =
   { id: string; status: "ok"; result: T } | { id: string; status: "error"; error: string };
 
+/**
+ * Fires as each entity starts and finishes. This is the only way a caller
+ * (a CLI script) gets real-time progress — `runForEachEntity` itself only
+ * returns once every entity is done, which for a run against a remote
+ * database with many rows can take a while. Without this hook, nothing
+ * prints until the very end, indistinguishable from a hang.
+ */
+export interface StageProgress<T> {
+  onStart?: (id: string) => void;
+  onComplete?: (entry: StageEntityResult<T>) => void;
+}
+
 async function runForEachEntity<T>(
   ids: readonly string[],
   run: (id: string) => Promise<T>,
+  progress?: StageProgress<T>,
 ): Promise<StageEntityResult<T>[]> {
   const results: StageEntityResult<T>[] = [];
 
   for (const id of ids) {
+    progress?.onStart?.(id);
+
+    let entry: StageEntityResult<T>;
     try {
-      results.push({ id, status: "ok", result: await run(id) });
+      entry = { id, status: "ok", result: await run(id) };
     } catch (error) {
-      results.push({
+      entry = {
         id,
         status: "error",
         error: error instanceof Error ? error.message : String(error),
-      });
+      };
     }
+
+    results.push(entry);
+    progress?.onComplete?.(entry);
   }
 
   return results;
@@ -56,16 +75,21 @@ function recordAndRun<T extends object>(
 }
 
 /** Signal generation, Company Intelligence, and Opportunity detection for every Company. */
-export async function scoreAllCompanies() {
+export async function scoreAllCompanies(
+  progress?: StageProgress<Awaited<ReturnType<typeof runScoringPipeline>>>,
+) {
   const companies = await getDb().select({ id: schema.company.id }).from(schema.company);
   return runForEachEntity(
     companies.map((c) => c.id),
     (id) => recordAndRun("scoring", "company", id, () => runScoringPipeline(id)),
+    progress,
   );
 }
 
 /** Classifies every `scored` Opportunity that hasn't been classified yet. */
-export async function classifyAllOpportunities() {
+export async function classifyAllOpportunities(
+  progress?: StageProgress<Awaited<ReturnType<typeof runClassificationPipeline>>>,
+) {
   const opportunities = await getDb()
     .select({ id: schema.opportunity.id })
     .from(schema.opportunity)
@@ -73,36 +97,46 @@ export async function classifyAllOpportunities() {
   return runForEachEntity(
     opportunities.map((o) => o.id),
     (id) => recordAndRun("classification", "opportunity", id, () => runClassificationPipeline(id)),
+    progress,
   );
 }
 
 /** Technology detection for every Company. */
-export async function detectTechnologyForAllCompanies() {
+export async function detectTechnologyForAllCompanies(
+  progress?: StageProgress<Awaited<ReturnType<typeof runTechnologyPipeline>>>,
+) {
   const companies = await getDb().select({ id: schema.company.id }).from(schema.company);
   return runForEachEntity(
     companies.map((c) => c.id),
     (id) => recordAndRun("technology", "company", id, () => runTechnologyPipeline(id)),
+    progress,
   );
 }
 
 /** Recomputes Matches for every User with a Profile. */
-export async function matchAllUsers() {
+export async function matchAllUsers(
+  progress?: StageProgress<Awaited<ReturnType<typeof runMatchingPipeline>>>,
+) {
   const profiles = await getDb()
     .select({ userId: schema.userProfile.userId })
     .from(schema.userProfile);
   return runForEachEntity(
     profiles.map((p) => p.userId),
     (id) => recordAndRun("matching", "user", id, () => runMatchingPipeline(id)),
+    progress,
   );
 }
 
 /** Evaluates Recommendation creation, priority refresh, and staleness expiration for every User with a Profile. */
-export async function decideForAllUsers() {
+export async function decideForAllUsers(
+  progress?: StageProgress<Awaited<ReturnType<typeof runDecisionPipeline>>>,
+) {
   const profiles = await getDb()
     .select({ userId: schema.userProfile.userId })
     .from(schema.userProfile);
   return runForEachEntity(
     profiles.map((p) => p.userId),
     (id) => recordAndRun("decision", "user", id, () => runDecisionPipeline(id)),
+    progress,
   );
 }

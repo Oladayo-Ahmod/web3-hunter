@@ -9,30 +9,31 @@ import { scoreAllCompanies } from "../lib/pipeline/stages";
  * instrumented from the start, per Milestone 10.
  *
  * The per-entity loop itself lives in `../lib/pipeline/stages.ts`,
- * shared with `app/api/cron/pipeline/route.ts`.
+ * shared with `app/api/cron/pipeline/route.ts`. Prints as each Company
+ * starts and finishes — against a remote database this can take a
+ * while, and silent output is indistinguishable from a hang.
  *
  *   pnpm --filter @web3-hunter/web exec tsx scripts/run-scoring.ts
  */
 async function main() {
-  const results = await scoreAllCompanies();
-  let hadFailure = false;
+  const results = await scoreAllCompanies({
+    onStart: (id) => console.log(`[score] ${id}: starting…`),
+    onComplete: (entry) => {
+      if (entry.status === "error") {
+        console.error(`[score] ${entry.id}: FAILED —`, entry.error);
+        return;
+      }
 
-  for (const entry of results) {
-    if (entry.status === "error") {
-      hadFailure = true;
-      console.error(`[score] ${entry.id}: FAILED —`, entry.error);
-      continue;
-    }
+      const result = entry.result;
+      console.log(
+        `[score] ${entry.id}: events processed ${result.eventsProcessed}, signals produced ${result.signalsProduced}, ` +
+          `intelligence updates ${result.intelligenceUpdates}, opportunities detected ${result.opportunitiesDetected}, ` +
+          `opportunities scored ${result.opportunitiesScored}`,
+      );
+    },
+  });
 
-    const result = entry.result;
-    console.log(
-      `[score] ${entry.id}: events processed ${result.eventsProcessed}, signals produced ${result.signalsProduced}, ` +
-        `intelligence updates ${result.intelligenceUpdates}, opportunities detected ${result.opportunitiesDetected}, ` +
-        `opportunities scored ${result.opportunitiesScored}`,
-    );
-  }
-
-  if (hadFailure) {
+  if (results.some((entry) => entry.status === "error")) {
     process.exitCode = 1;
   }
 }

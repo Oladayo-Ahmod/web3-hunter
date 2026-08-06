@@ -7,29 +7,30 @@ import { decideForAllUsers } from "../lib/pipeline/stages";
  * for picking up newly recomputed Matches against existing Profiles.
  *
  * The per-entity loop itself lives in `../lib/pipeline/stages.ts`,
- * shared with `app/api/cron/pipeline/route.ts`.
+ * shared with `app/api/cron/pipeline/route.ts`. Prints as each User
+ * starts and finishes — against a remote database this can take a
+ * while, and silent output is indistinguishable from a hang.
  *
  *   pnpm --filter @web3-hunter/web exec tsx scripts/run-decisions.ts
  */
 async function main() {
-  const results = await decideForAllUsers();
-  let hadFailure = false;
+  const results = await decideForAllUsers({
+    onStart: (id) => console.log(`[decide] ${id}: starting…`),
+    onComplete: (entry) => {
+      if (entry.status === "error") {
+        console.error(`[decide] ${entry.id}: FAILED —`, entry.error);
+        return;
+      }
 
-  for (const entry of results) {
-    if (entry.status === "error") {
-      hadFailure = true;
-      console.error(`[decide] ${entry.id}: FAILED —`, entry.error);
-      continue;
-    }
+      const result = entry.result;
+      console.log(
+        `[decide] ${entry.id}: matches considered ${result.matchesConsidered}, created ${result.recommendationsCreated}, ` +
+          `refreshed ${result.recommendationsRefreshed}, expired ${result.recommendationsExpired}`,
+      );
+    },
+  });
 
-    const result = entry.result;
-    console.log(
-      `[decide] ${entry.id}: matches considered ${result.matchesConsidered}, created ${result.recommendationsCreated}, ` +
-        `refreshed ${result.recommendationsRefreshed}, expired ${result.recommendationsExpired}`,
-    );
-  }
-
-  if (hadFailure) {
+  if (results.some((entry) => entry.status === "error")) {
     process.exitCode = 1;
   }
 }
