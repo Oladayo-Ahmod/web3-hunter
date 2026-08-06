@@ -78,6 +78,20 @@ export async function runClassificationPipeline(
     classificationsProduced: 0,
   };
 
+  // Deferred and inserted once, batched, after the loop below - instead of
+  // one awaited insert per Event - since against a remote database this
+  // was the dominant cost: most Events produce zero classifications (pure
+  // ledger bookkeeping), so this was N sequential round-trips for what's
+  // fundamentally one piece of work. Trade-off, disclosed rather than
+  // silent: if this function throws partway through the loop, none of
+  // this batch's ledger rows are persisted, not even for Events already
+  // successfully classified - unlike before, where each row was durable
+  // the moment its Event finished. That only costs redundant, idempotent
+  // reprocessing on the next run (deterministic IDs + onConflictDoNothing
+  // throughout this codebase mean it recovers the same rows, not
+  // duplicates) - never lost or incorrect data.
+  const ledgerRows: (typeof schema.classificationLedger.$inferInsert)[] = [];
+
   for (const eventRow of unprocessed) {
     const triggeringEvent = toRecentCompanyEvent(eventRow);
     const candidates = listSkillClassifiers().flatMap((classifier) =>
@@ -94,13 +108,17 @@ export async function runClassificationPipeline(
       result.classificationsProduced += 1;
     }
 
+    ledgerRows.push({
+      opportunityId,
+      eventId: eventRow.id,
+      classificationsProduced: candidates.length,
+    });
+  }
+
+  if (ledgerRows.length > 0) {
     await db
       .insert(schema.classificationLedger)
-      .values({
-        opportunityId,
-        eventId: eventRow.id,
-        classificationsProduced: candidates.length,
-      })
+      .values(ledgerRows)
       .onConflictDoNothing({
         target: [schema.classificationLedger.opportunityId, schema.classificationLedger.eventId],
       });
