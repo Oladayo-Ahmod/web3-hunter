@@ -44,8 +44,23 @@ export const maxDuration = 300;
  * Authenticated by a shared-secret bearer token (`CRON_SECRET`) rather
  * than a signed-in User session - this is a service-to-service call, not
  * a User-facing one.
+ *
+ * Accepts both GET and POST: this triggers real work with no request
+ * body either way, and cron dispatch services vary on which method they
+ * send by default (cron-job.org's own test run uses GET; Vercel Cron
+ * always sends GET). Rejecting GET outright, per REST purism, would just
+ * mean depending on every scheduler's UI defaulting to POST - not worth
+ * it for an endpoint with no body to speak of.
  */
+export async function GET(request: Request) {
+  return handleCronRequest(request);
+}
+
 export async function POST(request: Request) {
+  return handleCronRequest(request);
+}
+
+async function handleCronRequest(request: Request) {
   const env = getEnv();
 
   if (!env.CRON_SECRET) {
