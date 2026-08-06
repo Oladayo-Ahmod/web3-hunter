@@ -78,7 +78,7 @@ Fill in real values in both files. A repo-root `.env` is not read by anything �
 | `OPENAI_API_KEY` / `OPENAI_MODEL` | No | Only used when `AI_PROVIDER=openai` |
 | `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` | No | Only used when `AI_PROVIDER=anthropic` |
 | `GITHUB_TOKEN` | No | Raises the GitHub Collector's rate limit from 60/hour (unauthenticated) to 5,000/hour. No scopes required — only public repository data is read |
-| `CRON_SECRET` | No | Required only to use `POST /api/cron/pipeline` (see "Automating the pipeline" below). Unset means that route always responds `503` |
+| `CRON_SECRET` | No | Required only to use any `/api/cron/*` route (see "Automating the pipeline" below). Unset means those routes always respond `503` |
 
 If you don't have a Supabase project yet, start a local Postgres instead:
 
@@ -136,21 +136,35 @@ To track a different or additional company, add an entry to the relevant file (b
 
 ### Automating the pipeline
 
-Running the 7 commands above by hand every time isn't required — `POST /api/cron/pipeline` runs the same 7 recurring stages (`seed:skills` excepted; it's a one-time step, not a recurring one) in the same dependency order, in one request. There is still no scheduler inside this codebase — nothing here decides *when* to run; the route only responds to a request an external scheduler chooses to send. This project uses an external scheduler, [cron-job.org](https://cron-job.org), rather than Vercel Cron, so the same setup works whether the app is deployed on Vercel, Docker, or anywhere else.
+Running the 7 commands above by hand every time isn't required. There is still no scheduler inside this codebase — nothing here decides *when* to run; every route below only responds to a request an external scheduler chooses to send. This project uses an external scheduler, [cron-job.org](https://cron-job.org), rather than Vercel Cron, so the same setup works whether the app is deployed on Vercel, Docker, or anywhere else.
 
-**Setup:**
-1. Set `CRON_SECRET` (generate one with `openssl rand -base64 32`) alongside your other env vars, wherever the app is deployed.
-2. In cron-job.org, create a job:
-   - URL: `https://<your-deployment>/api/cron/pipeline`
-   - Method: `POST`
+**Recommended: one cron job per stage**, each independently schedulable, so a slow or rate-limited stage never delays the others and no single request risks a host's execution-time cap:
+
+| Endpoint | Same as |
+|---|---|
+| `GET/POST /api/cron/collect-greenhouse` | `collect:greenhouse` |
+| `GET/POST /api/cron/collect-github` | `collect:github` |
+| `GET/POST /api/cron/scoring` | `score:companies` |
+| `GET/POST /api/cron/classification` | `classify:opportunities` |
+| `GET/POST /api/cron/technology` | `detect:technology` |
+| `GET/POST /api/cron/matching` | `match:users` |
+| `GET/POST /api/cron/decision` | `decide:recommendations` |
+
+Each returns `{ ok, stage, results }` — `200` on full success, `207` if any individual entity within that stage failed (the rest still ran, per-entity isolation as always), `401` on a missing/incorrect bearer token, `503` if `CRON_SECRET` isn't configured.
+
+`GET /api/cron/pipeline` also still exists, running all 7 stages (`seed:skills` excepted — it's a one-time step, not a recurring one) in dependency order in a single request. Useful for a manual "run everything now" trigger (a fresh deploy, a backfill); not recommended as the regular schedule, for the reasons above.
+
+**Setup (per endpoint you want scheduled):**
+1. Set `CRON_SECRET` (generate one with `openssl rand -base64 32`) alongside your other env vars, wherever the app is deployed — one secret authorizes every `/api/cron/*` route.
+2. In cron-job.org, create a job per endpoint:
+   - URL: `https://<your-deployment>/api/cron/<stage>`
+   - Method: `GET` or `POST` — both work
    - Header: `Authorization: Bearer <your CRON_SECRET>`
-   - Schedule: your choice — hourly is reasonable for a low-volume feed like this
-
-The route returns `200` with a per-stage summary (`{ ok, stages, errors }`) on full success, `207` if any individual entity within a stage failed (the rest still ran — the same per-entity isolation `run-collector.ts` and every pipeline script already use), `401` on a missing/incorrect bearer token, and `503` if `CRON_SECRET` isn't configured.
+   - Schedule: your choice. Respect dependency order across jobs — e.g. Collectors before Scoring, Scoring before Classification/Matching, Matching before Decision — Technology only depends on `collect-github`, independently of the others.
 
 Two things worth knowing before turning this on:
-- **GitHub rate limits.** `collect:github` is part of this chain. Without `GITHUB_TOKEN` set, frequent automated runs will exhaust the unauthenticated 60-requests/hour limit quickly — set `GITHUB_TOKEN` if you're scheduling this to run more than a couple of times an hour.
-- **Execution time limits.** A cold run against a large backlog (all 3 tracked companies, live network calls, every downstream stage) can take a while. The route declares `maxDuration = 300`, but your host still enforces its own ceiling regardless — e.g. Vercel's Hobby plan caps at 60 seconds; Pro allows configuring higher.
+- **GitHub rate limits.** Without `GITHUB_TOKEN` set, frequent automated runs of `collect-github` will exhaust the unauthenticated 60-requests/hour limit quickly — either set `GITHUB_TOKEN`, or schedule that one endpoint less frequently than the others.
+- **Execution time limits.** A cold run against a large backlog can take a while, especially the two Collectors (live network calls). Each per-stage route declares `maxDuration = 120` (the combined route: `300`), but your host still enforces its own ceiling regardless — e.g. Vercel's Hobby plan caps at 60 seconds; Pro allows configuring higher.
 
 ### Common commands
 
