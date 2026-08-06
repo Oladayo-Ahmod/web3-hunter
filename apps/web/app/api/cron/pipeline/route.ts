@@ -1,9 +1,8 @@
-import { timingSafeEqual } from "node:crypto";
 import { runGithubCollector } from "@/lib/collectors/run-github";
 import { runGreenhouseCollector } from "@/lib/collectors/run-greenhouse";
 import { TRACKED_GREENHOUSE_COMPANIES } from "@/lib/collectors/tracked-companies";
 import { TRACKED_GITHUB_ORGS } from "@/lib/collectors/tracked-github-orgs";
-import { getEnv } from "@/lib/env";
+import { authorizeCronRequest, hasEntityError } from "@/lib/cron/shared";
 import {
   classifyAllOpportunities,
   decideForAllUsers,
@@ -24,26 +23,30 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * The one HTTP entry point into the deterministic pipeline, added so an
- * external scheduler (cron-job.org, not Vercel Cron - an explicit choice,
- * see README) can trigger it on a schedule. Every architectural
- * constraint this system has held since Milestone 2 - "no queue, no
- * worker, no scheduler inside this codebase" - still holds: this route
- * does not schedule anything itself, it only responds to a request an
- * external service chooses to send, the same as a human running
- * `pnpm --filter @web3-hunter/web collect:greenhouse` by hand.
+ * The "run everything in one request" entry point into the deterministic
+ * pipeline. `../collect-greenhouse/route.ts` and its 6 siblings under
+ * `app/api/cron/` are the per-stage alternative - use those for regular
+ * scheduled runs, each on its own cadence and execution-time budget; this
+ * route stays around for a manual "run everything now" trigger (e.g. a
+ * fresh deploy, a backfill) where chaining all 7 stages in one request is
+ * actually what you want.
+ *
+ * Every architectural constraint this system has held since Milestone 2 -
+ * "no queue, no worker, no scheduler inside this codebase" - still holds:
+ * this route does not schedule anything itself, it only responds to a
+ * request an external service or a human chooses to send, the same as
+ * running `pnpm --filter @web3-hunter/web collect:greenhouse` by hand.
  *
  * Runs the same 7 recurring stages `apps/web/scripts/run-*.ts` run
  * manually, via the shared logic in `../../../lib/pipeline/stages.ts`
  * (plus the two Collectors, whose library functions were already
  * side-effect-free enough to call directly) - in dependency order,
- * chained in one request rather than 7 separate cron jobs, per the
- * approved design. `seed:skills` is deliberately excluded: it's a
+ * chained in one request. `seed:skills` is deliberately excluded: it's a
  * one-time setup step, not a recurring job.
  *
- * Authenticated by a shared-secret bearer token (`CRON_SECRET`) rather
- * than a signed-in User session - this is a service-to-service call, not
- * a User-facing one.
+ * Authenticated by the same shared-secret bearer token (`CRON_SECRET`,
+ * see `lib/cron/shared.ts`) every `/api/cron/*` route uses - a
+ * service-to-service call, not a User-facing one.
  *
  * Accepts both GET and POST: this triggers real work with no request
  * body either way, and cron dispatch services vary on which method they
@@ -61,17 +64,9 @@ export async function POST(request: Request) {
 }
 
 async function handleCronRequest(request: Request) {
-  const env = getEnv();
-
-  if (!env.CRON_SECRET) {
-    return NextResponse.json(
-      { error: "CRON_SECRET is not configured on the server" },
-      { status: 503 },
-    );
-  }
-
-  if (!isAuthorized(request, env.CRON_SECRET)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const unauthorized = authorizeCronRequest(request);
+  if (unauthorized) {
+    return unauthorized;
   }
 
   const stages: Record<string, unknown> = {};
@@ -102,33 +97,5 @@ async function handleCronRequest(request: Request) {
   return NextResponse.json(
     { ok: stageErrors.length === 0, stages, errors: stageErrors },
     { status: stageErrors.length === 0 ? 200 : 207 },
-  );
-}
-
-function isAuthorized(request: Request, secret: string): boolean {
-  const header = request.headers.get("authorization") ?? "";
-  const expected = `Bearer ${secret}`;
-  const headerBuffer = Buffer.from(header);
-  const expectedBuffer = Buffer.from(expected);
-
-  // Constant-time comparison: a plain `===` would leak how many leading
-  // characters matched via response-time differences (OWASP: timing
-  // attacks against secret comparison).
-  return (
-    headerBuffer.length === expectedBuffer.length && timingSafeEqual(headerBuffer, expectedBuffer)
-  );
-}
-
-/** Every per-entity stage result array (see stages.ts, and the two Collectors' own result types) shares this `{ status: "ok" | "error" }` shape. */
-function hasEntityError(value: unknown): boolean {
-  return (
-    Array.isArray(value) &&
-    value.some(
-      (entry) =>
-        typeof entry === "object" &&
-        entry !== null &&
-        "status" in entry &&
-        entry.status === "error",
-    )
   );
 }
