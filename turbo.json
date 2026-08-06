@@ -6,11 +6,37 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "DATABASE_URL",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "NEXT_PUBLIC_APP_URL",
+        "CRON_SECRET",
+        "AI_PROVIDER",
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL",
+        "ANTHROPIC_API_KEY",
+        "ANTHROPIC_MODEL",
+        "GITHUB_TOKEN"
+      ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "DATABASE_URL",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "NEXT_PUBLIC_APP_URL",
+        "CRON_SECRET",
+        "AI_PROVIDER",
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL",
+        "ANTHROPIC_API_KEY",
+        "ANTHROPIC_MODEL",
+        "GITHUB_TOKEN"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
