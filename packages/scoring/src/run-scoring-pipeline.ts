@@ -1,5 +1,5 @@
 import { getDb, schema } from "@web3-hunter/db";
-import { and, asc, eq, lte, notExists } from "drizzle-orm";
+import { and, asc, eq, notExists } from "drizzle-orm";
 import { updateCompanyIntelligence } from "./company-intelligence-store";
 import { evaluateOpportunity } from "./opportunity-store";
 import { listSignalDetectors } from "./registry";
@@ -73,19 +73,34 @@ export async function runScoringPipeline(companyId: string): Promise<ScoringPipe
     opportunitiesScored: 0,
   };
 
+  if (unprocessed.length === 0) {
+    return result;
+  }
+
+  // Fetched once, up front, rather than re-querying "every source Event up
+  // to this point" from the database on every iteration below. Same query
+  // shape as the per-iteration one this replaces (relatedEntityType,
+  // relatedEntityId, category, ordering) minus the `lte(occurredAt, ...)`
+  // cutoff, which is instead applied in memory per event - turning what
+  // was an O(events²) sequence of growing database round-trips into one
+  // query plus in-memory filtering. Correctness-preserving: the exact same
+  // rows are available to each iteration, just computed once.
+  const allSourceEvents = await db
+    .select()
+    .from(schema.event)
+    .where(
+      and(
+        eq(schema.event.relatedEntityType, "company"),
+        eq(schema.event.relatedEntityId, companyId),
+        eq(schema.event.category, "source"),
+      ),
+    )
+    .orderBy(asc(schema.event.occurredAt), asc(schema.event.id));
+
   for (const triggeringEvent of unprocessed) {
-    const historyRows = await db
-      .select()
-      .from(schema.event)
-      .where(
-        and(
-          eq(schema.event.relatedEntityType, "company"),
-          eq(schema.event.relatedEntityId, companyId),
-          eq(schema.event.category, "source"),
-          lte(schema.event.occurredAt, triggeringEvent.occurredAt),
-        ),
-      )
-      .orderBy(asc(schema.event.occurredAt), asc(schema.event.id));
+    const historyRows = allSourceEvents.filter(
+      (event) => event.occurredAt.getTime() <= triggeringEvent.occurredAt.getTime(),
+    );
 
     const triggering = toRecentCompanyEvent(triggeringEvent);
     const context: SignalDetectionContext = {
