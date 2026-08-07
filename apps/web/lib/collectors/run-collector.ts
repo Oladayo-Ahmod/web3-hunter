@@ -56,6 +56,21 @@ export type RunCollectorResult =
     }
   | { companySlug: string; status: "error"; message: string };
 
+/** How many companies' external fetches run concurrently within one batch — see the ADR referenced below for why this is the only step parallelized. */
+const FETCH_CONCURRENCY = 5;
+
+function chunk<T>(items: readonly T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
+type FetchOutcome<TRecord> =
+  | { status: "fetched"; companyId: string; records: TRecord[] }
+  | { status: "error"; message: string };
+
 /**
  * The generic composition root every ATS Collector runs through: resolves
  * the shared `collector` row, resolves each tracked company's `company`
@@ -70,6 +85,29 @@ export type RunCollectorResult =
  * recorded and the loop continues, per Milestone 2's original acceptance
  * criteria. Health is now aggregated once per full run rather than
  * overwritten per company mid-run, which was the pre-Milestone-8 bug.
+ *
+ * Two distinct phases, deliberately not merged — see
+ * docs/adr/0001-fetch-only-collector-concurrency.md for the full
+ * reasoning:
+ *
+ * 1. Resolve + fetch, in bounded concurrent batches. Purely network- and
+ *    read-bound, and safe to parallelize: each company resolves its own
+ *    `company_source_identity` row (keyed by its own `sourceIdentifier`,
+ *    never shared with another company) and fetches from its own
+ *    external endpoint. Nothing here touches state another company's
+ *    fetch could race on.
+ * 2. Persist, ingest, and reconcile, sequentially, in the original input
+ *    order — exactly as before this milestone. `packages/ingestion`'s
+ *    `runIngestionPipeline`/`reconcileMissingRecords` scope their
+ *    "unprocessed" and "still tracked" queries by Collector only, not by
+ *    Company (verified directly against that package's source, not
+ *    assumed) — running this phase concurrently across companies sharing
+ *    one Collector would let one company's still-processing Raw Records
+ *    be picked up and misattributed by another company's normalizer, or
+ *    have its still-open roles reconciled as "closed" under the wrong
+ *    Company. `packages/ingestion` is intentionally out of scope for this
+ *    milestone, so this phase stays exactly as sequential as it always
+ *    was rather than working around that.
  */
 export async function runCollector<TRecord>(
   config: CollectorSourceConfig<TRecord>,
@@ -82,9 +120,45 @@ export async function runCollector<TRecord>(
   let recordsProcessed = 0;
   let recordsPublished = 0;
 
+  const fetchOutcomes = new Map<string, FetchOutcome<TRecord>>();
+
+  for (const batch of chunk(companies, FETCH_CONCURRENCY)) {
+    const batchOutcomes = await Promise.all(
+      batch.map(async (trackedCompany): Promise<[string, FetchOutcome<TRecord>]> => {
+        try {
+          const companyId = await resolveCompany(collectorId, trackedCompany);
+          const records = await config.fetchRecords(trackedCompany.sourceIdentifier);
+          return [trackedCompany.companySlug, { status: "fetched", companyId, records }];
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          return [trackedCompany.companySlug, { status: "error", message }];
+        }
+      }),
+    );
+
+    for (const [companySlug, outcome] of batchOutcomes) {
+      fetchOutcomes.set(companySlug, outcome);
+    }
+  }
+
   for (const trackedCompany of companies) {
+    const outcome = fetchOutcomes.get(trackedCompany.companySlug);
+
+    if (!outcome || outcome.status === "error") {
+      const message = outcome?.message ?? "Fetch outcome missing.";
+      errors.push(`${trackedCompany.companySlug}: ${message}`);
+      results.push({ companySlug: trackedCompany.companySlug, status: "error", message });
+      continue;
+    }
+
     try {
-      const result = await runForCompany(collectorId, config, trackedCompany);
+      const result = await persistAndIngest(
+        collectorId,
+        config,
+        trackedCompany.companySlug,
+        outcome.companyId,
+        outcome.records,
+      );
       results.push(result);
       recordsProcessed += result.fetched;
       recordsPublished += result.published + result.closed;
@@ -105,14 +179,19 @@ export async function runCollector<TRecord>(
   return results;
 }
 
-async function runForCompany<TRecord>(
+/**
+ * The sequential half of a company's run: store what was already fetched,
+ * run it through the Ingestion Pipeline, then reconcile disappeared
+ * records. Deliberately never runs concurrently with another company's
+ * call to this function — see `runCollector`'s doc comment.
+ */
+async function persistAndIngest<TRecord>(
   collectorId: string,
   config: CollectorSourceConfig<TRecord>,
-  trackedCompany: TrackedCompany,
+  companySlug: string,
+  companyId: string,
+  records: readonly TRecord[],
 ): Promise<Extract<RunCollectorResult, { status: "ok" }>> {
-  const companyId = await resolveCompany(collectorId, trackedCompany);
-  const records = await config.fetchRecords(trackedCompany.sourceIdentifier);
-
   for (const record of records) {
     await storeRawRecord({
       collectorId,
@@ -133,7 +212,7 @@ async function runForCompany<TRecord>(
   });
 
   return {
-    companySlug: trackedCompany.companySlug,
+    companySlug,
     status: "ok",
     fetched: records.length,
     published: pipelineResult.published,
