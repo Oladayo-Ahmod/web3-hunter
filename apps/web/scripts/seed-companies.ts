@@ -1,8 +1,11 @@
-import { join } from "node:path";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { getDb, upsertCompanyDirectory } from "@web3-hunter/db";
 import { parseCompanyDirectory } from "./lib/company-directory";
 
-const DIRECTORY_PATH = join(__dirname, "..", "data", "companies");
+// `apps/web` is an ES module package ("type": "module") - `__dirname`
+// doesn't exist there, unlike in a CommonJS script.
+const DIRECTORY_PATH = join(dirname(fileURLToPath(import.meta.url)), "..", "data", "companies");
 
 /**
  * Idempotently loads the curated company directory (one JSON file per
