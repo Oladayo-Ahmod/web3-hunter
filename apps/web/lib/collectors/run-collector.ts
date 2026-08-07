@@ -156,6 +156,7 @@ export async function runCollector<TRecord>(
         collectorId,
         config,
         trackedCompany.companySlug,
+        trackedCompany.sourceIdentifier,
         outcome.companyId,
         outcome.records,
       );
@@ -189,6 +190,7 @@ async function persistAndIngest<TRecord>(
   collectorId: string,
   config: CollectorSourceConfig<TRecord>,
   companySlug: string,
+  sourceIdentifier: string,
   companyId: string,
   records: readonly TRecord[],
 ): Promise<Extract<RunCollectorResult, { status: "ok" }>> {
@@ -197,16 +199,19 @@ async function persistAndIngest<TRecord>(
       collectorId,
       payload: record,
       externalId: config.externalIdOf(record),
+      sourceIdentifier,
     });
   }
 
   const pipelineResult = await runIngestionPipeline({
     collectorId,
+    sourceIdentifier,
     normalize: config.createNormalizer(companyId),
   });
 
   const closedResult = await reconcileMissingRecords({
     collectorId,
+    sourceIdentifier,
     currentExternalIds: records.map(config.externalIdOf),
     normalizeMissing: config.createClosedNormalizer(companyId),
   });

@@ -70,8 +70,15 @@ describe("runCollector — fetch-only concurrency (integration)", () => {
     // reconcile phase's own real database round-trips dominate total time
     // in a fast test environment, making a duration-based assertion noisy
     // and not actually about what this test is proving.)
+    //
+    // Threshold is 2x FETCH_DELAY_MS, not 1x: sequential execution would
+    // need at least 4x FETCH_DELAY_MS (400ms) for all four starts to
+    // spread out, so 2x still clearly distinguishes concurrent from
+    // sequential while tolerating scheduling jitter under a loaded test
+    // suite (observed up to ~190ms spread when the full suite runs in
+    // parallel, well under the 400ms a sequential run would produce).
     const spread = Math.max(...fetchStartTimes) - Math.min(...fetchStartTimes);
-    expect(spread).toBeLessThan(FETCH_DELAY_MS);
+    expect(spread).toBeLessThan(2 * FETCH_DELAY_MS);
   });
 
   it("returns results in original input order regardless of fetch completion order", async () => {

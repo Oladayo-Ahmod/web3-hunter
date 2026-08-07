@@ -88,11 +88,17 @@ async function runForOrg(
   const repos = await github.fetchGithubOrgRepos(trackedOrg.org);
 
   for (const repo of repos) {
-    await storeRawRecord({ collectorId, payload: repo, externalId: String(repo.id) });
+    await storeRawRecord({
+      collectorId,
+      payload: repo,
+      externalId: String(repo.id),
+      sourceIdentifier: trackedOrg.org,
+    });
   }
 
   const pipelineResult = await runIngestionPipeline({
     collectorId,
+    sourceIdentifier: trackedOrg.org,
     normalize: github.createGithubRepositoryNormalizer(companyId),
   });
 
