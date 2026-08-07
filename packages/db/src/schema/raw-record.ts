@@ -33,6 +33,18 @@ export const rawRecord = pgTable(
     // already seen — without the normalizer itself doing any I/O. Not
     // every source necessarily has a natural stable ID, hence nullable.
     externalId: text("external_id"),
+    // This Collector's own identifier for *which tracked entity* this
+    // Raw Record came from — a Greenhouse board token, a Lever site, a
+    // GitHub org login. Added per ADR 0002
+    // (docs/adr/0002-source-scoped-ingestion.md): `collectorId` alone
+    // doesn't distinguish between two companies tracked on the same
+    // Collector, which is what let one company's Raw Records be
+    // normalized, or its still-open roles reconciled as closed, under
+    // another company's identity. Nullable only because rows written
+    // before this column existed don't have it — every new write always
+    // supplies it; see `packages/ingestion`'s `storeRawRecord`, which
+    // requires it as a parameter, not an optional one.
+    sourceIdentifier: text("source_identifier"),
     payload: jsonb("payload").notNull(),
     fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -40,6 +52,7 @@ export const rawRecord = pgTable(
     unique("raw_record_collector_content_hash_key").on(table.collectorId, table.contentHash),
     index("raw_record_collector_id_idx").on(table.collectorId),
     index("raw_record_external_id_idx").on(table.collectorId, table.externalId),
+    index("raw_record_source_identifier_idx").on(table.collectorId, table.sourceIdentifier),
   ],
 );
 
