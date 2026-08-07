@@ -27,6 +27,7 @@ describe("storeRawRecord (integration)", () => {
       collectorId,
       payload: { id: 1, title: "Engineer" },
       externalId: "1",
+      sourceIdentifier: "test-source",
     });
 
     expect(record.payload).toEqual({ id: 1, title: "Engineer" });
@@ -38,11 +39,13 @@ describe("storeRawRecord (integration)", () => {
       collectorId,
       payload: { id: 2, title: "Designer" },
       externalId: "2",
+      sourceIdentifier: "test-source",
     });
     const second = await storeRawRecord({
       collectorId,
       payload: { id: 2, title: "Designer" },
       externalId: "2",
+      sourceIdentifier: "test-source",
     });
 
     expect(second.id).toBe(first.id);
@@ -57,11 +60,13 @@ describe("storeRawRecord (integration)", () => {
       collectorId,
       payload: { id: 3, title: "PM", location: "Remote" },
       externalId: "3",
+      sourceIdentifier: "test-source",
     });
     const second = await storeRawRecord({
       collectorId,
       payload: { location: "Remote", id: 3, title: "PM" },
       externalId: "3",
+      sourceIdentifier: "test-source",
     });
 
     expect(second.id).toBe(first.id);
@@ -72,11 +77,13 @@ describe("storeRawRecord (integration)", () => {
       collectorId,
       payload: { id: 4, title: "Analyst" },
       externalId: "4",
+      sourceIdentifier: "test-source",
     });
     const second = await storeRawRecord({
       collectorId,
       payload: { id: 4, title: "Senior Analyst" },
       externalId: "4",
+      sourceIdentifier: "test-source",
     });
 
     expect(second.id).not.toBe(first.id);

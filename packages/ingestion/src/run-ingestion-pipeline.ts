@@ -8,6 +8,15 @@ type Db = ReturnType<typeof getDb>;
 
 export interface RunIngestionPipelineInput {
   collectorId: string;
+  /**
+   * This Collector's own identifier for which tracked entity to process
+   * Raw Records for — required per ADR 0002
+   * (docs/adr/0002-source-scoped-ingestion.md). `collectorId` alone
+   * doesn't distinguish between two companies tracked on the same
+   * Collector; omitting this let one company's Raw Records be
+   * normalized under another's identity.
+   */
+  sourceIdentifier: string;
   normalize: Normalizer;
 }
 
@@ -46,6 +55,7 @@ export async function runIngestionPipeline(
     .where(
       and(
         eq(schema.rawRecord.collectorId, input.collectorId),
+        eq(schema.rawRecord.sourceIdentifier, input.sourceIdentifier),
         notExists(
           db
             .select()
@@ -99,9 +109,20 @@ export async function runIngestionPipeline(
 
 async function findPreviousPayload(
   db: Db,
-  rawRecord: { id: string; collectorId: string; externalId: string | null },
+  rawRecord: {
+    id: string;
+    collectorId: string;
+    sourceIdentifier: string | null;
+    externalId: string | null;
+  },
 ): Promise<unknown | null> {
-  if (!rawRecord.externalId) {
+  // `sourceIdentifier` is only ever null for Raw Records stored before it
+  // existed (see ADR 0002's documented assumptions) — every row `runIngestionPipeline`
+  // passes here comes from a query already filtered to a specific,
+  // non-null `sourceIdentifier`, so this guard should never actually
+  // trigger in practice; it exists so the comparison below is
+  // well-typed rather than comparing against `string | null`.
+  if (!rawRecord.externalId || rawRecord.sourceIdentifier === null) {
     return null;
   }
 
@@ -111,6 +132,7 @@ async function findPreviousPayload(
     .where(
       and(
         eq(schema.rawRecord.collectorId, rawRecord.collectorId),
+        eq(schema.rawRecord.sourceIdentifier, rawRecord.sourceIdentifier),
         eq(schema.rawRecord.externalId, rawRecord.externalId),
         // UUIDv7 IDs are time-sortable (see @web3-hunter/db's generateId),
         // so comparing by ID avoids any clock-precision ambiguity a
@@ -127,6 +149,16 @@ async function findPreviousPayload(
 
 export interface ReconcileMissingRecordsInput {
   collectorId: string;
+  /**
+   * This Collector's own identifier for which tracked entity to
+   * reconcile — required per ADR 0002
+   * (docs/adr/0002-source-scoped-ingestion.md). Without this, "every
+   * externalId ever tracked under this Collector" included every other
+   * company's still-open roles too, which is exactly what caused this
+   * function to reconcile another company's open roles as closed under
+   * the wrong identity.
+   */
+  sourceIdentifier: string;
   /** Every externalId observed in the current poll. */
   currentExternalIds: readonly string[];
   /**
@@ -160,6 +192,7 @@ export async function reconcileMissingRecords(
     .where(
       and(
         eq(schema.rawRecord.collectorId, input.collectorId),
+        eq(schema.rawRecord.sourceIdentifier, input.sourceIdentifier),
         isNotNull(schema.rawRecord.externalId),
       ),
     );
@@ -181,6 +214,7 @@ export async function reconcileMissingRecords(
       .where(
         and(
           eq(schema.rawRecord.collectorId, input.collectorId),
+          eq(schema.rawRecord.sourceIdentifier, input.sourceIdentifier),
           eq(schema.rawRecord.externalId, externalId),
         ),
       )

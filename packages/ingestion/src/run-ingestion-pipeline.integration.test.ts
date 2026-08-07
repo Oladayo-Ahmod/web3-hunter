@@ -65,9 +65,18 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
   });
 
   it("publishes JobPosted-equivalent events for first-seen Raw Records", async () => {
-    await storeRawRecord({ collectorId, payload: { title: "Engineer" }, externalId: "job-1" });
+    await storeRawRecord({
+      collectorId,
+      payload: { title: "Engineer" },
+      externalId: "job-1",
+      sourceIdentifier: "test-source",
+    });
 
-    const result = await runIngestionPipeline({ collectorId, normalize: testNormalizer });
+    const result = await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "test-source",
+      normalize: testNormalizer,
+    });
 
     expect(result.published).toBe(1);
     expect(result.skipped).toBe(0);
@@ -78,7 +87,11 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
   });
 
   it("does nothing on a second run over the same, already-processed Raw Records", async () => {
-    const result = await runIngestionPipeline({ collectorId, normalize: testNormalizer });
+    const result = await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "test-source",
+      normalize: testNormalizer,
+    });
 
     expect(result.processed).toBe(0);
     expect(result.published).toBe(0);
@@ -110,9 +123,14 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
       collectorId,
       payload: { title: "Senior Engineer" },
       externalId: "job-1",
+      sourceIdentifier: "test-source",
     });
 
-    const result = await runIngestionPipeline({ collectorId, normalize: testNormalizer });
+    const result = await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "test-source",
+      normalize: testNormalizer,
+    });
 
     expect(result.published).toBe(1);
     const updated = await replayEvents({ type: TestUpdated.name, collectorId });
@@ -129,9 +147,14 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
       collectorId,
       payload: { title: "Senior Engineer", noise: 1 },
       externalId: "job-1",
+      sourceIdentifier: "test-source",
     });
 
-    const result = await runIngestionPipeline({ collectorId, normalize: testNormalizer });
+    const result = await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "test-source",
+      normalize: testNormalizer,
+    });
 
     expect(result.published).toBe(0);
     expect(result.skipped).toBe(1);
@@ -142,6 +165,7 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
       collectorId,
       payload: { title: "Recovered" },
       externalId: "job-recovery",
+      sourceIdentifier: "test-source",
     });
 
     const [rawRecord] = await getDb()
@@ -162,7 +186,11 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
       collectorId,
     });
 
-    const result = await runIngestionPipeline({ collectorId, normalize: testNormalizer });
+    const result = await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "test-source",
+      normalize: testNormalizer,
+    });
 
     expect(result.published).toBe(1);
 
@@ -178,11 +206,17 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
       collectorId,
       payload: { title: "About to close" },
       externalId: "job-closing",
+      sourceIdentifier: "test-source",
     });
-    await runIngestionPipeline({ collectorId, normalize: testNormalizer });
+    await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "test-source",
+      normalize: testNormalizer,
+    });
 
     const result = await reconcileMissingRecords({
       collectorId,
+      sourceIdentifier: "test-source",
       currentExternalIds: [], // job-closing is no longer present
       normalizeMissing: ({ lastKnownPayload }) => ({
         type: TestClosed.name,
@@ -205,6 +239,7 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
 
     await reconcileMissingRecords({
       collectorId,
+      sourceIdentifier: "test-source",
       currentExternalIds: [],
       normalizeMissing: ({ lastKnownPayload }) => ({
         type: TestClosed.name,
@@ -216,5 +251,73 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
 
     const after = await replayEvents({ type: TestClosed.name, collectorId });
     expect(after).toHaveLength(before.length);
+  });
+
+  // The direct regression proof for ADR 0002
+  // (docs/adr/0002-source-scoped-ingestion.md): two source identifiers
+  // under one Collector must never see each other's Raw Records or
+  // reconciliation state.
+  it("does not let one sourceIdentifier's Raw Records or reconciliation affect another's, under the same collectorId", async () => {
+    await storeRawRecord({
+      collectorId,
+      payload: { title: "Company A's role" },
+      externalId: "cross-a-1",
+      sourceIdentifier: "source-a",
+    });
+    await storeRawRecord({
+      collectorId,
+      payload: { title: "Company B's role" },
+      externalId: "cross-b-1",
+      sourceIdentifier: "source-b",
+    });
+
+    // Only ingest source-a. source-b's Raw Record must remain untouched
+    // by it — this is exactly the misattribution Bug A described.
+    const resultA = await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "source-a",
+      normalize: testNormalizer,
+    });
+    expect(resultA.processed).toBe(1);
+    expect(resultA.published).toBe(1);
+
+    const stillUnprocessedB = await getDb()
+      .select()
+      .from(schema.rawRecord)
+      .where(eq(schema.rawRecord.externalId, "cross-b-1"));
+    const [ledgerForB] = await getDb()
+      .select()
+      .from(schema.rawRecordIngestion)
+      .where(eq(schema.rawRecordIngestion.rawRecordId, stillUnprocessedB[0]!.id));
+    expect(ledgerForB).toBeUndefined();
+
+    // Now ingest source-b for real, then reconcile source-b with an
+    // empty current fetch. Only source-b's own role should be
+    // considered "missing" — source-a's still-open role must not be
+    // reconciled as closed under source-b's identity. This is exactly
+    // Bug B, reproduced and asserted against directly.
+    await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "source-b",
+      normalize: testNormalizer,
+    });
+
+    await reconcileMissingRecords({
+      collectorId,
+      sourceIdentifier: "source-b",
+      currentExternalIds: [], // source-b's own board is now empty
+      normalizeMissing: ({ lastKnownPayload }) => ({
+        type: TestClosed.name,
+        metadata: lastKnownPayload as { title: string },
+        occurredAt: new Date(),
+        confidence: 1,
+      }),
+    });
+
+    const closedTitles = (await replayEvents({ type: TestClosed.name, collectorId })).map(
+      (event) => (event.metadata as { title: string }).title,
+    );
+    expect(closedTitles).toContain("Company B's role");
+    expect(closedTitles).not.toContain("Company A's role");
   });
 });

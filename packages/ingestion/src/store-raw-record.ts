@@ -7,6 +7,7 @@ export interface RawRecord {
   collectorId: string;
   contentHash: string;
   externalId: string | null;
+  sourceIdentifier: string | null;
   payload: unknown;
   fetchedAt: Date;
 }
@@ -16,6 +17,15 @@ export interface StoreRawRecordInput {
   payload: unknown;
   /** The source's own stable ID for this entity, if it has one — see docs/DATABASE.md and `raw_record.externalId`. */
   externalId?: string;
+  /**
+   * This Collector's own identifier for which tracked entity this record
+   * came from — a Greenhouse board token, a Lever site, a GitHub org
+   * login. Required, not optional: per ADR 0002
+   * (docs/adr/0002-source-scoped-ingestion.md), omitting it is meant to
+   * be a compile-time error, not a silent reversion to the
+   * collector-only scoping that caused cross-company misattribution.
+   */
+  sourceIdentifier: string;
 }
 
 /**
@@ -35,6 +45,7 @@ export async function storeRawRecord(input: StoreRawRecordInput): Promise<RawRec
       collectorId: input.collectorId,
       contentHash,
       externalId: input.externalId ?? null,
+      sourceIdentifier: input.sourceIdentifier,
       payload: input.payload,
     })
     .onConflictDoNothing({
