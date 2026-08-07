@@ -76,5 +76,25 @@ export async function storeRawRecord(input: StoreRawRecordInput): Promise<RawRec
     );
   }
 
+  // Defense-in-depth for the assumption ADR 0002
+  // (docs/adr/0002-source-scoped-ingestion.md) documents rather than
+  // enforces: that two different sources never produce a byte-identical
+  // payload, because every source's own payload embeds
+  // identifying data (a URL, an org name) that would itself have to
+  // coincidentally match too. Under normal operation this can never
+  // trigger — content_hash covers the entire payload, so re-polling the
+  // *same* board always supplies the *same* sourceIdentifier as the
+  // original insert. If it ever does trigger, the assumption was wrong;
+  // failing loudly here is safer than silently handing back a Raw Record
+  // attributed to the wrong source.
+  if (existing.sourceIdentifier !== input.sourceIdentifier) {
+    throw new Error(
+      `storeRawRecord: a Raw Record with this exact content already exists under a ` +
+        `different sourceIdentifier ("${existing.sourceIdentifier}" vs "${input.sourceIdentifier}") ` +
+        `for collector "${input.collectorId}". This should be structurally impossible — see ` +
+        `docs/adr/0002-source-scoped-ingestion.md's documented cross-source collision assumption.`,
+    );
+  }
+
   return existing;
 }

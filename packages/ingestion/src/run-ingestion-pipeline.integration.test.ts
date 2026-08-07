@@ -320,4 +320,56 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
     expect(closedTitles).toContain("Company B's role");
     expect(closedTitles).not.toContain("Company A's role");
   });
+
+  // The regression proof specifically for findPreviousPayload's
+  // sourceIdentifier scoping. The cross-contamination test above uses
+  // different externalIds for its two sources, so it doesn't actually
+  // exercise this — externalId alone would already isolate them. This
+  // test deliberately reuses the *same* externalId across two different
+  // sourceIdentifiers (different payload content, so it doesn't trip the
+  // content-hash collision check in storeRawRecord) to prove
+  // findPreviousPayload doesn't cross-correlate them.
+  it("does not treat another sourceIdentifier's Raw Record as the 'previous' capture, even with the same externalId", async () => {
+    await storeRawRecord({
+      collectorId,
+      payload: { title: "X's role" },
+      externalId: "shared-external-id",
+      sourceIdentifier: "source-x",
+    });
+    await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "source-x",
+      normalize: testNormalizer,
+    });
+
+    await storeRawRecord({
+      collectorId,
+      payload: { title: "Y's role" },
+      externalId: "shared-external-id",
+      sourceIdentifier: "source-y",
+    });
+    const resultY = await runIngestionPipeline({
+      collectorId,
+      sourceIdentifier: "source-y",
+      normalize: testNormalizer,
+    });
+
+    // If findPreviousPayload ignored sourceIdentifier, it would find
+    // source-x's row as source-y's "previous" (same externalId), and
+    // the normalizer would see a title change and publish
+    // __test__IngestionUpdated instead of a fresh
+    // __test__IngestionPosted — this is precisely what the assertions
+    // below rule out.
+    expect(resultY.published).toBe(1);
+
+    const postedForY = await replayEvents({ type: TestPosted.name, collectorId });
+    expect(
+      postedForY.some((event) => (event.metadata as { title: string }).title === "Y's role"),
+    ).toBe(true);
+
+    const updatedEvents = await replayEvents({ type: TestUpdated.name, collectorId });
+    expect(
+      updatedEvents.some((event) => (event.metadata as { title: string }).title === "Y's role"),
+    ).toBe(false);
+  });
 });
