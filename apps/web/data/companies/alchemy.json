@@ -1,0 +1,13 @@
+{
+  "companySlug": "alchemy",
+  "companyName": "Alchemy",
+  "websiteUrl": "https://www.alchemy.com",
+  "careersPageUrl": "https://www.alchemy.com/careers",
+  "twitterUrl": "https://x.com/AlchemyPlatform",
+  "category": "infrastructure",
+  "tags": ["node-infrastructure", "apis"],
+  "sources": [
+    { "collectorSlug": "ashby", "sourceIdentifier": "alchemy" },
+    { "collectorSlug": "github", "sourceIdentifier": "alchemyplatform" }
+  ]
+}

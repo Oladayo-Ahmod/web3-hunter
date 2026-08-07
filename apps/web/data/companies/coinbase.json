@@ -1,0 +1,13 @@
+{
+  "companySlug": "coinbase",
+  "companyName": "Coinbase",
+  "websiteUrl": "https://www.coinbase.com",
+  "careersPageUrl": "https://www.coinbase.com/careers",
+  "twitterUrl": "https://x.com/coinbase",
+  "category": "l2",
+  "tags": ["exchange", "base", "wallet"],
+  "sources": [
+    { "collectorSlug": "greenhouse", "sourceIdentifier": "coinbase" },
+    { "collectorSlug": "github", "sourceIdentifier": "coinbase" }
+  ]
+}

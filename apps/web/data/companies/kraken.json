@@ -1,0 +1,12 @@
+{
+  "companySlug": "kraken",
+  "companyName": "Kraken",
+  "websiteUrl": "https://www.kraken.com",
+  "twitterUrl": "https://x.com/krakenfx",
+  "category": "other",
+  "tags": ["exchange"],
+  "sources": [
+    { "collectorSlug": "lever", "sourceIdentifier": "kraken" },
+    { "collectorSlug": "github", "sourceIdentifier": "krakenfx" }
+  ]
+}

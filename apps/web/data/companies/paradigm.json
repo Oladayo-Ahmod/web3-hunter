@@ -1,0 +1,13 @@
+{
+  "companySlug": "paradigm",
+  "companyName": "Paradigm",
+  "websiteUrl": "https://www.paradigm.xyz",
+  "careersPageUrl": "https://www.paradigm.xyz/careers",
+  "twitterUrl": "https://x.com/paradigm",
+  "category": "infrastructure",
+  "tags": ["research", "foundry", "reth"],
+  "sources": [
+    { "collectorSlug": "greenhouse", "sourceIdentifier": "paradigm" },
+    { "collectorSlug": "github", "sourceIdentifier": "paradigmxyz" }
+  ]
+}

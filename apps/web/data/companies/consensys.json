@@ -1,0 +1,13 @@
+{
+  "companySlug": "consensys",
+  "companyName": "ConsenSys",
+  "websiteUrl": "https://consensys.io",
+  "careersPageUrl": "https://consensys.io/careers",
+  "twitterUrl": "https://x.com/Consensys",
+  "category": "infrastructure",
+  "tags": ["ethereum", "metamask", "infura"],
+  "sources": [
+    { "collectorSlug": "greenhouse", "sourceIdentifier": "consensys" },
+    { "collectorSlug": "github", "sourceIdentifier": "ConsenSys" }
+  ]
+}
