@@ -1,7 +1,8 @@
+import { runAshbyCollector } from "@/lib/collectors/run-ashby";
 import { runGithubCollector } from "@/lib/collectors/run-github";
 import { runGreenhouseCollector } from "@/lib/collectors/run-greenhouse";
-import { TRACKED_GREENHOUSE_COMPANIES } from "@/lib/collectors/tracked-companies";
-import { TRACKED_GITHUB_ORGS } from "@/lib/collectors/tracked-github-orgs";
+import { runLeverCollector } from "@/lib/collectors/run-lever";
+import { getTrackedCompaniesForCollector } from "@/lib/collectors/tracked-companies-from-directory";
 import { authorizeCronRequest, hasEntityError } from "@/lib/cron/shared";
 import {
   classifyAllOpportunities,
@@ -16,7 +17,7 @@ import { NextResponse } from "next/server";
 // serve this from a cache or run it as part of a static build.
 export const dynamic = "force-dynamic";
 
-// Generous ceiling for a cold run against a fresh database (7 chained
+// Generous ceiling for a cold run against a fresh database (9 chained
 // stages, including live ATS/GitHub network calls). Vercel enforces its
 // own plan-dependent cap regardless of this value (Hobby: 60s max, Pro:
 // configurable higher) - see README's "Automating the pipeline" section.
@@ -24,12 +25,12 @@ export const maxDuration = 300;
 
 /**
  * The "run everything in one request" entry point into the deterministic
- * pipeline. `../collect-greenhouse/route.ts` and its 6 siblings under
- * `app/api/cron/` are the per-stage alternative - use those for regular
- * scheduled runs, each on its own cadence and execution-time budget; this
- * route stays around for a manual "run everything now" trigger (e.g. a
- * fresh deploy, a backfill) where chaining all 7 stages in one request is
- * actually what you want.
+ * pipeline. The 9 per-stage routes under `app/api/cron/` are the
+ * per-stage alternative - use those for regular scheduled runs, each on
+ * its own cadence and execution-time budget; this route stays around for
+ * a manual "run everything now" trigger (e.g. a fresh deploy, a
+ * backfill) where chaining every stage in one request is actually what
+ * you want.
  *
  * Every architectural constraint this system has held since Milestone 2 -
  * "no queue, no worker, no scheduler inside this codebase" - still holds:
@@ -37,12 +38,11 @@ export const maxDuration = 300;
  * request an external service or a human chooses to send, the same as
  * running `pnpm --filter @web3-hunter/web collect:greenhouse` by hand.
  *
- * Runs the same 7 recurring stages `apps/web/scripts/run-*.ts` run
- * manually, via the shared logic in `../../../lib/pipeline/stages.ts`
- * (plus the two Collectors, whose library functions were already
- * side-effect-free enough to call directly) - in dependency order,
- * chained in one request. `seed:skills` is deliberately excluded: it's a
- * one-time setup step, not a recurring job.
+ * Tracked companies for every Collector stage come from the curated
+ * directory via `getTrackedCompaniesForCollector`, exactly like every
+ * per-stage route and CLI script - Milestone 11's replacement for a
+ * hardcoded array. `seed:skills` and `seed:companies` are deliberately
+ * excluded: both are one-time setup steps, not recurring jobs.
  *
  * Authenticated by the same shared-secret bearer token (`CRON_SECRET`,
  * see `lib/cron/shared.ts`) every `/api/cron/*` route uses - a
@@ -86,8 +86,30 @@ async function handleCronRequest(request: Request) {
     }
   }
 
-  await runStage("collectGreenhouse", () => runGreenhouseCollector(TRACKED_GREENHOUSE_COMPANIES));
-  await runStage("collectGithub", () => runGithubCollector(TRACKED_GITHUB_ORGS));
+  await runStage("collectGreenhouse", async () => {
+    const tracked = await getTrackedCompaniesForCollector("greenhouse");
+    return runGreenhouseCollector(
+      tracked.map(({ sourceIdentifier, ...rest }) => ({ ...rest, boardToken: sourceIdentifier })),
+    );
+  });
+  await runStage("collectLever", async () => {
+    const tracked = await getTrackedCompaniesForCollector("lever");
+    return runLeverCollector(
+      tracked.map(({ sourceIdentifier, ...rest }) => ({ ...rest, site: sourceIdentifier })),
+    );
+  });
+  await runStage("collectAshby", async () => {
+    const tracked = await getTrackedCompaniesForCollector("ashby");
+    return runAshbyCollector(
+      tracked.map(({ sourceIdentifier, ...rest }) => ({ ...rest, boardName: sourceIdentifier })),
+    );
+  });
+  await runStage("collectGithub", async () => {
+    const tracked = await getTrackedCompaniesForCollector("github");
+    return runGithubCollector(
+      tracked.map(({ sourceIdentifier, ...rest }) => ({ ...rest, org: sourceIdentifier })),
+    );
+  });
   await runStage("scoring", () => scoreAllCompanies());
   await runStage("classification", () => classifyAllOpportunities());
   await runStage("technology", () => detectTechnologyForAllCompanies());
