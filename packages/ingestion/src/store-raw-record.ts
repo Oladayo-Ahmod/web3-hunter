@@ -87,7 +87,19 @@ export async function storeRawRecord(input: StoreRawRecordInput): Promise<RawRec
   // original insert. If it ever does trigger, the assumption was wrong;
   // failing loudly here is safer than silently handing back a Raw Record
   // attributed to the wrong source.
-  if (existing.sourceIdentifier !== input.sourceIdentifier) {
+  //
+  // Deliberately excludes `existing.sourceIdentifier === null`: that's
+  // not a collision between two sources, it's a Raw Record captured
+  // before this column existed (see ADR 0002's documented assumption
+  // that historical data isn't repaired by this change). Discovered
+  // live: content unchanged since before the migration re-hits this
+  // exact conflict path on every future run for that entity, which
+  // would otherwise permanently and repeatedly fail every subsequent
+  // `collect:*` run for any company with any pre-migration data —
+  // exactly the "silently ignore it going forward" behavior already
+  // documented and tested for the read side (`findPreviousPayload`,
+  // `runIngestionPipeline`'s unprocessed-select) needs to hold here too.
+  if (existing.sourceIdentifier !== null && existing.sourceIdentifier !== input.sourceIdentifier) {
     throw new Error(
       `storeRawRecord: a Raw Record with this exact content already exists under a ` +
         `different sourceIdentifier ("${existing.sourceIdentifier}" vs "${input.sourceIdentifier}") ` +

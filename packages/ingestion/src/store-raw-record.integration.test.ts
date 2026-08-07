@@ -1,6 +1,8 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { hashContent } from "./content-hash";
 import { storeRawRecord } from "./store-raw-record";
 
 describe("storeRawRecord (integration)", () => {
@@ -87,5 +89,68 @@ describe("storeRawRecord (integration)", () => {
     });
 
     expect(second.id).not.toBe(first.id);
+  });
+
+  // Regression test for a real production failure: a Raw Record captured
+  // before source_identifier existed (sourceIdentifier: null) whose
+  // content is unchanged must not block every future collector run for
+  // that entity - it should be returned silently, exactly like any other
+  // dedup hit, not treated as a collision.
+  it("does not throw when the existing row is a pre-migration legacy record (NULL sourceIdentifier) with matching content", async () => {
+    const legacyPayload = { id: 5, title: "Pre-migration role" };
+    const [legacyRow] = await getDb()
+      .insert(schema.rawRecord)
+      .values({
+        collectorId,
+        // Must be the real hash of the payload below, not an arbitrary
+        // string — this is exactly what makes storeRawRecord's dedup
+        // conflict path trigger against it.
+        contentHash: hashContent(legacyPayload),
+        externalId: "legacy-5",
+        sourceIdentifier: null,
+        payload: legacyPayload,
+      })
+      .returning();
+
+    const result = await storeRawRecord({
+      collectorId,
+      payload: legacyPayload,
+      externalId: "legacy-5",
+      sourceIdentifier: "real-source",
+    });
+
+    expect(result.id).toBe(legacyRow!.id);
+    expect(result.sourceIdentifier).toBeNull();
+
+    // The legacy row itself must remain untouched - append-only, and this
+    // call must not have attempted (or needed) to change it.
+    const [stillLegacy] = await getDb()
+      .select()
+      .from(schema.rawRecord)
+      .where(eq(schema.rawRecord.id, legacyRow!.id));
+    expect(stillLegacy?.sourceIdentifier).toBeNull();
+  });
+
+  // The check this is defending must still actually catch the case it
+  // exists for: two different, real sourceIdentifiers producing
+  // byte-identical content is exactly the "structurally impossible"
+  // scenario ADR 0002 documents - if it ever happens, this must fail
+  // loudly, not silently attribute the record to the wrong source.
+  it("throws when the existing row has a different, non-null sourceIdentifier", async () => {
+    await storeRawRecord({
+      collectorId,
+      payload: { id: 6, title: "Collision role" },
+      externalId: "collision-6",
+      sourceIdentifier: "source-one",
+    });
+
+    await expect(
+      storeRawRecord({
+        collectorId,
+        payload: { id: 6, title: "Collision role" },
+        externalId: "collision-6",
+        sourceIdentifier: "source-two",
+      }),
+    ).rejects.toThrow(/different sourceIdentifier/);
   });
 });
