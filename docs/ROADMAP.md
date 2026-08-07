@@ -31,6 +31,10 @@ Four sequencing decisions shape every milestone below, and are worth stating onc
 | 7 | [AI Enrichment Layer](#milestone-7--ai-enrichment-layer) | Explanations and outreach get AI-generated | High |
 | 8 | [CRM Depth & Feedback Loop](#milestone-8--crm-depth-applications--feedback-loop) | Outcomes are tracked and quality compounds | Medium |
 | 9 | [Ecosystem Scale-Out](#milestone-9--ecosystem-scale-out) | Many more sources, cheaply — GitHub enrichment included | Low–Medium (per source) |
+| 10 | [Pipeline Run Observability](#milestone-10--pipeline-run-observability) | Close the operational feedback loop for the deterministic pipeline stages that had none | Low–Medium |
+| 11 | [Collector Ecosystem & Ingestion Correctness](#milestone-11--collector-ecosystem--ingestion-correctness) | Company tracking becomes data-driven, not hardcoded; a Raw Record misattribution bug found mid-implementation is fixed | High |
+
+Milestones 10 and 11 were not in this document's original plan — both were identified by direct architectural review of the system as actually built, per each entry's own Goal, rather than sequenced here in advance. See [docs/adr/](./adr/) for the architectural decisions made during Milestone 11's implementation.
 
 ---
 
@@ -241,10 +245,52 @@ Four sequencing decisions shape every milestone below, and are worth stating onc
 
 ---
 
+## Milestone 10 — Pipeline Run Observability
+
+**Goal:** Close the one operational feedback loop the system didn't have: Scoring, Classification, Technology Detection, Matching, and Decision all ran with zero visibility into whether or how they executed, unlike Collectors, which have had Collector Health since Milestone 8. Identified by direct architectural review of the system as it stood after Milestone 9, not sequenced in this document's original plan — the review's own reasoning, and the candidates considered and rejected, are not reproduced here.
+
+**Features:**
+- `pipeline_run` (`packages/db`): an append-only log, one row per pipeline invocation — not a mutable per-entity snapshot like Collector Health, since Scoring/Classification/Technology/Matching/Decision each run repeatedly over the same Company/Opportunity/User, unlike a Collector. Records pipeline name, a polymorphic scope (type + id, no foreign key), status, timing, and a `jsonb` metrics payload mirroring each pipeline's own result shape.
+- `recordPipelineRun` (`apps/web/lib/observability`): a single, thin, centralized wrapper instrumenting every recurring pipeline script — `score:companies` (new; the Scoring Engine had no trigger script at all before this, a gap flagged in Milestones 8 and 9), `classify:opportunities`, `detect:technology`, `match:users`, `decide:recommendations` — without altering any deterministic pipeline logic itself. Proven non-invasive by a dedicated integration test comparing wrapped and unwrapped output.
+- `GET /api/pipeline-runs` (`packages/application` + `apps/web`): a read-only, unauthenticated query API mirroring Collector Health's existing shape.
+- Deliberately not event-sourced, for the same reason Collector Health isn't: this is operational telemetry about *how the system ran*, not a reproducible business fact.
+
+**Dependencies:** Milestone 8 (extends the Collector Health pattern established there).
+
+**Estimated complexity:** Low–Medium — extends an already-proven pattern; no new architectural concepts.
+
+**Deliverables:** Every recurring deterministic pipeline invocation is durably recorded and queryable via `GET /api/pipeline-runs`, including failures and their error messages.
+
+**Definition of Done:** A failed pipeline run is queryable with a specific error message, not just a generic failure flag. Wrapping a pipeline invocation with `recordPipelineRun` produces byte-identical business output to calling it directly — verified by an automated test, not just inspection.
+
+---
+
+## Milestone 11 — Collector Ecosystem & Ingestion Correctness
+
+**Goal:** Move company tracking from a hardcoded array — the ceiling on this system ever supporting more than a handful of companies — to a curated, data-driven directory that scales by adding data, not code, while making Companies and Opportunities richer and more directly actionable. Identified the same way as Milestone 10, by direct architectural review, not sequenced in advance; several rounds of architectural review (an approach comparison across three designs, an adversarial review, a final production-readiness approval) preceded implementation.
+
+**Features:**
+- `company` gains curated profile metadata — website, careers page, documentation, blog, social links, logo, description, headquarters, funding stage, tags, and a closed `category` enum — all nullable, all operator-curated rather than event-sourced (the same category of data as the Skill taxonomy, not a new one).
+- A curated company directory: one git-committed JSON file per company under `apps/web/data/companies/`, loaded by a new `seed:companies` script into `company` and `company_source_identity` via `packages/db`'s `upsertCompanyDirectory` (mirroring `seedSkillTaxonomy`'s existing pattern). This is the mechanism: adding a company on an already-supported source becomes a data change, never a code change.
+- Every Collector (Greenhouse, Lever, Ashby, GitHub) cut over to resolve its tracked companies from `company_source_identity` through this directory, replacing the static `tracked-companies.ts` / `tracked-github-orgs.ts` arrays (deleted).
+- Lever and Ashby — Collector logic that had existed since Milestone 9 but was never wired to a tracked company or given a CLI/cron entry point — wired for the first time.
+- Bounded, fetch-only concurrency in the Collector orchestrator, documented in [ADR 0001](./adr/0001-fetch-only-collector-concurrency.md).
+- **An ingestion correctness fix, discovered during implementation, not pre-planned.** Investigating collector concurrency surfaced a real, already-live bug: `packages/ingestion`'s `runIngestionPipeline` and `reconcileMissingRecords` scoped their queries by Collector alone — for any Collector tracking more than one company, already true of the live Greenhouse Collector, this let one company's Raw Records be normalized under another company's identity, or one company's still-open roles be reconciled as closed under another's. Fixed by adding `source_identifier` to `raw_record` and scoping every affected query by it, documented in [ADR 0002](./adr/0002-source-scoped-ingestion.md). This does not repair already-corrupted historical data — see that ADR's documented assumptions.
+
+**Dependencies:** Milestone 8 (`company_source_identity`, the resolution mechanism the directory writes into) and Milestone 9 (the Collector pattern this generalizes).
+
+**Estimated complexity:** High — not from any single piece, but from the ingestion correctness fix surfacing mid-implementation and requiring its own architectural review (three approaches compared, an adversarial pass, a final approval) before any of it was implemented.
+
+**Deliverables:** A curated directory of real, verified companies spanning all four supported sources; `seed:companies` as the sole mechanism for growing it; every Collector reading from it instead of a hardcoded array; the Raw Record misattribution bug fixed and empirically verified against the real, previously-failing scenario.
+
+**Definition of Done:** Adding a company on an already-supported source requires a new directory entry and a re-seed, never a code change. Two companies sharing a Collector no longer misattribute each other's Raw Records or reconciliation state — verified by a regression test that reproduces the original failure against the real, unmodified pre-fix code and confirms it no longer occurs post-fix.
+
+---
+
 ## Legal / ToS Review — a Cross-Cutting Gate, Not a Milestone
 
 [ARCHITECTURE.md Open Question #7](./ARCHITECTURE.md#10-open-questions) and [DOMAIN_MODEL.md](./DOMAIN_MODEL.md) both flag that several intended sources may carry scraping or terms-of-service constraints. This isn't scheduled as its own milestone because it isn't sequential work — it's a per-Collector gate: **before any Collector is built, its source's legal/ToS status must be reviewed.** This applies starting with [Milestone 2](#milestone-2--first-collector-the-walking-skeleton) itself — an ATS provider's public job-board API is generally lower-risk than scraping an arbitrary career page, but "generally lower-risk" is not the same as "reviewed," and Milestone 2 is the first milestone that touches an external data source at all. It continues to apply to every source added in Milestone 9. Treat it as a blocking prerequisite for each new source, not a retrospective audit.
 
 ---
 
-This roadmap should be revisited after every milestone ships — not rewritten from scratch, but checked against what was actually learned (especially in Milestone 3, where the scoring rules are explicitly expected to need iteration). Milestone 0 is now in progress.
+This roadmap should be revisited after every milestone ships — not rewritten from scratch, but checked against what was actually learned (especially in Milestone 3, where the scoring rules are explicitly expected to need iteration). Milestone 11 is the most recently completed milestone. This document was not maintained as a live status tracker between Milestone 9 and the point Milestones 10–11 were added — see [README.md](../README.md#status) for current status and [docs/adr/](./adr/) for architectural decisions made outside this document's original sequencing.
