@@ -1,4 +1,4 @@
-import { getDb, schema } from "@web3-hunter/db";
+import { getDb, resolveOrCreateCollector, schema } from "@web3-hunter/db";
 import {
   reconcileMissingRecords,
   runIngestionPipeline,
@@ -76,7 +76,7 @@ export async function runCollector<TRecord>(
   companies: readonly TrackedCompany[],
 ): Promise<RunCollectorResult[]> {
   const startedAt = Date.now();
-  const collectorId = await resolveCollector(config.slug, config.sourceType);
+  const collectorId = await resolveOrCreateCollector(getDb(), config.slug, config.sourceType);
   const results: RunCollectorResult[] = [];
   const errors: string[] = [];
   let recordsProcessed = 0;
@@ -140,32 +140,6 @@ async function runForCompany<TRecord>(
     skipped: pipelineResult.skipped,
     closed: closedResult.published,
   };
-}
-
-async function resolveCollector(slug: string, sourceType: string): Promise<string> {
-  const db = getDb();
-
-  const [created] = await db
-    .insert(schema.collector)
-    .values({ slug, sourceType })
-    .onConflictDoNothing({ target: schema.collector.slug })
-    .returning();
-
-  if (created) {
-    return created.id;
-  }
-
-  const [existing] = await db
-    .select()
-    .from(schema.collector)
-    .where(eq(schema.collector.slug, slug))
-    .limit(1);
-
-  if (!existing) {
-    throw new Error(`Failed to resolve the "${slug}" collector row.`);
-  }
-
-  return existing.id;
 }
 
 /**

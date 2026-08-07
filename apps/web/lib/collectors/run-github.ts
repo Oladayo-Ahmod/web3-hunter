@@ -1,5 +1,5 @@
 import { github } from "@web3-hunter/collectors";
-import { getDb, schema } from "@web3-hunter/db";
+import { getDb, resolveOrCreateCollector, schema } from "@web3-hunter/db";
 import { runIngestionPipeline, storeRawRecord } from "@web3-hunter/ingestion";
 import { and, eq } from "drizzle-orm";
 
@@ -51,7 +51,7 @@ export async function runGithubCollector(
   orgs: readonly TrackedGithubOrg[],
 ): Promise<RunGithubCollectorResult[]> {
   const startedAt = Date.now();
-  const collectorId = await resolveCollector();
+  const collectorId = await resolveOrCreateCollector(getDb(), "github", "vcs");
   const results: RunGithubCollectorResult[] = [];
   const errors: string[] = [];
   let recordsProcessed = 0;
@@ -103,32 +103,6 @@ async function runForOrg(
     published: pipelineResult.published,
     skipped: pipelineResult.skipped,
   };
-}
-
-async function resolveCollector(): Promise<string> {
-  const db = getDb();
-
-  const [created] = await db
-    .insert(schema.collector)
-    .values({ slug: "github", sourceType: "vcs" })
-    .onConflictDoNothing({ target: schema.collector.slug })
-    .returning();
-
-  if (created) {
-    return created.id;
-  }
-
-  const [existing] = await db
-    .select()
-    .from(schema.collector)
-    .where(eq(schema.collector.slug, "github"))
-    .limit(1);
-
-  if (!existing) {
-    throw new Error('Failed to resolve the "github" collector row.');
-  }
-
-  return existing.id;
 }
 
 /**
