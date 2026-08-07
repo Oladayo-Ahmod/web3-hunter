@@ -12,6 +12,7 @@ The `docs/` directory is the source of truth for how this project is built, in t
 4. [EVENT_MODEL.md](docs/EVENT_MODEL.md) — every event in the system and how it flows
 5. [DATABASE.md](docs/DATABASE.md) — persistence architecture
 6. [ROADMAP.md](docs/ROADMAP.md) — milestones, in build order
+7. [adr/](docs/adr/) — architectural decisions made after the original roadmap, each with its own context and consequences
 
 ## Stack
 
@@ -105,44 +106,73 @@ Visit `http://localhost:3000` and `http://localhost:3000/health` to confirm the 
 
 ### Populating data
 
-`pnpm dev` starts an app with an empty Opportunity Feed — nothing runs automatically, there is no scheduler anywhere in this system. Seed the Skill taxonomy once, then run each pipeline stage by hand, in this order. Every script below reads `apps/web/.env` automatically (via `tsx --env-file`) — no manual `export` needed, as long as that file exists:
+`pnpm dev` starts an app with an empty Opportunity Feed — nothing runs automatically, there is no scheduler anywhere in this system. Seed the Skill taxonomy and the curated company directory once each, then run each pipeline stage by hand, in this order. Every script below reads `apps/web/.env` automatically (via `tsx --env-file`) — no manual `export` needed, as long as that file exists:
 
 ```bash
-pnpm --filter @web3-hunter/web seed:skills              # once — seeds the Skill taxonomy
+pnpm --filter @web3-hunter/web seed:skills               # once — seeds the Skill taxonomy
+pnpm --filter @web3-hunter/web seed:companies             # once, and after any directory change — see "Tracked companies" below
 
-pnpm --filter @web3-hunter/web collect:greenhouse        # ingest job postings
-pnpm --filter @web3-hunter/web collect:github            # ingest repository data
+pnpm --filter @web3-hunter/web collect:greenhouse         # ingest job postings
+pnpm --filter @web3-hunter/web collect:lever              # ingest job postings
+pnpm --filter @web3-hunter/web collect:ashby              # ingest job postings
+pnpm --filter @web3-hunter/web collect:github              # ingest repository data
 
-pnpm --filter @web3-hunter/web score:companies           # detect Signals, score Opportunities
-pnpm --filter @web3-hunter/web classify:opportunities    # tag Opportunities with Skills
-pnpm --filter @web3-hunter/web detect:technology         # tag Companies' Technology Profile
-                                                           # (depends only on collect:github — order-
-                                                           #  independent of the two commands above)
+pnpm --filter @web3-hunter/web score:companies            # detect Signals, score Opportunities
+pnpm --filter @web3-hunter/web classify:opportunities     # tag Opportunities with Skills
+pnpm --filter @web3-hunter/web detect:technology          # tag Companies' Technology Profile
+                                                             # (depends only on collect:github — order-
+                                                             #  independent of the other collectors)
 
-pnpm --filter @web3-hunter/web match:users                # match every existing User Profile against current Opportunities
-pnpm --filter @web3-hunter/web decide:recommendations     # regenerate every existing User's Recommendations
+pnpm --filter @web3-hunter/web match:users                 # match every existing User Profile against current Opportunities
+pnpm --filter @web3-hunter/web decide:recommendations      # regenerate every existing User's Recommendations
 ```
 
 Signing up and saving a Profile at `/profile` runs Matching and Decision automatically, but only for that one User, against whatever Opportunities exist at that moment. Re-run `match:users` and `decide:recommendations` to bring already-registered Users' Recommendations up to date with newly collected or reclassified data.
 
 ### Tracked companies
 
-`collect:greenhouse` and `collect:github` only ingest data for the companies explicitly listed in source — there is no watchlist UI or database-driven configuration yet:
+Every collector (`collect:greenhouse`, `collect:lever`, `collect:ashby`, `collect:github`) reads its tracked companies from the database, not a hardcoded list — resolved via `company_source_identity`, populated from a curated, git-committed directory: one JSON file per company under `apps/web/data/companies/`.
 
-- `apps/web/lib/collectors/tracked-companies.ts` — Greenhouse board tokens (`TRACKED_GREENHOUSE_COMPANIES`), currently ConsenSys, Coinbase, and Paradigm.
-- `apps/web/lib/collectors/tracked-github-orgs.ts` — GitHub organizations (`TRACKED_GITHUB_ORGS`), the same three companies' orgs. `companySlug` is deliberately shared with the Greenhouse list so both sources resolve to the same Company row via `company_source_identity`.
+To add or update a company:
 
-To track a different or additional company, add an entry to the relevant file (both, if it has data from both sources) and re-run the corresponding `collect:*` command — no other code changes are required.
+1. Add or edit its file at `apps/web/data/companies/<slug>.json` — profile fields (website, careers page, logo, ecosystem category, tags, etc., all optional) plus a `sources` array declaring which Collector(s) track it and their board token/site/org login:
+
+   ```json
+   {
+     "companySlug": "acme",
+     "companyName": "Acme",
+     "websiteUrl": "https://acme.example",
+     "careersPageUrl": "https://acme.example/careers",
+     "category": "infrastructure",
+     "tags": ["ethereum"],
+     "sources": [
+       { "collectorSlug": "greenhouse", "sourceIdentifier": "acme" },
+       { "collectorSlug": "github", "sourceIdentifier": "acme-labs" }
+     ]
+   }
+   ```
+
+2. Load it into the database:
+
+   ```bash
+   pnpm --filter @web3-hunter/web seed:companies
+   ```
+
+3. Run the relevant `collect:*` command (or wait for its next scheduled run).
+
+Adding a company on an already-supported source (Greenhouse, Lever, Ashby, GitHub) is a data change, never a code change — that's the whole point of this mechanism. Supporting a new ATS provider entirely is still a real engineering task.
 
 ### Automating the pipeline
 
-Running the 7 commands above by hand every time isn't required. There is still no scheduler inside this codebase — nothing here decides *when* to run; every route below only responds to a request an external scheduler chooses to send. This project uses an external scheduler, [cron-job.org](https://cron-job.org), rather than Vercel Cron, so the same setup works whether the app is deployed on Vercel, Docker, or anywhere else.
+Running the commands above by hand every time isn't required. There is still no scheduler inside this codebase — nothing here decides *when* to run; every route below only responds to a request an external scheduler chooses to send. This project uses an external scheduler, [cron-job.org](https://cron-job.org), rather than Vercel Cron, so the same setup works whether the app is deployed on Vercel, Docker, or anywhere else.
 
 **Recommended: one cron job per stage**, each independently schedulable, so a slow or rate-limited stage never delays the others and no single request risks a host's execution-time cap:
 
 | Endpoint | Same as |
 |---|---|
 | `GET/POST /api/cron/collect-greenhouse` | `collect:greenhouse` |
+| `GET/POST /api/cron/collect-lever` | `collect:lever` |
+| `GET/POST /api/cron/collect-ashby` | `collect:ashby` |
 | `GET/POST /api/cron/collect-github` | `collect:github` |
 | `GET/POST /api/cron/scoring` | `score:companies` |
 | `GET/POST /api/cron/classification` | `classify:opportunities` |
@@ -152,7 +182,7 @@ Running the 7 commands above by hand every time isn't required. There is still n
 
 Each returns `{ ok, stage, results }` — `200` on full success, `207` if any individual entity within that stage failed (the rest still ran, per-entity isolation as always), `401` on a missing/incorrect bearer token, `503` if `CRON_SECRET` isn't configured.
 
-`GET /api/cron/pipeline` also still exists, running all 7 stages (`seed:skills` excepted — it's a one-time step, not a recurring one) in dependency order in a single request. Useful for a manual "run everything now" trigger (a fresh deploy, a backfill); not recommended as the regular schedule, for the reasons above.
+`GET /api/cron/pipeline` also still exists, running all 9 stages above (`seed:skills` and `seed:companies` excepted — both are one-time/as-needed steps, not recurring ones) in dependency order in a single request. Useful for a manual "run everything now" trigger (a fresh deploy, a backfill); not recommended as the regular schedule, for the reasons above.
 
 **Setup (per endpoint you want scheduled):**
 1. Set `CRON_SECRET` (generate one with `openssl rand -base64 32`) alongside your other env vars, wherever the app is deployed — one secret authorizes every `/api/cron/*` route.
@@ -164,7 +194,7 @@ Each returns `{ ok, stage, results }` — `200` on full success, `207` if any in
 
 Two things worth knowing before turning this on:
 - **GitHub rate limits.** Without `GITHUB_TOKEN` set, frequent automated runs of `collect-github` will exhaust the unauthenticated 60-requests/hour limit quickly — either set `GITHUB_TOKEN`, or schedule that one endpoint less frequently than the others.
-- **Execution time limits.** A cold run against a large backlog can take a while, especially the two Collectors (live network calls). Each per-stage route declares `maxDuration = 120` (the combined route: `300`), but your host still enforces its own ceiling regardless — e.g. Vercel's Hobby plan caps at 60 seconds; Pro allows configuring higher.
+- **Execution time limits.** A cold run against a large backlog can take a while, especially the four Collectors (live network calls). Each per-stage route declares `maxDuration = 120` (the combined route: `300`), but your host still enforces its own ceiling regardless — e.g. Vercel's Hobby plan caps at 60 seconds; Pro allows configuring higher.
 
 ### Common commands
 
@@ -181,4 +211,4 @@ Two things worth knowing before turning this on:
 
 ## Status
 
-The full deterministic pipeline is implemented and working end-to-end — Collectors, Scoring, Classification, Technology Detection, Matching, and Decision — along with the AI Enrichment Layer and Pipeline Run Observability. See [docs/ROADMAP.md](docs/ROADMAP.md) for how this was originally sequenced; note that document predates Pipeline Run Observability and isn't maintained as a live status tracker. Of the ATS sources it names, Greenhouse is the only one currently wired to a runnable collector command — Lever and Ashby collector logic exists in `packages/collectors`, but has no tracked-company configuration or `collect:*` script yet.
+The full deterministic pipeline is implemented and working end-to-end — Collectors (Greenhouse, Lever, Ashby, and GitHub, all four wired to runnable commands), Scoring, Classification, Technology Detection, Matching, and Decision — along with the AI Enrichment Layer, Pipeline Run Observability, and a curated, data-driven company directory (see "Tracked companies" above) that scales to new companies on an already-supported source without any code change. See [docs/ROADMAP.md](docs/ROADMAP.md) for how this was originally sequenced; note that document predates several of the milestones above and isn't maintained as a live status tracker. See [docs/adr/](docs/adr/) for architectural decisions made since, including a correctness fix to how the Ingestion Pipeline attributes Raw Records for Collectors tracking more than one company.
