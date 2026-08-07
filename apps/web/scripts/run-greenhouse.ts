@@ -1,16 +1,21 @@
-import { TRACKED_GREENHOUSE_COMPANIES } from "../lib/collectors/tracked-companies";
 import { runGreenhouseCollector } from "../lib/collectors/run-greenhouse";
+import { getTrackedCompaniesForCollector } from "../lib/collectors/tracked-companies-from-directory";
 
 /**
  * The "simplest viable" trigger for the Greenhouse Collector, per
  * docs/ROADMAP.md Milestone 2: run this on a schedule (a cron-triggered
  * CI workflow, to start) rather than standing up dedicated queue/worker
- * infrastructure this milestone doesn't need yet.
+ * infrastructure this milestone doesn't need yet. Tracked companies come
+ * from the curated directory (Milestone 11), via `company_source_identity`
+ * — never a hardcoded array.
  *
  *   pnpm --filter @web3-hunter/web exec tsx scripts/run-greenhouse.ts
  */
 async function main() {
-  const results = await runGreenhouseCollector(TRACKED_GREENHOUSE_COMPANIES);
+  const tracked = await getTrackedCompaniesForCollector("greenhouse");
+  const results = await runGreenhouseCollector(
+    tracked.map(({ sourceIdentifier, ...rest }) => ({ ...rest, boardToken: sourceIdentifier })),
+  );
 
   for (const result of results) {
     if (result.status === "error") {

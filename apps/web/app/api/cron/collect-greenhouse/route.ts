@@ -1,5 +1,5 @@
 import { runGreenhouseCollector } from "@/lib/collectors/run-greenhouse";
-import { TRACKED_GREENHOUSE_COMPANIES } from "@/lib/collectors/tracked-companies";
+import { getTrackedCompaniesForCollector } from "@/lib/collectors/tracked-companies-from-directory";
 import { authorizeCronRequest, cronStageResponse } from "@/lib/cron/shared";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +23,10 @@ async function handler(request: Request) {
     return unauthorized;
   }
 
-  const results = await runGreenhouseCollector(TRACKED_GREENHOUSE_COMPANIES);
+  const tracked = await getTrackedCompaniesForCollector("greenhouse");
+  const results = await runGreenhouseCollector(
+    tracked.map(({ sourceIdentifier, ...rest }) => ({ ...rest, boardToken: sourceIdentifier })),
+  );
   return cronStageResponse("collectGreenhouse", results);
 }
 

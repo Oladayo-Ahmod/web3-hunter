@@ -1,5 +1,5 @@
 import { runGithubCollector } from "@/lib/collectors/run-github";
-import { TRACKED_GITHUB_ORGS } from "@/lib/collectors/tracked-github-orgs";
+import { getTrackedCompaniesForCollector } from "@/lib/collectors/tracked-companies-from-directory";
 import { authorizeCronRequest, cronStageResponse } from "@/lib/cron/shared";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,10 @@ async function handler(request: Request) {
     return unauthorized;
   }
 
-  const results = await runGithubCollector(TRACKED_GITHUB_ORGS);
+  const tracked = await getTrackedCompaniesForCollector("github");
+  const results = await runGithubCollector(
+    tracked.map(({ sourceIdentifier, ...rest }) => ({ ...rest, org: sourceIdentifier })),
+  );
   return cronStageResponse("collectGithub", results);
 }
 
