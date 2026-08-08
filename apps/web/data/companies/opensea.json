@@ -1,0 +1,17 @@
+{
+  "companySlug": "opensea",
+  "companyName": "OpenSea",
+  "websiteUrl": "https://opensea.io",
+  "category": "other",
+  "tags": ["nft-marketplace"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "opensea"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "ProjectOpenSea"
+    }
+  ]
+}

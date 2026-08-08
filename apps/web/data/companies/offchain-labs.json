@@ -1,0 +1,17 @@
+{
+  "companySlug": "offchain-labs",
+  "companyName": "Offchain Labs",
+  "websiteUrl": "https://arbitrum.io",
+  "category": "l2",
+  "tags": ["rollup", "optimistic-rollup"],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "offchainlabs"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "OffchainLabs"
+    }
+  ]
+}

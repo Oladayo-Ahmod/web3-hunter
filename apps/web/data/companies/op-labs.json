@@ -1,0 +1,17 @@
+{
+  "companySlug": "op-labs",
+  "companyName": "OP Labs",
+  "websiteUrl": "https://www.optimism.io",
+  "category": "l2",
+  "tags": ["rollup", "optimistic-rollup"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "oplabs"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "ethereum-optimism"
+    }
+  ]
+}

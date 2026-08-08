@@ -1,0 +1,17 @@
+{
+  "companySlug": "openzeppelin",
+  "companyName": "OpenZeppelin",
+  "websiteUrl": "https://www.openzeppelin.com",
+  "category": "security",
+  "tags": ["audits", "smart-contract-security"],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "openzeppelin"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "OpenZeppelin"
+    }
+  ]
+}

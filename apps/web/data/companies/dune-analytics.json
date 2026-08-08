@@ -1,0 +1,17 @@
+{
+  "companySlug": "dune-analytics",
+  "companyName": "Dune Analytics",
+  "websiteUrl": "https://dune.com",
+  "category": "infrastructure",
+  "tags": ["analytics"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "dune"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "duneanalytics"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "companySlug": "sky-mavis",
+  "companyName": "Sky Mavis",
+  "websiteUrl": "https://skymavis.com",
+  "category": "gaming",
+  "tags": ["gaming"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "skymavis"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "axieinfinity"
+    }
+  ]
+}

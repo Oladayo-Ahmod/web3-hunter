@@ -1,0 +1,13 @@
+{
+  "companySlug": "cantina",
+  "companyName": "Cantina",
+  "websiteUrl": "https://cantina.xyz",
+  "category": "security",
+  "tags": ["audits", "audit-contests"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "cantina"
+    }
+  ]
+}

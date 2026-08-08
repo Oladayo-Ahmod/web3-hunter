@@ -1,0 +1,17 @@
+{
+  "companySlug": "tenderly",
+  "companyName": "Tenderly",
+  "websiteUrl": "https://tenderly.co",
+  "category": "infrastructure",
+  "tags": ["dev-tooling", "simulation"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "tenderly"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "Tenderly"
+    }
+  ]
+}

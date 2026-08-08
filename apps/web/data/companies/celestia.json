@@ -1,0 +1,17 @@
+{
+  "companySlug": "celestia",
+  "companyName": "Celestia",
+  "websiteUrl": "https://celestia.org",
+  "category": "infrastructure",
+  "tags": ["modular", "data-availability"],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "celestia"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "celestiaorg"
+    }
+  ]
+}

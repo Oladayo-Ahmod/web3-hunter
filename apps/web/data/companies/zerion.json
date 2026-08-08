@@ -1,0 +1,17 @@
+{
+  "companySlug": "zerion",
+  "companyName": "Zerion",
+  "websiteUrl": "https://zerion.io",
+  "category": "wallet",
+  "tags": ["wallet"],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "zerion"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "zeriontech"
+    }
+  ]
+}

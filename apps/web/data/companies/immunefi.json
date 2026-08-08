@@ -1,0 +1,13 @@
+{
+  "companySlug": "immunefi",
+  "companyName": "Immunefi",
+  "websiteUrl": "https://immunefi.com",
+  "category": "security",
+  "tags": ["bug-bounty"],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "immunefi"
+    }
+  ]
+}

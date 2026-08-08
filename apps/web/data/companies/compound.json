@@ -1,0 +1,17 @@
+{
+  "companySlug": "compound",
+  "companyName": "Compound",
+  "websiteUrl": "https://compound.finance",
+  "category": "defi",
+  "tags": ["lending"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "compound"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "compound-finance"
+    }
+  ]
+}

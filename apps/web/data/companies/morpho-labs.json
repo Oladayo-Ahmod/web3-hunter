@@ -1,0 +1,17 @@
+{
+  "companySlug": "morpho-labs",
+  "companyName": "Morpho Labs",
+  "websiteUrl": "https://morpho.org",
+  "category": "defi",
+  "tags": ["lending"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "morpho"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "morpho-org"
+    }
+  ]
+}

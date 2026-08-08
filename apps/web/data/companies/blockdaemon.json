@@ -1,0 +1,17 @@
+{
+  "companySlug": "blockdaemon",
+  "companyName": "Blockdaemon",
+  "websiteUrl": "https://www.blockdaemon.com",
+  "category": "infrastructure",
+  "tags": ["node-infra"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "blockdaemon"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "Blockdaemon"
+    }
+  ]
+}

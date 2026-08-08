@@ -1,0 +1,17 @@
+{
+  "companySlug": "fireblocks",
+  "companyName": "Fireblocks",
+  "websiteUrl": "https://www.fireblocks.com",
+  "category": "security",
+  "tags": ["custody", "audits"],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "fireblocks"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "fireblocks"
+    }
+  ]
+}

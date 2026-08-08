@@ -1,0 +1,13 @@
+{
+  "companySlug": "certik",
+  "companyName": "CertiK",
+  "websiteUrl": "https://www.certik.com",
+  "category": "security",
+  "tags": ["audits"],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "certik"
+    }
+  ]
+}

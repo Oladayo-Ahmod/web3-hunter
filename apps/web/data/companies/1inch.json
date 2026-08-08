@@ -1,0 +1,17 @@
+{
+  "companySlug": "1inch",
+  "companyName": "1inch",
+  "websiteUrl": "https://1inch.io",
+  "category": "defi",
+  "tags": ["dex-aggregator"],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "1inch"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "1inch"
+    }
+  ]
+}

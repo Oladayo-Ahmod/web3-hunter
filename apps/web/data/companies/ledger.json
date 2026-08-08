@@ -1,0 +1,21 @@
+{
+  "companySlug": "ledger",
+  "companyName": "Ledger",
+  "websiteUrl": "https://www.ledger.com",
+  "category": "wallet",
+  "tags": ["wallet", "hardware"],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "ledger"
+    },
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "ledger"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "LedgerHQ"
+    }
+  ]
+}
