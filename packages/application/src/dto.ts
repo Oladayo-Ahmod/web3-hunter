@@ -142,6 +142,40 @@ export interface CompanyProfileDTO {
   aiSummary: AIArtifactSummaryDTO | null;
 }
 
+/**
+ * An open job posting, derived at read time from the Event log
+ * (`JobPosted`/`JobUpdated`/`JobClosed` — see
+ * `packages/collectors/src/hiring-events.ts`), not a persisted table
+ * (docs/ROADMAP.md Milestone 12, Phase 3: "inspect whether the existing
+ * Event/read-model architecture already contains what's needed before
+ * introducing new domain models" — it did).
+ *
+ * `id` is a deterministic composite (`${companyId}:${externalId}`), not a
+ * database-generated UUID, since there's no persisted row to generate one
+ * from — the same pair always produces the same `id`, which is what a
+ * detail-page URL needs.
+ *
+ * Fields are exactly what `JobFields` already captures — nothing here is
+ * inferred or fabricated. Employment type, workplace type (remote/hybrid/
+ * onsite), salary, and per-job Skill tags are deliberately absent: no
+ * Collector captures them yet, so they are not represented as empty/zero
+ * here — they are simply not present on this type at all until a real
+ * extraction step exists to populate them.
+ */
+export interface JobFeedItemDTO {
+  id: string;
+  externalId: string;
+  title: string;
+  locationName: string | null;
+  departmentNames: string[];
+  absoluteUrl: string;
+  company: CompanySummaryDTO;
+  /** When this posting first appeared (its `JobPosted` Event's `occurredAt`). */
+  postedAt: string;
+  /** When this posting's state last changed (its latest `JobPosted`/`JobUpdated` Event's `occurredAt`) — equal to `postedAt` if it has never been updated. */
+  updatedAt: string;
+}
+
 export interface PaginatedResult<T> {
   items: T[];
   page: number;

@@ -9,6 +9,7 @@ export type {
   CompanySummaryDTO,
   CompanyTechnologyProfileDTO,
   IntelligenceTrendDTO,
+  JobFeedItemDTO,
   MatchSummaryDTO,
   OpportunityDetailDTO,
   OpportunityFeedItemDTO,
@@ -33,6 +34,13 @@ export {
   type OpportunityFeedQuery,
   type OpportunitySortField,
 } from "./opportunity-query-service";
+export {
+  JOB_SORT_FIELDS,
+  jobFeedQuerySchema,
+  listJobFeed,
+  type JobFeedQuery,
+  type JobSortField,
+} from "./job-query-service";
 export {
   listPipelineRuns,
   pipelineRunQuerySchema,

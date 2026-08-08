@@ -16,6 +16,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             Web3 Hunter
           </Link>
           <nav className="flex items-center gap-4 text-sm">
+            <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
+              Jobs
+            </Link>
             <Link href="/opportunities" className="text-muted-foreground hover:text-foreground">
               Opportunities
             </Link>
