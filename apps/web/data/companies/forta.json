@@ -1,0 +1,17 @@
+{
+  "companySlug": "forta",
+  "companyName": "Forta",
+  "websiteUrl": "https://forta.org",
+  "category": "security",
+  "tags": ["security-monitoring"],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "forta"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "forta-network"
+    }
+  ]
+}

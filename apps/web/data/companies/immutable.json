@@ -1,0 +1,17 @@
+{
+  "companySlug": "immutable",
+  "companyName": "Immutable",
+  "websiteUrl": "https://www.immutable.com",
+  "category": "gaming",
+  "tags": ["gaming", "l2"],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "immutable"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "immutable"
+    }
+  ]
+}

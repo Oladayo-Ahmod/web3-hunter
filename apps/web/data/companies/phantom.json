@@ -1,0 +1,13 @@
+{
+  "companySlug": "phantom",
+  "companyName": "Phantom",
+  "websiteUrl": "https://phantom.app",
+  "category": "wallet",
+  "tags": ["wallet"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "phantom"
+    }
+  ]
+}

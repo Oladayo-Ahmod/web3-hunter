@@ -1,0 +1,17 @@
+{
+  "companySlug": "gelato",
+  "companyName": "Gelato",
+  "websiteUrl": "https://www.gelato.network",
+  "category": "infrastructure",
+  "tags": ["automation", "account-abstraction"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "gelato"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "gelatodigital"
+    }
+  ]
+}

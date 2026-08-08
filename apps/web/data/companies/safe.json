@@ -1,0 +1,21 @@
+{
+  "companySlug": "safe",
+  "companyName": "Safe",
+  "websiteUrl": "https://safe.global",
+  "category": "infrastructure",
+  "tags": ["smart-account", "multisig"],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "safe"
+    },
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "safe"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "safe-global"
+    }
+  ]
+}

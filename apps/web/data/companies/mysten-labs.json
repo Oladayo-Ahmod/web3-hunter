@@ -1,0 +1,17 @@
+{
+  "companySlug": "mysten-labs",
+  "companyName": "Mysten Labs",
+  "websiteUrl": "https://sui.io",
+  "category": "l1",
+  "tags": ["l1"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "mystenlabs"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "MystenLabs"
+    }
+  ]
+}

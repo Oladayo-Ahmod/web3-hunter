@@ -1,0 +1,17 @@
+{
+  "companySlug": "solana-foundation",
+  "companyName": "Solana Foundation",
+  "websiteUrl": "https://solana.com",
+  "category": "l1",
+  "tags": ["l1"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "solanalabs"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "solana-labs"
+    }
+  ]
+}

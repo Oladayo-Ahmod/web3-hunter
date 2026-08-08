@@ -1,0 +1,17 @@
+{
+  "companySlug": "layerzero-labs",
+  "companyName": "LayerZero Labs",
+  "websiteUrl": "https://layerzero.network",
+  "category": "infrastructure",
+  "tags": ["interoperability", "messaging"],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "layerzerolabs"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "LayerZero-Labs"
+    }
+  ]
+}

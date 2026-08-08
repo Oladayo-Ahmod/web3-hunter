@@ -1,0 +1,13 @@
+{
+  "companySlug": "magic-eden",
+  "companyName": "Magic Eden",
+  "websiteUrl": "https://magiceden.io",
+  "category": "other",
+  "tags": ["nft-marketplace"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "magiceden"
+    }
+  ]
+}

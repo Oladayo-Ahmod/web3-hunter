@@ -1,0 +1,13 @@
+{
+  "companySlug": "anchorage-digital",
+  "companyName": "Anchorage Digital",
+  "websiteUrl": "https://www.anchorage.com",
+  "category": "infrastructure",
+  "tags": ["custody"],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "anchorage"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "companySlug": "quicknode",
+  "companyName": "QuickNode",
+  "websiteUrl": "https://www.quicknode.com",
+  "category": "infrastructure",
+  "tags": ["node-infra", "rpc"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "quicknode"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "quiknode-labs"
+    }
+  ]
+}

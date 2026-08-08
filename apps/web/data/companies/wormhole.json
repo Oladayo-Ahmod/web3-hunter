@@ -1,0 +1,17 @@
+{
+  "companySlug": "wormhole",
+  "companyName": "Wormhole",
+  "websiteUrl": "https://wormhole.com",
+  "category": "infrastructure",
+  "tags": ["interoperability", "bridge"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "wormholelabs"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "wormhole-foundation"
+    }
+  ]
+}

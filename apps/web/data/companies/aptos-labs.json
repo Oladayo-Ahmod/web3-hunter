@@ -1,0 +1,17 @@
+{
+  "companySlug": "aptos-labs",
+  "companyName": "Aptos Labs",
+  "websiteUrl": "https://aptoslabs.com",
+  "category": "l1",
+  "tags": ["l1"],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "aptoslabs"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "aptos-labs"
+    }
+  ]
+}

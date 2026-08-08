@@ -1,0 +1,17 @@
+{
+  "companySlug": "uniswap-labs",
+  "companyName": "Uniswap Labs",
+  "websiteUrl": "https://uniswap.org",
+  "category": "defi",
+  "tags": ["dex"],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "uniswap"
+    },
+    {
+      "collectorSlug": "github",
+      "sourceIdentifier": "Uniswap"
+    }
+  ]
+}
