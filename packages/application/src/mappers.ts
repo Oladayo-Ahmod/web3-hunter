@@ -22,7 +22,13 @@ type CompanyTechnologyProfileRow = typeof schema.companyTechnologyProfile.$infer
 type PipelineRunRow = typeof schema.pipelineRun.$inferSelect;
 
 export function toCompanySummaryDTO(row: CompanyRow): CompanySummaryDTO {
-  return { id: row.id, slug: row.slug, name: row.name };
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    careersPageUrl: row.careersPageUrl,
+    websiteUrl: row.websiteUrl,
+  };
 }
 
 export function toSkillDTO(row: SkillRow): SkillDTO {

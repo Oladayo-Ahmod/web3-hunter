@@ -203,7 +203,13 @@ describe("opportunity-query-service (integration)", () => {
 
       expect(detail).not.toBeNull();
       expect(detail?.reasoning).toBe("Score 0.72 based on 2 Signals.");
-      expect(detail?.company).toEqual({ id: company.id, slug: "acme-detail", name: "Acme Detail" });
+      expect(detail?.company).toEqual({
+        id: company.id,
+        slug: "acme-detail",
+        name: "Acme Detail",
+        careersPageUrl: null,
+        websiteUrl: null,
+      });
       expect(detail?.signals.map((s) => s.id).sort()).toEqual([signalOne.id, signalTwo.id].sort());
       expect(detail?.companyIntelligence).toEqual({
         trend: "increasing",

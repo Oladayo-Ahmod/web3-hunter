@@ -10,6 +10,7 @@ export type {
   CompanyTechnologyProfileDTO,
   IntelligenceTrendDTO,
   JobFeedItemDTO,
+  JobFreshnessDTO,
   MatchSummaryDTO,
   OpportunityDetailDTO,
   OpportunityFeedItemDTO,
@@ -41,6 +42,7 @@ export {
   type JobFeedQuery,
   type JobSortField,
 } from "./job-query-service";
+export { computeJobFreshness, JOB_FRESHNESS_LEVELS, type JobFreshness } from "./job-freshness";
 export {
   listPipelineRuns,
   pipelineRunQuerySchema,
