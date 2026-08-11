@@ -67,6 +67,34 @@ describe("createGreenhouseJobNormalizer", () => {
     });
   });
 
+  it("extracts a plain-text description from HTML-encoded content, and leaves employment/workplace type null (Greenhouse has neither field)", () => {
+    const result = normalize({
+      rawRecordId: "raw-content",
+      collectorId: "collector-1",
+      payload: job({ content: "&lt;p&gt;About the role&lt;/p&gt;" }),
+      fetchedAt: new Date(),
+      previousPayload: null,
+    });
+
+    expect(result?.metadata).toMatchObject({
+      description: "About the role",
+      employmentType: null,
+      workplaceType: null,
+    });
+  });
+
+  it("produces a null description when the source has no content field", () => {
+    const result = normalize({
+      rawRecordId: "raw-no-content",
+      collectorId: "collector-1",
+      payload: job(),
+      fetchedAt: new Date(),
+      previousPayload: null,
+    });
+
+    expect(result?.metadata).toMatchObject({ description: null });
+  });
+
   it("does not report unrelated fields as changed", () => {
     const result = normalize({
       rawRecordId: "raw-4",

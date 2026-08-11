@@ -14,6 +14,11 @@ export const greenhouseJobSchema = z
     absolute_url: z.string(),
     location: z.object({ name: z.string() }).nullable().optional(),
     departments: z.array(z.object({ name: z.string() })).optional(),
+    // Only present when fetched with `?content=true` (see ./fetch.ts) —
+    // Greenhouse's public API omits it by default. HTML, and itself
+    // HTML-entity-encoded — see `stripHtmlToPlainText`. Greenhouse has no
+    // structured employment-type/workplace-type field at all.
+    content: z.string().optional(),
   })
   .passthrough();
 

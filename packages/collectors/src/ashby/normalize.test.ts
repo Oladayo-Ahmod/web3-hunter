@@ -79,6 +79,42 @@ describe("createAshbyJobNormalizer", () => {
     expect(result?.metadata).toMatchObject({ departmentNames: ["Platform"] });
   });
 
+  it("extracts description/employmentType/workplaceType when Ashby provides them", () => {
+    const result = normalize({
+      rawRecordId: "raw-fields",
+      collectorId: "collector-1",
+      payload: job({
+        descriptionPlain: "We are looking for a Solidity Engineer.",
+        employmentType: "FullTime",
+        workplaceType: "Hybrid",
+      }),
+      fetchedAt: new Date(),
+      previousPayload: null,
+    });
+
+    expect(result?.metadata).toMatchObject({
+      description: "We are looking for a Solidity Engineer.",
+      employmentType: "full-time",
+      workplaceType: "hybrid",
+    });
+  });
+
+  it("leaves description/employmentType/workplaceType null when Ashby doesn't provide them", () => {
+    const result = normalize({
+      rawRecordId: "raw-no-fields",
+      collectorId: "collector-1",
+      payload: job(),
+      fetchedAt: new Date(),
+      previousPayload: null,
+    });
+
+    expect(result?.metadata).toMatchObject({
+      description: null,
+      employmentType: null,
+      workplaceType: null,
+    });
+  });
+
   it("prefers the updatedAt timestamp over publishedAt when present", () => {
     const result = normalize({
       rawRecordId: "raw-5",

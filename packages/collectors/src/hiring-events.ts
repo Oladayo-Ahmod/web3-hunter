@@ -19,12 +19,32 @@ import { z } from "zod";
  * branches on which source is calling it.
  */
 
+/** Canonical, cross-source vocabulary — each Collector's normalizer maps its own source's values into this, never the reverse (see `./job-field-normalization.ts`). */
+export const EMPLOYMENT_TYPES = ["full-time", "part-time", "contract", "internship"] as const;
+export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
+
+export const WORKPLACE_TYPES = ["remote", "hybrid", "onsite"] as const;
+export type WorkplaceType = (typeof WORKPLACE_TYPES)[number];
+
 const jobFieldsSchema = z.object({
   externalId: z.string(),
   title: z.string(),
   locationName: z.string().nullable(),
   departmentNames: z.array(z.string()),
   absoluteUrl: z.string(),
+  // Added after Milestone 12 shipped — per docs/EVENT_MODEL.md's "Event
+  // Versioning" ("additive changes do not require a new version"), these
+  // are `.nullable().optional()`, not just `.nullable()`: a Raw Record
+  // captured before this change produces a `current.fields` object that's
+  // simply missing these keys (`undefined`, not `null`), and replaying an
+  // already-published pre-this-change Event must still validate against
+  // this same schema. `null` means "this source doesn't provide it";
+  // `undefined`/absent means "this Event predates capturing it" — both
+  // read the same way downstream (`?? null`), but the schema has to
+  // accept both to stay backward compatible.
+  description: z.string().nullable().optional(),
+  employmentType: z.enum(EMPLOYMENT_TYPES).nullable().optional(),
+  workplaceType: z.enum(WORKPLACE_TYPES).nullable().optional(),
 });
 
 export type JobFields = z.infer<typeof jobFieldsSchema>;

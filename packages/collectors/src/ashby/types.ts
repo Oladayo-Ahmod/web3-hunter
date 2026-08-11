@@ -21,6 +21,12 @@ export const ashbyJobSchema = z
     // `publishedAt` is used instead (see ./normalize.ts).
     updatedAt: z.string().optional(),
     jobUrl: z.string(),
+    // e.g. "FullTime" | "PartTime" | "Contract" | "Intern".
+    employmentType: z.string().optional(),
+    // e.g. "Remote" | "Hybrid" | "OnSite".
+    workplaceType: z.string().optional(),
+    // Plain text — unlike Greenhouse's `content`, no HTML stripping needed.
+    descriptionPlain: z.string().optional(),
   })
   .passthrough();
 
