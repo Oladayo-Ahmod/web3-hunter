@@ -5,6 +5,7 @@ import {
   type CanonicalJob,
   type JobFields,
 } from "../hiring-events";
+import { normalizeEmploymentType, normalizeWorkplaceType } from "../job-field-normalization";
 import { leverPostingSchema } from "./types";
 
 function toCanonicalJob(payload: unknown): CanonicalJob {
@@ -17,6 +18,9 @@ function toCanonicalJob(payload: unknown): CanonicalJob {
     locationName: posting.categories?.location ?? null,
     departmentNames: departmentName ? [departmentName] : [],
     absoluteUrl: posting.hostedUrl,
+    description: posting.descriptionPlain ?? null,
+    employmentType: normalizeEmploymentType(posting.categories?.commitment),
+    workplaceType: normalizeWorkplaceType(posting.workplaceType),
   };
 
   // Lever's public Postings API doesn't consistently expose a separate

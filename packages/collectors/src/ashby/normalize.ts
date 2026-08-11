@@ -5,6 +5,7 @@ import {
   type CanonicalJob,
   type JobFields,
 } from "../hiring-events";
+import { normalizeEmploymentType, normalizeWorkplaceType } from "../job-field-normalization";
 import { ashbyJobSchema } from "./types";
 
 function toCanonicalJob(payload: unknown): CanonicalJob {
@@ -17,6 +18,9 @@ function toCanonicalJob(payload: unknown): CanonicalJob {
     locationName: job.location ?? null,
     departmentNames: departmentName ? [departmentName] : [],
     absoluteUrl: job.jobUrl,
+    description: job.descriptionPlain ?? null,
+    employmentType: normalizeEmploymentType(job.employmentType),
+    workplaceType: normalizeWorkplaceType(job.workplaceType),
   };
 
   // Ashby's public Job Board API doesn't consistently expose a separate

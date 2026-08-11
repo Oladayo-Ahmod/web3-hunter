@@ -5,6 +5,7 @@ import {
   type CanonicalJob,
   type JobFields,
 } from "../hiring-events";
+import { stripHtmlToPlainText } from "../job-field-normalization";
 import { greenhouseJobSchema } from "./types";
 
 function toCanonicalJob(payload: unknown): CanonicalJob {
@@ -15,6 +16,11 @@ function toCanonicalJob(payload: unknown): CanonicalJob {
     locationName: job.location?.name ?? null,
     departmentNames: (job.departments ?? []).map((department) => department.name),
     absoluteUrl: job.absolute_url,
+    description: job.content ? stripHtmlToPlainText(job.content) : null,
+    // Greenhouse's public Job Board API has no structured field for
+    // either of these — never guessed from free text.
+    employmentType: null,
+    workplaceType: null,
   };
   return { fields, occurredAt: new Date(job.updated_at) };
 }

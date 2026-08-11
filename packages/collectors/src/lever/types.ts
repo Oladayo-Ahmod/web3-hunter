@@ -24,8 +24,15 @@ export const leverPostingSchema = z
         team: z.string().optional(),
         department: z.string().optional(),
         location: z.string().optional(),
+        // Lever's own employment-type field, e.g. "Full-time".
+        commitment: z.string().optional(),
       })
       .optional(),
+    // Plain text — unlike Greenhouse's `content`, no HTML stripping needed.
+    descriptionPlain: z.string().optional(),
+    // e.g. "onsite" | "remote" | "hybrid" — not consistently present
+    // across accounts, so optional like `updatedAt` above.
+    workplaceType: z.string().optional(),
   })
   .passthrough();
 
