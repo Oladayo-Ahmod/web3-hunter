@@ -33,8 +33,10 @@ Four sequencing decisions shape every milestone below, and are worth stating onc
 | 9 | [Ecosystem Scale-Out](#milestone-9--ecosystem-scale-out) | Many more sources, cheaply — GitHub enrichment included | Low–Medium (per source) |
 | 10 | [Pipeline Run Observability](#milestone-10--pipeline-run-observability) | Close the operational feedback loop for the deterministic pipeline stages that had none | Low–Medium |
 | 11 | [Collector Ecosystem & Ingestion Correctness](#milestone-11--collector-ecosystem--ingestion-correctness) | Company tracking becomes data-driven, not hardcoded; a Raw Record misattribution bug found mid-implementation is fixed | High |
+| 12 | [Hunter Expansion](#milestone-12--hunter-expansion) | Pivot from a small prestigious-company demo to a broad, verified company universe with a real job read-model | Medium |
+| 13 | [Job-Hunting Pivot](#milestone-13--job-hunting-pivot) | Pivot the primary product object from company-level hiring signals to job-level, ranked, actionable targets | High |
 
-Milestones 10 and 11 were not in this document's original plan — both were identified by direct architectural review of the system as actually built, per each entry's own Goal, rather than sequenced here in advance. See [docs/adr/](./adr/) for the architectural decisions made during Milestone 11's implementation.
+Milestones 10 through 13 were not in this document's original plan — all were identified by direct review of the system as actually built and used, rather than sequenced here in advance. See [docs/adr/](./adr/) for architectural decisions made outside this document's original sequencing, and [docs/MILESTONE_13_JOB_HUNTING_PIVOT.md](./MILESTONE_13_JOB_HUNTING_PIVOT.md) for Milestone 13's full design review.
 
 ---
 
@@ -287,10 +289,51 @@ Milestones 10 and 11 were not in this document's original plan — both were ide
 
 ---
 
+## Milestone 12 — Hunter Expansion
+
+**Goal:** Correct a product drift toward a handful of prestigious companies (Coinbase, ConsenSys, Paradigm) by expanding the company universe on Milestone 11's now-proven data-driven directory, verifying the collectors actually produce substantial real data at that scale, and exposing that data as a first-class, browsable job surface — not just company-level Opportunities.
+
+**Features:**
+- Company directory expanded from 5 to 37 companies, weighted toward security/audit firms (previously zero representation) and smaller/lesser-known protocols, not just household names. Every `(collector, sourceIdentifier)` pair live-verified against the real Greenhouse/Lever/Ashby/GitHub public APIs before being added — nothing guessed.
+- A Job read-model (`packages/application/src/job-query-service.ts`): derives currently-open job postings at read time directly from the existing `JobPosted`/`JobUpdated`/`JobClosed` Event log — no new persisted table, no new Event types, reusing exactly the architecture Milestones 1–11 already built. `JobFeedItemDTO`, `GET /api/jobs`, and a `/jobs` page (search, sort, pagination) ship on top of it.
+- Real, empirically measured collector output at the new scale (not just "the directory contains 37 companies"): ~540 open jobs across the expanded universe, verified live against the deployed application, not just locally.
+
+**Dependencies:** Milestone 11 (the directory/seed/collector-cutover mechanism this fills with real data).
+
+**Estimated complexity:** Medium — almost entirely a content/verification effort (curating and live-verifying real companies) plus one new, small, additive read-model; no changes to Events, ingestion, or collector orchestration were needed.
+
+**Deliverables:** 37 live-verified companies; a working `/jobs` surface backed by a read-time Event-log projection; empirical production verification (job counts, collector health) rather than a locally-tested claim.
+
+**Definition of Done:** The running, deployed application shows a broad hiring universe with hundreds of real active job postings in a searchable feed — verified against the live deployment, not assumed from a successful local build. Superseded as the primary product target by Milestone 13, which found the company-level Opportunity object this milestone still centered the UI on to be the wrong primary object for the actual user (see that milestone's Goal).
+
+---
+
+## Milestone 13 — Job-Hunting Pivot
+
+**Goal:** Milestone 12 proved the data pipeline scales; it did not fix what the product actually shows a user. The primary object surfaced to date is still "Company X has an engineering hiring surge," repeating weekly per company — technically correct, product-wise weak for a single user trying to aggressively job-hunt. Pivot the primary object from company-level hiring signals to individual, ranked, actionable job targets, while keeping the existing company-signal system as a secondary, explicitly-labeled view rather than removing it.
+
+**Full design review:** [docs/MILESTONE_13_JOB_HUNTING_PIVOT.md](./MILESTONE_13_JOB_HUNTING_PIVOT.md) — a 10-part gap analysis, domain/schema design, source-discovery strategy, relevance-scoring design, API/UI changes, migration strategy, phased implementation plan, and test/production-verification criteria, produced before any implementation per this milestone's own Definition of Ready. Summarized here; that document is the source of truth for implementation.
+
+**Features (planned, not yet built):**
+- Curated-vs-Discovered Company distinction (a state on the existing `company` row, not a new table) — the curated directory becomes an enrichment mechanism, not the sole path a Company can exist through.
+- Job-level relevance scoring (positive/negative keyword weights, explainable breakdown) and job-level Skill tagging (`job_skill`, re-pointing the classifier that already exists at Opportunity-granularity).
+- Freshness correctness: `raw_record.fetchedAt` (always reliable) as the floor for a source's own `updated_at` (already found to be an unreliable "still active" signal — a long-open, rarely-edited requisition can carry a multi-year-old source timestamp).
+- User Profile gains target roles, remote/location/seniority preference.
+- An Aggregator `JobSource` shape (alongside the existing Directory shape) for sources that discover companies as a side effect of returning jobs, enabling growth past manually-curated companies.
+- A real action layer (Save/Applied/Follow-up, `job_action`) and a job detail page reusing the existing `packages/ai` outreach-draft infrastructure at job granularity.
+
+**Dependencies:** Milestone 12 (the Job read-model this extends) and the classification/matching/AI infrastructure from Milestones 3, 5, and 7 (all reused, re-scoped from company to job granularity — none rebuilt).
+
+**Estimated complexity:** High — five phases (Job correctness → Job relevance → Broad discovery → Action layer → Intelligence), each independently shippable and independently verifiable in production per the design document's own criteria.
+
+**Definition of Done:** see the design document's own success criteria — in short, a user can configure a real profile and get a ranked, explainable job feed with no stale postings presented as active, discovery is no longer capped by the manually-curated directory, and a high-match job supports apply → contact-path → outreach → save/track without leaving the application (aside from the actual external application/contact destination).
+
+---
+
 ## Legal / ToS Review — a Cross-Cutting Gate, Not a Milestone
 
 [ARCHITECTURE.md Open Question #7](./ARCHITECTURE.md#10-open-questions) and [DOMAIN_MODEL.md](./DOMAIN_MODEL.md) both flag that several intended sources may carry scraping or terms-of-service constraints. This isn't scheduled as its own milestone because it isn't sequential work — it's a per-Collector gate: **before any Collector is built, its source's legal/ToS status must be reviewed.** This applies starting with [Milestone 2](#milestone-2--first-collector-the-walking-skeleton) itself — an ATS provider's public job-board API is generally lower-risk than scraping an arbitrary career page, but "generally lower-risk" is not the same as "reviewed," and Milestone 2 is the first milestone that touches an external data source at all. It continues to apply to every source added in Milestone 9. Treat it as a blocking prerequisite for each new source, not a retrospective audit.
 
 ---
 
-This roadmap should be revisited after every milestone ships — not rewritten from scratch, but checked against what was actually learned (especially in Milestone 3, where the scoring rules are explicitly expected to need iteration). Milestone 11 is the most recently completed milestone. This document was not maintained as a live status tracker between Milestone 9 and the point Milestones 10–11 were added — see [README.md](../README.md#status) for current status and [docs/adr/](./adr/) for architectural decisions made outside this document's original sequencing.
+This roadmap should be revisited after every milestone ships — not rewritten from scratch, but checked against what was actually learned (especially in Milestone 3, where the scoring rules are explicitly expected to need iteration). Milestone 12 is the most recently completed milestone; Milestone 13 is designed but not yet implemented (see its design document). This document was not maintained as a live status tracker between Milestone 9 and the point Milestones 10–11 were added — see [README.md](../README.md#status) for current status and [docs/adr/](./adr/) for architectural decisions made outside this document's original sequencing.
