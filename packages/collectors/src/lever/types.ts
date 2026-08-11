@@ -24,15 +24,19 @@ export const leverPostingSchema = z
         team: z.string().optional(),
         department: z.string().optional(),
         location: z.string().optional(),
-        // Lever's own employment-type field, e.g. "Full-time".
-        commitment: z.string().optional(),
+        // Lever's own employment-type field, e.g. "Full-time". `.nullable()`
+        // per the Ashby sibling field's confirmed-live behavior — a source
+        // that provides a field for some postings can send an explicit
+        // `null` for others, not just omit the key.
+        commitment: z.string().nullable().optional(),
       })
       .optional(),
     // Plain text — unlike Greenhouse's `content`, no HTML stripping needed.
-    descriptionPlain: z.string().optional(),
+    descriptionPlain: z.string().nullable().optional(),
     // e.g. "onsite" | "remote" | "hybrid" — not consistently present
-    // across accounts, so optional like `updatedAt` above.
-    workplaceType: z.string().optional(),
+    // across accounts, so optional like `updatedAt` above; `.nullable()`
+    // for the same reason as `commitment`.
+    workplaceType: z.string().nullable().optional(),
   })
   .passthrough();
 

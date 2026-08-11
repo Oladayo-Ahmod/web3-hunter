@@ -18,7 +18,7 @@ export const greenhouseJobSchema = z
     // Greenhouse's public API omits it by default. HTML, and itself
     // HTML-entity-encoded — see `stripHtmlToPlainText`. Greenhouse has no
     // structured employment-type/workplace-type field at all.
-    content: z.string().optional(),
+    content: z.string().nullable().optional(),
   })
   .passthrough();
 
