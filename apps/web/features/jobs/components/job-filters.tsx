@@ -5,14 +5,14 @@ const FIELD_CLASS =
   "h-9 rounded-md border bg-background px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50";
 
 interface JobFiltersProps {
-  defaultValues: Pick<JobFeedQuery, "search" | "sort" | "direction">;
+  defaultValues: Pick<JobFeedQuery, "search" | "sort" | "direction" | "freshness" | "includeStale">;
 }
 
 /**
  * A plain GET `<form>`, same pattern as `OpportunityFilters` — no
  * client-side state needed. `search` is a title keyword match; see
  * `job-query-service.ts`'s doc comment for why there's no
- * remote/seniority/skill filter yet.
+ * skill/role filter yet (Milestone 13 Phase 2).
  */
 export function JobFilters({ defaultValues }: JobFiltersProps) {
   return (
@@ -26,6 +26,21 @@ export function JobFilters({ defaultValues }: JobFiltersProps) {
           placeholder="e.g. Solidity, security, protocol"
           className={`${FIELD_CLASS} w-64`}
         />
+      </Field>
+
+      <Field label="Freshness" htmlFor="freshness">
+        <select
+          id="freshness"
+          name="freshness"
+          defaultValue={defaultValues.freshness ?? ""}
+          className={FIELD_CLASS}
+        >
+          <option value="">Fresh, recent & aging (default)</option>
+          <option value="fresh">Fresh only (updated ≤7d)</option>
+          <option value="recent">Recent only (8-30d)</option>
+          <option value="aging">Aging only (31-60d)</option>
+          <option value="stale">Stale only (60d+)</option>
+        </select>
       </Field>
 
       <Field label="Sort by" htmlFor="sort">
@@ -46,6 +61,16 @@ export function JobFilters({ defaultValues }: JobFiltersProps) {
           <option value="asc">Ascending</option>
         </select>
       </Field>
+
+      <label className="flex items-center gap-2 pb-2 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          name="includeStale"
+          value="true"
+          defaultChecked={defaultValues.includeStale}
+        />
+        Include stale (60d+) postings
+      </label>
 
       <Button type="submit">Apply filters</Button>
     </form>
