@@ -21,12 +21,14 @@ export const ashbyJobSchema = z
     // `publishedAt` is used instead (see ./normalize.ts).
     updatedAt: z.string().optional(),
     jobUrl: z.string(),
-    // e.g. "FullTime" | "PartTime" | "Contract" | "Intern".
-    employmentType: z.string().optional(),
-    // e.g. "Remote" | "Hybrid" | "OnSite".
-    workplaceType: z.string().optional(),
+    // e.g. "FullTime" | "PartTime" | "Contract" | "Intern". Observed as
+    // explicit `null` (not just absent) on real boards — `.nullable()`,
+    // same as `department`/`team`/`location` above, not just `.optional()`.
+    employmentType: z.string().nullable().optional(),
+    // e.g. "Remote" | "Hybrid" | "OnSite" — same `null`-vs-absent note.
+    workplaceType: z.string().nullable().optional(),
     // Plain text — unlike Greenhouse's `content`, no HTML stripping needed.
-    descriptionPlain: z.string().optional(),
+    descriptionPlain: z.string().nullable().optional(),
   })
   .passthrough();
 

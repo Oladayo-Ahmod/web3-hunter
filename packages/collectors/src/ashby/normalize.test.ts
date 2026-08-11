@@ -115,6 +115,25 @@ describe("createAshbyJobNormalizer", () => {
     });
   });
 
+  // Regression: a real Ashby board (op-labs) sends explicit `null` for
+  // `workplaceType` on some postings, not just an absent key — the schema
+  // must accept that, not throw. See job-field-normalization's callers.
+  it("does not throw when Ashby sends an explicit null for these fields", () => {
+    const result = normalize({
+      rawRecordId: "raw-explicit-null",
+      collectorId: "collector-1",
+      payload: job({ workplaceType: null, employmentType: null, descriptionPlain: null }),
+      fetchedAt: new Date(),
+      previousPayload: null,
+    });
+
+    expect(result?.metadata).toMatchObject({
+      description: null,
+      employmentType: null,
+      workplaceType: null,
+    });
+  });
+
   it("prefers the updatedAt timestamp over publishedAt when present", () => {
     const result = normalize({
       rawRecordId: "raw-5",
