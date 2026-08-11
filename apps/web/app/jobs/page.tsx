@@ -27,6 +27,8 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     if (query.direction !== "desc") params.set("direction", query.direction);
     if (query.search) params.set("search", query.search);
     if (query.companyId) params.set("companyId", query.companyId);
+    if (query.freshness) params.set("freshness", query.freshness);
+    if (query.includeStale) params.set("includeStale", "true");
     params.set("page", String(page));
     params.set("pageSize", String(query.pageSize));
     return `/jobs?${params.toString()}`;
@@ -42,7 +44,13 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
       </div>
 
       <JobFilters
-        defaultValues={{ search: query.search, sort: query.sort, direction: query.direction }}
+        defaultValues={{
+          search: query.search,
+          sort: query.sort,
+          direction: query.direction,
+          freshness: query.freshness,
+          includeStale: query.includeStale,
+        }}
       />
 
       {result.items.length === 0 ? (
