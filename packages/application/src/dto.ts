@@ -15,6 +15,9 @@ export interface CompanySummaryDTO {
   id: string;
   slug: string;
   name: string;
+  /** `null` when the Company has no curated `careersPageUrl` (Milestone 11) — never fabricated from `websiteUrl`. */
+  careersPageUrl: string | null;
+  websiteUrl: string | null;
 }
 
 export interface SignalSummaryDTO {
@@ -142,6 +145,9 @@ export interface CompanyProfileDTO {
   aiSummary: AIArtifactSummaryDTO | null;
 }
 
+/** See `packages/application/src/job-freshness.ts` for the bucketing rule and why it's based on `updatedAt`, not `postedAt` or our own fetch time. */
+export type JobFreshnessDTO = "fresh" | "recent" | "aging" | "stale";
+
 /**
  * An open job posting, derived at read time from the Event log
  * (`JobPosted`/`JobUpdated`/`JobClosed` — see
@@ -155,12 +161,14 @@ export interface CompanyProfileDTO {
  * from — the same pair always produces the same `id`, which is what a
  * detail-page URL needs.
  *
- * Fields are exactly what `JobFields` already captures — nothing here is
- * inferred or fabricated. Employment type, workplace type (remote/hybrid/
- * onsite), salary, and per-job Skill tags are deliberately absent: no
- * Collector captures them yet, so they are not represented as empty/zero
- * here — they are simply not present on this type at all until a real
- * extraction step exists to populate them.
+ * Fields are exactly what `JobFields` captures — nothing here is inferred
+ * or fabricated. `description`/`employmentType`/`workplaceType` are
+ * `null` whenever the source genuinely doesn't provide them (Greenhouse
+ * has no structured employment/workplace type at all — see
+ * `packages/collectors/src/greenhouse/normalize.ts`), never a guess.
+ * Salary and per-job Skill tags remain absent entirely (Milestone 13
+ * Phase 2), the same "not present until a real extraction step exists"
+ * discipline this type has followed since Milestone 12.
  */
 export interface JobFeedItemDTO {
   id: string;
@@ -169,11 +177,18 @@ export interface JobFeedItemDTO {
   locationName: string | null;
   departmentNames: string[];
   absoluteUrl: string;
+  /** Plain text. `null` if the source didn't provide one, or this Event predates capturing it (see `JobFields`' doc comment). */
+  description: string | null;
+  employmentType: "full-time" | "part-time" | "contract" | "internship" | null;
+  workplaceType: "remote" | "hybrid" | "onsite" | null;
   company: CompanySummaryDTO;
-  /** When this posting first appeared (its `JobPosted` Event's `occurredAt`). */
+  /** Always `"open"` today — this read model only ever returns currently-open postings (see `job-query-service.ts`'s `open_jobs` CTE). A literal, not a boolean, so an "include closed" view (Milestone 13, deferred) is additive, not a breaking type change. */
+  status: "open";
+  /** When this posting first appeared (its `JobPosted` Event's `occurredAt` — the source's own timestamp at first discovery, not our fetch time). */
   postedAt: string;
-  /** When this posting's state last changed (its latest `JobPosted`/`JobUpdated` Event's `occurredAt`) — equal to `postedAt` if it has never been updated. */
+  /** When this posting's state last changed (its latest `JobPosted`/`JobUpdated` Event's `occurredAt`, i.e. the source's own last-modified timestamp) — equal to `postedAt` if it has never been updated. This, not `postedAt`, is what `freshness` is computed from. */
   updatedAt: string;
+  freshness: JobFreshnessDTO;
 }
 
 export interface PaginatedResult<T> {
