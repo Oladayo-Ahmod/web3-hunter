@@ -39,6 +39,8 @@ describe("createTestDatabase", () => {
       "company_technology_profile",
       "event",
       "event_provenance",
+      "job_classification_ledger",
+      "job_skill",
       "match",
       "opportunity",
       "opportunity_skill",
