@@ -230,4 +230,52 @@ Explicitly **not** in scope for Milestone 14: aggregator adapters, AI/LLM matchi
 
 ---
 
-*Not implementing until this design is approved.*
+## O. Phase 1–3 results — the actual fix, and the real re-measurement
+
+Approved and executed. `packages/application/src/job-relevance.ts` gained two keyword additions:
+
+- `solidity-engineer` now also recognizes `"smart contract engineer"`/`"smart contract developer"`.
+- `security-researcher` now also recognizes plain `"security engineer"` (deliberately not folded into the narrower `smart-contract-security-engineer`/`blockchain-security-engineer` roles — a bare "Security Engineer" title doesn't claim that specificity).
+
+No weight, threshold, or role-mismatch mechanic changed. 4 new regression tests were added using the exact real titles found in §G, plus a test confirming generic Frontend/Backend/DevOps titles still can't reach "high" purely from skill overlap. All 31 tests in `job-relevance.test.ts` (27 existing + 4 new) pass, including every Phase A ordering/regression assertion, unmodified.
+
+A new permanent script, `apps/web/scripts/measure-discovery-relevance.ts`, reproduces this document's §B/§G measurement on demand against real production data — this is what produced every number below.
+
+**Before vs. after, the real production job pool (709 open jobs, same pool both times — no discovery, no new ingestion happened between measurements):**
+
+| Segment | n | Before: high+medium | After: high+medium | Change |
+|---|---|---|---|---|
+| Curated | 544 | 11 high + 17 medium = **5.1%** | 13 high + 26 medium = **7.2%** | +2.1pp |
+| Discovered | 165 | 0 high + 1 medium = **0.6%** | 0 high + 4 medium = **2.4%** | +1.8pp |
+| Discovered/Greenhouse | 1 | 0.0% | 0.0% | unchanged |
+| Discovered/Lever | 35 | 2.9% | 2.9% | unchanged |
+| Discovered/Ashby | 129 | 0.0% | 2.3% | +2.3pp |
+
+**The exact three evidenced false negatives, verified against real production data (not just the unit test):**
+
+| Title | Company | Before | After |
+|---|---|---|---|
+| "Smart Contract Engineer" | Paxos Labs (discovered) | low, score 0 | **medium, score 45** |
+| "Lead Security Engineer" | Paxos Labs (discovered) | low, score 8 | **medium, score 53** |
+| "Senior Infrastructure Security Engineer" | Matter Labs (discovered) | low, score 8 | **medium, score 53** |
+
+All three moved exactly as predicted. The discovered-company medium count went from 1 → 4 — precisely +3, matching these three fixes with no unexplained extra movement.
+
+**Regression check, real production data**: the exact real Coinbase job that triggered Milestone 13 Phase A (`"Senior Software Engineer, Frontend (Coinbase Advisor - Agentic Trading)"`) still scores **low (3)** — unchanged. The role gate is intact.
+
+**Checked for incorrect upward moves**: every curated-company job that newly matches the expanded keywords (14 jobs, queried directly) was inspected. All 14 are genuine security/protocol-adjacent roles at already-vetted Web3 security/infra companies — `"Blockchain Security Engineer"` @ CertiK, `"Web3 Security Engineer"` @ Sky Mavis, `"Information Security Engineer"` @ Fireblocks, `"Senior Smart Contract Engineer"` @ Uniswap Labs, etc. **No unintended over-match was found.** (One near-miss worth naming: `"Member of Technical Staff, Security Engineering"` @ Anchorage Digital stayed low — "Security Engineering" doesn't contain the exact "Security Engineer" phrase, which is correct, conservative behavior, not a gap this fix claims to close.)
+
+## P. Phase 4 — the scaling decision, based on the corrected numbers
+
+**Recommendation: C — do not scale broad, repo-count-ranked ATS discovery further.** The evidence, not the old projections:
+
+- The fix roughly **quadrupled** discovered-company relevance (0.6% → 2.4%) and confirmed the earlier 8x gap was partly a real measurement bug — but a **substantial, real gap remains**: discovered companies still produce useful (high+medium) jobs at **less than a third the rate of curated companies** (2.4% vs. 7.2%), and **zero** discovered-company jobs have ever reached "high" tier, across all 165 of them, even after the fix. This is no longer a measurement artifact — it's the corrected number.
+- The curated rate improved *more* in absolute terms than the discovered rate (+2.1pp vs. +1.8pp) — the fix helped the hand-picked companies at least as much as the discovered ones, which is the opposite of what you'd want if the plan were "discovery just needed better scoring to catch up."
+- In absolute terms, batch 2's entire yield — 20 net-new companies, 165 jobs — produced exactly **4 medium-tier jobs and 0 high-tier jobs** for this profile, even measured correctly. That is a very small return for 1,000 probes (§B's "probe cost" metric: 152 probes per net-useful *company*, not per net-useful *job* — the per-useful-job cost is far higher).
+- This tracks §G's original explanation, now confirmed rather than merely suspected: the repo-count ranking that drives ATS discovery selects for "is an active software organization," which has no correlation with "hires for security/protocol/audit roles specifically." Curated companies were hand-picked *because* security/audit/infra is their business; discovered companies are a random cross-section of crypto software companies generally, most of whose job volume (correctly) scores low regardless of title-matching precision.
+
+**What would change this recommendation**: not more probes against the same repo-count-ranked candidate list — the evidence here says that specific lever is close to exhausted of value. If more useful companies are wanted, the higher-leverage path demonstrated by this data is the same one that produced the 37 curated companies' 7.2% rate: identifying companies *because* they're security/audit/protocol-focused (a targeting signal ATS discovery's GitHub-repo-count ranking structurally cannot see), not probing further down an activity-ranked list. That's a curation decision, not a discovery-batch-size decision, and is out of scope here per your explicit "no new discovery batch" instruction — noted as the honest answer to "what would make Option B worth reconsidering," not a fourth option snuck in as a recommendation.
+
+---
+
+*Phases 1–4 complete. No discovery batch was run. No company was probed, discovered, or ingested. This document's recommendation is C; no further discovery scaling is planned pending your decision.*
