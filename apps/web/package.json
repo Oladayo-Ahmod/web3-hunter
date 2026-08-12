@@ -18,6 +18,7 @@
     "seed:companies": "tsx --env-file=.env scripts/seed-companies.ts",
     "score:companies": "tsx --env-file=.env scripts/run-scoring.ts",
     "classify:opportunities": "tsx --env-file=.env scripts/run-classification.ts",
+    "classify:jobs": "tsx --env-file=.env scripts/run-job-classification.ts",
     "match:users": "tsx --env-file=.env scripts/run-matching.ts",
     "decide:recommendations": "tsx --env-file=.env scripts/run-decisions.ts",
     "detect:technology": "tsx --env-file=.env scripts/run-technology.ts"

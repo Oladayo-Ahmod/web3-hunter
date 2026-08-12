@@ -1,6 +1,7 @@
 import { getDb, schema } from "@web3-hunter/db";
 
-export type PipelineName = "scoring" | "classification" | "technology" | "matching" | "decision";
+export type PipelineName =
+  "scoring" | "classification" | "job-classification" | "technology" | "matching" | "decision";
 export type PipelineRunScopeType = "company" | "user" | "opportunity";
 
 export interface PipelineRunScope {

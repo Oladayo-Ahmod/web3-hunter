@@ -1,4 +1,7 @@
-import { runClassificationPipeline } from "@web3-hunter/classification";
+import {
+  runClassificationPipeline,
+  runJobClassificationPipeline,
+} from "@web3-hunter/classification";
 import { getDb, schema } from "@web3-hunter/db";
 import { runDecisionPipeline } from "@web3-hunter/decision";
 import { runMatchingPipeline } from "@web3-hunter/matching";
@@ -97,6 +100,25 @@ export async function classifyAllOpportunities(
   return runForEachEntity(
     opportunities.map((o) => o.id),
     (id) => recordAndRun("classification", "opportunity", id, () => runClassificationPipeline(id)),
+    progress,
+  );
+}
+
+/**
+ * Job-level Skill classification for every Company — Milestone 13 Phase
+ * 2's `run-job-classification-pipeline`. Company-scoped, like Technology,
+ * not Opportunity-scoped like (Opportunity) Classification: a Company
+ * doesn't need an Opportunity for its Jobs to be classifiable — see that
+ * pipeline's own doc comment.
+ */
+export async function classifyJobsForAllCompanies(
+  progress?: StageProgress<Awaited<ReturnType<typeof runJobClassificationPipeline>>>,
+) {
+  const companies = await getDb().select({ id: schema.company.id }).from(schema.company);
+  return runForEachEntity(
+    companies.map((c) => c.id),
+    (id) =>
+      recordAndRun("job-classification", "company", id, () => runJobClassificationPipeline(id)),
     progress,
   );
 }
