@@ -403,9 +403,9 @@ This is directly checkable against the real Coinbase frontend example from §1 �
 
 ---
 
-## 21. Phase D — empirical source evaluation (post Phase A/C, pre-implementation)
+## 21. Phase D — empirical source evaluation, and the decision it produced
 
-**Status: evaluation complete. Recommendation: reject all four candidate aggregators. No implementation in this pass.** Every number below is a live API call made while writing this section, not documentation.
+**Status: DECIDED.** Jobicy, RemoteOK, Himalayas, and Remotive are rejected as production job sources, on the URL-correctness grounds documented below. Web3.career remains excluded — no public API exists to evaluate. **No adapter will be built for any of the five.** This is a closed architectural decision reached through direct empirical evaluation, not an unfinished task or an open question — reopening it would need new evidence (e.g. one of these platforms shipping a real employer-URL field), not a different reading of the same evidence. Every number below is a live API call made while producing this decision, not documentation.
 
 ### 21.1 Method
 
@@ -442,4 +442,111 @@ Not a new aggregator integration. A second (and third, etc.) Phase C batch:
 
 This keeps every one of your Phase D constraints satisfied by construction: existing source abstraction reused (not stretched), no source-specific hack, immutable Raw Record/Event provenance untouched, company resolution's wrong-company protection already proven in production, rejected-company filtering already live. There is nothing architecturally new to design — only a decision on how large a batch to run next, which is yours to make, not mine to assume.
 
-**Not starting any further scaling until you approve this direction** — including whether "Phase D" is in fact this Phase-C-continuation, or whether you'd rather I keep looking for a different kind of source (e.g. investigating whether Web3.career's business contact is worth pursuing, or scoping the "crawl individual company career pages for `JobPosting` schema" idea §20 explicitly deferred as its own future project).
+**Approved.** §21.4's direction — scaling the existing ATS-probe pipeline rather than integrating a new aggregator — is confirmed. §22 below is the resulting implementation plan.
+
+---
+
+## 22. Expanded ATS discovery — implementation plan (not yet implemented)
+
+**Status: plan only, per explicit instruction. No code in this section.**
+
+### 22.1 Current discovery architecture (inspected fresh for this plan)
+
+- `apps/web/lib/collectors/discover-companies.ts` (237 lines): `discoverCompanies(candidates, discoverySource, concurrency = 8)`. For each `(candidate, ATS platform)` pair: skip if `hasBeenProbed`; otherwise fetch via the real, unmodified `fetchGreenhouseJobs`/`fetchLeverPostings`/`fetchAshbyJobs`; on success, cross-check Greenhouse's `company_name` field (the one structured signal that exists) before accepting; resolve/create the Company via `resolveDiscoveredCompany`; attach `company_source_identity`; auto-reject a newly-created Company whose only source attach hit a conflict (duplicate under a different normalized name).
+- `packages/db/src/discovery/company-resolution.ts` (104 lines): exact canonical-domain match → exact normalized-name match → create `discoveryStatus: "discovered"`. Never fuzzy.
+- `packages/db/src/discovery/probe-store.ts` (52 lines): `hasBeenProbed`/`recordProbe` against `company_discovery_probe`, unique on `(candidateSlug, collectorSlug)` — this is what already makes the pipeline resumable (see §22.4).
+- `company.discoveryStatus` (`curated | discovered | verified | rejected`), `discoverySource`, `discoveredAt`, `lastVerifiedAt` — shipped in Phase C, migration `0018_thin_dazzler.sql`.
+
+**Real current state** (live query): 37 curated + 6 discovered (43 total) = 370 open jobs (366 curated + 4 discovered). 150 of 22,545 real candidate organizations probed (150 distinct candidates × up to 3 platforms = 450 probes recorded); 15 hits, 8 successful/functioning, 4 rejected (2 wrong-company, 2 duplicate), 3 already-known.
+
+### 22.2 Candidate ranking strategy
+
+Analyzed the full 22,545-candidate pool (Electric Capital's Ethereum-ecosystem export, ranked by GitHub repo count — already the batch-1 signal) for a second, independent signal: keyword match against the org name itself, for the categories you named.
+
+```
+Candidates matching >=1 category keyword: 2,610 / 22,545 (11.6%)
+  protocol: 471   defi: 665   infra: 679   devtool: 575
+  exchange: 141   zk: 100     wallet: 39   security: 15
+```
+
+Electric Capital's own per-repo `tags` field exists but is populated on only ~0.1% of entries (57/50,000 sampled) — too sparse to be a primary ranking signal, usable only as a minor tiebreaker bonus when present.
+
+**Recommended ranking: composite score = repo count (primary, proven in batch 1) with a category-keyword match as a tiebreaker/boost, not a hard filter.** A hard category filter would exclude real companies with generic names (batch 1's real hits — Centrifuge, Maple, Fuel Labs — don't all contain an obvious keyword), so keyword match adjusts ordering within the repo-count ranking rather than gating candidates out. Concretely: sort by repo count descending; among ties or near-ties, category-keyword matches sort first.
+
+### 22.3 Recommended batch size
+
+**1,000 candidates** (ranks 151–1,150 by the composite score in §22.2, i.e. the next slice after batch 1, not a re-probe of it — `hasBeenProbed` would skip already-checked ones automatically regardless).
+
+Reasoning, from real batch-1 evidence: 150 candidates → 450 probes → 15 hits → 8 successful. If this rate holds (it may not — stated as a range, not a promise, per your "don't invent success" instruction), 1,000 candidates → ~3,000 probes → ~100 hits → ~50 successful new companies. That's a large, meaningful jump from 6 without being 22,545-candidates-at-once. Still small enough to fully inspect (per-company manual/query review, exactly as batch 1's report did) before deciding on a batch 3.
+
+### 22.4 Probe efficiency, rate-limiting, and resumability
+
+- **Concurrency: reduce the default from 8 to 5**, matching `run-collector.ts`'s already-established, documented-safe `FETCH_CONCURRENCY` (ADR 0001) against these exact same three platforms. Probing is a *larger volume* of requests than a normal collector run even if each one is cheaper (most are fast 404s), and "avoid overwhelming ATS endpoints" was explicit — aligning with the proven precedent rather than keeping a higher, untested value is the conservative choice.
+- **Resumability: already real, not aspirational.** Every probe's `recordProbe` commits individually as it happens (no batching, no single giant transaction) — if the process dies at candidate 600 of 1,000, restarting with the identical candidate file skips the first 600 (already recorded) and continues. Verified by construction (§22.1), not new engineering.
+- **One real robustness gap found on inspection, to fix before a 1,000-candidate run**: `discoverCompanies`'s concurrency-worker loop has no per-task try/catch — if `probeCandidateAgainstCollector` throws for a reason *other than* the ATS fetch itself (e.g. a transient DB error), that exception propagates out of `Promise.all` and kills the entire batch, discarding whatever the other concurrent workers were mid-way through. A small, additive fix: wrap each task in its own try/catch inside the runner loop so one unexpected failure only costs that one `(candidate, platform)` pair — it stays "unprobed" and is naturally retried on the next run, per §22.4's resumability property.
+- **Transient vs. genuine "not found," a related real gap**: today, *any* thrown error from a fetch call (a genuine 404, but also a DNS blip, a 500, a timeout) is recorded as a permanent `"miss"` — which, because of the unique-constraint-based `hasBeenProbed` check, means a transient failure is never retried. See §22.5 for the schema change this motivates.
+
+### 22.5 Discovery state — one small, additive schema change recommended
+
+Your question directly: is more state needed to distinguish unprobed / attempted / confirmed / rejected / duplicate / temporarily-failed?
+
+- **unprobed**: already correct — no row in `company_discovery_probe`.
+- **confirmed**: already correct — `company.discoveryStatus = "discovered"` with a real `company_source_identity` row (verified functioning, not just "created").
+- **rejected** (including duplicates): already correct and already covers both cases (wrong-company via the Greenhouse name check, and duplicate-under-a-different-name via the source-identity-conflict auto-reject) — **not adding a separate "duplicate" status**, since it would fragment one concept (this row will never produce jobs) into two without changing any behavior, contradicting "avoid unnecessary schema changes."
+- **temporarily-failed**: **the one real gap** (§22.4). Recommended: add `"error"` to the existing `companyDiscoveryProbeResult` pgEnum (`hit | miss | error`) — a one-line, additive enum extension, the same "enums grow by addition" pattern `companyCategory`/`companyDiscoveryStatus` already establish. `hasBeenProbed` is updated to treat only `hit`/`miss` as "already checked" — an `"error"` row stays eligible for retry on the next run.
+
+No new table, no new column beyond that one enum value.
+
+### 22.6 False-positive protection — unchanged, explicitly re-measured
+
+The Greenhouse `company_name` cross-check and the duplicate-conflict auto-reject ship unmodified. The batch-3-of-450-probes false-positive rate (2 confirmed wrong-company matches, both on platforms with no structured name field to check) is the honest baseline going into a larger run — Lever and Ashby still have no equivalent structured field, so their false-positive risk doesn't improve with this batch; only their *volume* does. This will be measured again, explicitly, in the batch-2 report (§22.8), not assumed to have stayed at the same rate.
+
+### 22.7 Duplicate handling
+
+Unchanged from Phase C (§5/§7 above): exact canonical-domain match, then exact normalized-name match, nothing fuzzier. A batch-2-specific risk worth naming: at 1,000 candidates, more near-miss name collisions like Compound/compound-finance are statistically likely. These will continue to be caught by the existing conflict-detection-on-attach mechanism (§22.1) and auto-rejected, not silently merged.
+
+### 22.8 Metrics and acceptance criteria for the batch-2 run
+
+Every metric you listed, measured against real production data after the run, exactly as batch 1's report did:
+
+```
+candidates attempted / successful probes (hit) / confirmed (functioning) companies /
+rejected companies (wrong-company vs. duplicate, reported separately) /
+jobs produced / jobs surviving into the production feed (post role-relevance, post
+freshness, post rejected-company filter) / source distribution (GH/Lever/Ashby) /
+jobs per discovered company / % of feed from curated vs. discovered /
+top 20 companies by job count / any HTTP errors or rate-limit signals observed
+```
+
+**Targets** (ranges, not promises, per your "don't invent success" instruction, derived from batch 1's real rate):
+- Discovered companies: 6 → **30-80** (batch 1's ~5.3% success-per-candidate rate, applied to 1,000 candidates, with wide error bars since batch 1 is a small sample)
+- Discovered-company jobs: 4 → **at least 20-40**, likely more given several of batch 1's real hits (Maple, Bifrost, Ashby-sourced companies generally) produced multiple jobs each
+- URL correctness: **unchanged at 100%** — structurally guaranteed by only ever probing Greenhouse/Lever/Ashby, not a new source
+- False-positive rate: **measured and reported**, not targeted to a number — if it's higher than batch 1's, that's reported as a real finding, not smoothed over
+- Relevance regression: **zero** — §22.9
+
+### 22.9 Relevance — explicit non-regression check
+
+Phase A's role-compatibility gate is not touched by this phase at all (no file in `packages/application` changes). The verification step: re-run the same real-profile relevance query (13 skills, 8 target roles, junior/mid/senior — the actual current saved profile) against the production job pool *after* batch 2, and confirm the same ordering property Phase A's own test suite already asserts — every target-role-matching job outranks every named non-target role — still holds with the larger pool. This is a regression check on existing behavior, not new scoring work.
+
+### 22.10 Exact files expected to change
+
+- `apps/web/lib/collectors/discover-companies.ts` — concurrency default 8→5, per-task try/catch in the runner loop, `"error"` result classification for non-404 failures.
+- `packages/db/src/schema/company-discovery-probe.ts` — add `"error"` to `companyDiscoveryProbeResult`.
+- `packages/db/src/discovery/probe-store.ts` — `hasBeenProbed` excludes `"error"` rows from "already checked."
+- `packages/db/migrations/` — one new additive migration (enum value only).
+- No changes anywhere in `packages/collectors`, `packages/application` (relevance/scoring untouched), or any existing curated-company code path.
+- New: a candidate-batch generation script (ranks the next slice per §22.2) and its output data file — mirrors how batch 1's candidate list was prepared, not new production code.
+
+### 22.11 Production verification plan
+
+Same discipline as every phase so far: typecheck/lint/boundaries/full test suite/production build → commit → push → confirm deploy → run the batch-2 discovery pipeline against real production → run the real Greenhouse/Lever/Ashby collectors + job classification over any newly-discovered companies (as batch 1 did) → run the §22.8 metrics queries against real production data → manually spot-check a sample of newly discovered companies' jobs (title, URL, company identity) the same way the Compound/Uniswap/switchboard/unlock false positives were actually found in batch 1 — not just trust the aggregate numbers.
+
+### 22.12 Rollback / safety strategy
+
+- Every schema change is additive (one enum value) — trivially reversible, no data loss possible.
+- `discoveryStatus: "rejected"` is the existing, already-proven kill switch for any bad discovery, applied per-company, not batch-wide — a bad batch doesn't require reverting the whole run, just rejecting the specific companies found to be wrong (exactly what happened with switchboard-xyz/unlock-protocol in batch 1, done live, without a rollback).
+- The pipeline is additive to `company`/`company_source_identity`/`company_discovery_probe` only — it never touches `event`, `raw_record`, or any curated company's existing data, so a bad batch-2 run has zero blast radius on the 37 curated companies or their 366 jobs.
+- If mid-run ATS rate-limiting or errors are observed (§22.8's explicit metric), the response is to stop the batch — the resumability property (§22.4) means this costs nothing; a partial batch is not a failed batch, it's a paused one.
+
+Not implementing until this plan is approved.
