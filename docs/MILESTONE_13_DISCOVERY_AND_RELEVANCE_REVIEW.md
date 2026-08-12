@@ -401,4 +401,45 @@ This is directly checkable against the real Coinbase frontend example from §1 �
 
 **G. Measurable definition of done:** §19's literal criteria — specific company/source-diversity numbers, and the exact role-ordering test suite derived from your own real example.
 
-Not starting Phase A until you approve this.
+---
+
+## 21. Phase D — empirical source evaluation (post Phase A/C, pre-implementation)
+
+**Status: evaluation complete. Recommendation: reject all four candidate aggregators. No implementation in this pass.** Every number below is a live API call made while writing this section, not documentation.
+
+### 21.1 Method
+
+For each source, fetched real, current job objects directly from its public API and inspected every field on the raw response — not a sample rendered through their website, not their own docs' claims. The one question that turned out to be decisive: **does any field in the actual API response contain a URL that is not the aggregator's own domain?**
+
+### 21.2 Findings, per source
+
+| Source | Total examined | Relevant (Web3/security/eng) | Identifiable employer | **Valid, verifiable employer application URL** | Notes |
+|---|---|---|---|---|---|
+| **Jobicy** | 20 (`?tag=crypto`) + 3 (full field dump) | ~5/20 genuinely relevant (Kraken "Staff Security Architect," Matter Labs, Binance roles) | Yes — `companyName` field present and accurate | **0%. Confirmed by exhaustively listing every field on the raw job object: `id, url, jobSlug, jobTitle, companyName, companyLogo, jobIndustry, jobType, jobGeo, jobLevel, jobExcerpt, jobDescription, pubDate`. `url` is Jobicy's own `jobicy.com/jobs/...` page. No employer URL field exists anywhere in the response**, despite Jobicy's own stated terms claiming "application buttons redirect to the original job URL." Their job-detail HTML page (where that redirect would supposedly happen) returned `403` on every attempt, including with full browser-equivalent headers — unverifiable by design, not just by omission. | **REJECT** |
+| **RemoteOK** | 100 (general) + 62 (`remote-crypto-jobs.json`) + 5 (fresh field dump) | ~1/100 general feed; crypto-tag feed mostly non-technical roles carrying the tag among 30+ unrelated tags (Procurement Manager, Graphic Designer, CFO Controller) | Yes — `company` field present | **0%. `apply_url` exists as a distinct field, but empirically equals `url` on every job checked — both point to `remoteOK.com`, never the employer.** | **REJECT** |
+| **Himalayas** | 5 (fresh field dump) | Not reached — failed on identifiable employer before relevance mattered | **No — the free-tier API returned the literal string `"name"` as `companyName` on the sample job, not an actual company name.** A second red flag independent of the URL question. | **0%. `applicationLink` points to `himalayas.app/companies/...`, the aggregator's own domain.** | **REJECT** |
+| **Remotive** | 5 (fresh field dump) | Not deeply evaluated — rejected on the same URL grounds before it mattered | Yes — `company_name` field present and accurate | **0%. `url` points to `remotive.com/remote-jobs/...`, the aggregator's own domain.** | **REJECT** |
+| **Web3.career** | N/A | N/A | N/A | N/A — no public API to check at all | Unchanged from §2: gated behind a sales contact form, not a code problem |
+
+### 21.3 The pattern, and why it's decisive
+
+All four general-purpose aggregators checked expose only their *own* hosted job page as the one URL in their API response. This isn't an oversight on their part — it's the business model: aggregators keep traffic on their own site (ad revenue, lead capture, sometimes a paid "premium" tier that presumably unlocks the real employer link — Himalayas' placeholder `"name"` field is a strong hint of exactly this). Whatever happens after that (a client-side redirect to the real employer, visible only in a browser) is structurally unverifiable through their API, and in Jobicy's specific case, actively blocked (`403`) even at the HTML layer.
+
+Per your explicit instruction — *"If a source cannot provide a trustworthy application URL, explicitly reject/defer that source rather than weakening this requirement"* — this is not a borderline call. Every candidate fails the same hard requirement the same way, confirmed by direct inspection, not inference.
+
+### 21.4 Recommendation: there is no viable "Phase D aggregator" right now
+
+Per your own explicit permission — *"If the previously proposed Jobicy/RemoteOK/Web3.career sources fail the empirical evaluation, that's a valid result... investigate another legitimate high-quality source or report that we need a different discovery strategy"* — the honest conclusion is the second one.
+
+**The actual highest-leverage next step is not a new source at all — it's finishing what Phase C already proved works.** Phase C's first batch used exactly 150 of the 22,545 real candidate organizations pulled from Electric Capital's public taxonomy (§3/§8) — under 1% of the available candidate pool. Unlike every aggregator evaluated above, the ATS-probe mechanism has a **100% verified employer-URL rate by construction**: it hits Greenhouse/Lever/Ashby directly, the same platforms that already host the real employer's own application flow for all 43 currently-tracked companies. It doesn't need a new source-quality evaluation because it isn't a new source — it's the existing, already-shipped, already-tested Phase C pipeline, run again over a larger slice of the same candidate list, with the same false-positive safeguards (§21.5) already in place.
+
+### 21.5 What "Phase D" should actually be, pending your approval
+
+Not a new aggregator integration. A second (and third, etc.) Phase C batch:
+1. Take the next slice of the 22,545-candidate Electric Capital list (e.g. ranks 151–500, or a different repo-count threshold) — the exact same `discoverCompanies()` pipeline, unmodified.
+2. No new source type, no new schema, no new URL-correctness question to resolve — that was Phase C's work, already shipped and already verified.
+3. Report the same real metrics Phase C's own verification did: companies added, jobs added, false positives caught, hit rate — before/after, against real production data.
+
+This keeps every one of your Phase D constraints satisfied by construction: existing source abstraction reused (not stretched), no source-specific hack, immutable Raw Record/Event provenance untouched, company resolution's wrong-company protection already proven in production, rejected-company filtering already live. There is nothing architecturally new to design — only a decision on how large a batch to run next, which is yours to make, not mine to assume.
+
+**Not starting any further scaling until you approve this direction** — including whether "Phase D" is in fact this Phase-C-continuation, or whether you'd rather I keep looking for a different kind of source (e.g. investigating whether Web3.career's business contact is worth pursuing, or scoping the "crawl individual company career pages for `JobPosting` schema" idea §20 explicitly deferred as its own future project).
