@@ -74,6 +74,14 @@ export async function upsertCompanyDirectory(
   for (const entry of entries) {
     const profileFields = {
       name: entry.companyName,
+      // Every row this function writes came from a hand-authored JSON
+      // file - explicit, not the column's "discovered" default (which
+      // exists for packages/db/src/discovery's probe-driven path, not
+      // this one). Set on every upsert, not just insert, so a Company a
+      // live Collector run already created reactively (pre-Milestone-13,
+      // "discovered" by construction since nothing set it explicitly)
+      // gets corrected the moment a real directory entry for it exists.
+      discoveryStatus: "curated" as const,
       websiteUrl: entry.websiteUrl ?? null,
       careersPageUrl: entry.careersPageUrl ?? null,
       documentationUrl: entry.documentationUrl ?? null,

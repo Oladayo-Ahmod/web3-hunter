@@ -12,3 +12,10 @@ export {
   type CompanyDirectorySource,
   type CompanyDirectoryUpsertResult,
 } from "./seed/company-directory";
+export {
+  normalizeCompanyName,
+  resolveDiscoveredCompany,
+  type CompanyResolution,
+  type ResolveDiscoveredCompanyInput,
+} from "./discovery/company-resolution";
+export { hasBeenProbed, recordProbe, type RecordProbeInput } from "./discovery/probe-store";

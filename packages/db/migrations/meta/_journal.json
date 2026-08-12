@@ -127,6 +127,13 @@
       "when": 1786491547385,
       "tag": "0017_remarkable_captain_universe",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1786536587302,
+      "tag": "0018_thin_dazzler",
+      "breakpoints": true
     }
   ]
 }
