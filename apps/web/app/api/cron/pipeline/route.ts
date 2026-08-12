@@ -6,6 +6,7 @@ import { getTrackedCompaniesForCollector } from "@/lib/collectors/tracked-compan
 import { authorizeCronRequest, hasEntityError } from "@/lib/cron/shared";
 import {
   classifyAllOpportunities,
+  classifyJobsForAllCompanies,
   decideForAllUsers,
   detectTechnologyForAllCompanies,
   matchAllUsers,
@@ -17,7 +18,7 @@ import { NextResponse } from "next/server";
 // serve this from a cache or run it as part of a static build.
 export const dynamic = "force-dynamic";
 
-// Generous ceiling for a cold run against a fresh database (9 chained
+// Generous ceiling for a cold run against a fresh database (10 chained
 // stages, including live ATS/GitHub network calls). Vercel enforces its
 // own plan-dependent cap regardless of this value (Hobby: 60s max, Pro:
 // configurable higher) - see README's "Automating the pipeline" section.
@@ -25,7 +26,7 @@ export const maxDuration = 300;
 
 /**
  * The "run everything in one request" entry point into the deterministic
- * pipeline. The 9 per-stage routes under `app/api/cron/` are the
+ * pipeline. The 10 per-stage routes under `app/api/cron/` are the
  * per-stage alternative - use those for regular scheduled runs, each on
  * its own cadence and execution-time budget; this route stays around for
  * a manual "run everything now" trigger (e.g. a fresh deploy, a
@@ -112,6 +113,7 @@ async function handleCronRequest(request: Request) {
   });
   await runStage("scoring", () => scoreAllCompanies());
   await runStage("classification", () => classifyAllOpportunities());
+  await runStage("jobClassification", () => classifyJobsForAllCompanies());
   await runStage("technology", () => detectTechnologyForAllCompanies());
   await runStage("matching", () => matchAllUsers());
   await runStage("decision", () => decideForAllUsers());

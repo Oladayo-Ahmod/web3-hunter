@@ -176,6 +176,7 @@ Running the commands above by hand every time isn't required. There is still no 
 | `GET/POST /api/cron/collect-github` | `collect:github` |
 | `GET/POST /api/cron/scoring` | `score:companies` |
 | `GET/POST /api/cron/classification` | `classify:opportunities` |
+| `GET/POST /api/cron/job-classification` | `classify:jobs` |
 | `GET/POST /api/cron/technology` | `detect:technology` |
 | `GET/POST /api/cron/matching` | `match:users` |
 | `GET/POST /api/cron/decision` | `decide:recommendations` |
