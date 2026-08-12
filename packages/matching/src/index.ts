@@ -9,5 +9,7 @@ export {
   ensureUserProfile,
   getUserProfile,
   setDealBreakerSkills,
+  setJobHuntPreferences,
   setUserSkills,
+  type JobHuntPreferences,
 } from "./user-profile-store";
