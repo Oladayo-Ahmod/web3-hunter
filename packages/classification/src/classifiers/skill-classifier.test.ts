@@ -78,4 +78,48 @@ describe("skillKeywordClassifier", () => {
   it("returns no candidates when nothing matches", () => {
     expect(skillKeywordClassifier(jobPostedEvent("Head of Marketing"), CONTEXT)).toEqual([]);
   });
+
+  it("does not match generic corporate audit/compliance/threat-intel roles against smart-contract-security", () => {
+    // Regression test for a real production false positive (Milestone 13
+    // Phase 2 verification): these titles/departments were tagged
+    // "smart-contract-security" under the old bare-word ["security",
+    // "audit", "auditor"] keyword list.
+    const SMART_CONTRACT_SECURITY: SkillTaxonomyEntry = {
+      id: "skill-scs",
+      slug: "smart-contract-security",
+      name: "Smart Contract Security",
+    };
+    const context: ClassificationContext = { skills: [SMART_CONTRACT_SECURITY] };
+
+    expect(
+      skillKeywordClassifier(jobPostedEvent("Internal Audit Analytics Associate"), context),
+    ).toEqual([]);
+    expect(
+      skillKeywordClassifier(
+        jobPostedEvent("Regional Threat Assessment Manager", ["Global Security"]),
+        context,
+      ),
+    ).toEqual([]);
+    expect(
+      skillKeywordClassifier(jobPostedEvent("Director Application Security"), context),
+    ).toEqual([]);
+  });
+
+  it("still matches genuine smart-contract/protocol security roles", () => {
+    const SMART_CONTRACT_SECURITY: SkillTaxonomyEntry = {
+      id: "skill-scs",
+      slug: "smart-contract-security",
+      name: "Smart Contract Security",
+    };
+    const context: ClassificationContext = { skills: [SMART_CONTRACT_SECURITY] };
+
+    for (const title of [
+      "Smart Contract Security Engineer",
+      "Blockchain Security Researcher",
+      "Protocol Security Lead",
+      "Senior Smart Contract Auditor",
+    ]) {
+      expect(skillKeywordClassifier(jobPostedEvent(title), context)).toHaveLength(1);
+    }
+  });
 });

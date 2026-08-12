@@ -32,7 +32,25 @@ const KEYWORD_MATCH_CONFIDENCE = 0.6;
  */
 const SKILL_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
   "zero-knowledge-proofs": ["zero-knowledge", "zero knowledge", "zk"],
-  "smart-contract-security": ["security", "audit", "auditor"],
+  // Deliberately compound phrases, not bare "security"/"audit"/"auditor":
+  // this classifier also scans `departmentNames` (below), and those bare
+  // words matched real production department names like "Internal Audit"
+  // and "Threat Intelligence" at large exchanges - genuine corporate
+  // audit/compliance/physical-security functions, not smart-contract
+  // security work. Found via Milestone 13 Phase 2's real-data
+  // verification (a "Regional Threat Assessment Manager" scoring 70%
+  // match), not theoretical - see docs/MILESTONE_13_JOB_HUNTING_PIVOT.md.
+  // These phrases mirror the pivot request's own named positive signals.
+  "smart-contract-security": [
+    "smart contract security",
+    "smart contract audit",
+    "smart contract auditor",
+    "protocol security",
+    "security researcher",
+    "vulnerability research",
+    "blockchain security",
+    "web3 security",
+  ],
   "devops-infrastructure": ["devops", "site reliability", "sre", "infrastructure"],
   "the-graph": ["the graph", "subgraph"],
   "backend-engineering": ["backend"],
