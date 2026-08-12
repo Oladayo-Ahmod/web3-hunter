@@ -69,3 +69,39 @@ export async function setDealBreakerSkills(
     .set({ dealBreakerSkillIds: [...skillIds], updatedAt: new Date() })
     .where(eq(schema.userProfile.userId, userId));
 }
+
+export interface JobHuntPreferences {
+  targetRoleSlugs: readonly string[];
+  remotePreference: "remote_only" | "remote_friendly" | "no_preference" | null;
+  locationConstraint: string | null;
+  seniorityPreference: readonly string[];
+}
+
+/**
+ * Replaces a User's job-hunt preferences (Milestone 13 Phase 2) — the
+ * inputs `packages/application/src/job-relevance.ts` reads alongside
+ * declared Skills to score individual Jobs. A full replace, same
+ * reasoning as `setUserSkills`: this is a single, canonical statement of
+ * "what I'm looking for today," not an append-only history. Every field
+ * is nullable/empty-array-able and that's a legitimate, final state, not
+ * a placeholder — the scorer treats "not set" as "no opinion" (see that
+ * module's doc comment), never as an implicit mismatch.
+ */
+export async function setJobHuntPreferences(
+  userId: string,
+  preferences: JobHuntPreferences,
+): Promise<void> {
+  const db = getDb();
+  await ensureUserProfile(userId);
+
+  await db
+    .update(schema.userProfile)
+    .set({
+      targetRoleSlugs: [...preferences.targetRoleSlugs],
+      remotePreference: preferences.remotePreference,
+      locationConstraint: preferences.locationConstraint,
+      seniorityPreference: [...preferences.seniorityPreference],
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.userProfile.userId, userId));
+}
