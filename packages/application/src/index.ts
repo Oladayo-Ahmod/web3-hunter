@@ -41,6 +41,7 @@ export {
 } from "./opportunity-query-service";
 export {
   getJobDetail,
+  getViewerRelevanceProfile,
   JOB_SORT_FIELDS,
   jobFeedQuerySchema,
   listJobFeed,

@@ -109,8 +109,15 @@ type OpenJobRow = {
  * viewer, or the viewer hasn't created a Profile yet (same "may start
  * minimal" state `packages/matching`'s `getUserProfile` already treats
  * as absent, not empty).
+ *
+ * Exported (Milestone 14) so offline measurement scripts — e.g.
+ * `apps/web/scripts/measure-discovery-relevance.ts` — can score the real
+ * job pool against the real saved Profile without re-implementing this
+ * query.
  */
-async function getViewerRelevanceProfile(viewerId: string): Promise<JobRelevanceProfile | null> {
+export async function getViewerRelevanceProfile(
+  viewerId: string,
+): Promise<JobRelevanceProfile | null> {
   const db = getDb();
 
   const [profileRow] = await db
