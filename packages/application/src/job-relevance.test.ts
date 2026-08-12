@@ -193,6 +193,41 @@ describe("computeJobRelevance", () => {
   });
 });
 
+describe("word-boundary matching (negative keywords, roles, seniority)", () => {
+  it("does not match a negative keyword glued inside another word", () => {
+    // "hr" must not match inside e.g. "Chris" or a title containing no
+    // real HR signal — this is a regression test for the same class of
+    // bug found in packages/classification's "rust" matching inside
+    // "Trust" on real data (Milestone 13 Phase 2).
+    const result = computeJobRelevance(
+      job({ title: "Senior Backend Engineer, Chrome Extension" }),
+      [SOLIDITY],
+      profile({ skillIds: [SOLIDITY] }),
+      skillNames,
+    );
+    expect(result.breakdown.some((entry) => entry.label.includes("Unrelated-role"))).toBe(false);
+  });
+
+  it("still matches a genuine negative keyword as its own word", () => {
+    const result = computeJobRelevance(
+      job({ title: "HR Business Partner" }),
+      [],
+      profile(),
+      skillNames,
+    );
+    expect(result.breakdown.some((entry) => entry.label.includes("Unrelated-role"))).toBe(true);
+  });
+
+  it("does not infer seniority from a word merely containing a seniority keyword as a substring", () => {
+    // "lead" must not match inside "Leadership Development Program".
+    expect(inferSeniorityFromTitle("Leadership Development Program Manager")).toBeNull();
+  });
+
+  it("still infers seniority from the word as its own token", () => {
+    expect(inferSeniorityFromTitle("Engineering Lead")).toBe("senior");
+  });
+});
+
 describe("inferSeniorityFromTitle", () => {
   it("recognizes common senior signals", () => {
     expect(inferSeniorityFromTitle("Senior Solidity Engineer")).toBe("senior");

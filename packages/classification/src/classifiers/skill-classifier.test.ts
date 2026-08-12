@@ -79,6 +79,26 @@ describe("skillKeywordClassifier", () => {
     expect(skillKeywordClassifier(jobPostedEvent("Head of Marketing"), CONTEXT)).toEqual([]);
   });
 
+  it("does not match a Skill's bare name glued inside an unrelated word", () => {
+    // Regression test for a real production false positive (Milestone 13
+    // Phase 2 verification): "Senior Product Manager, Fireblocks Trust
+    // Company" was tagged with the Rust Skill because "rust" is a
+    // substring of "Trust" - Rust has no SKILL_KEYWORDS alias, so it fell
+    // back to naive `.includes()` on its bare name.
+    expect(
+      skillKeywordClassifier(
+        jobPostedEvent("Senior Product Manager, Fireblocks Trust Company"),
+        CONTEXT,
+      ),
+    ).toEqual([]);
+  });
+
+  it("still matches a Skill's bare name as its own word", () => {
+    expect(
+      skillKeywordClassifier(jobPostedEvent("Rust Engineer"), CONTEXT).map((c) => c.skillId),
+    ).toEqual([RUST.id]);
+  });
+
   it("does not match generic corporate audit/compliance/threat-intel roles against smart-contract-security", () => {
     // Regression test for a real production false positive (Milestone 13
     // Phase 2 verification): these titles/departments were tagged

@@ -64,6 +64,24 @@ function keywordsForSkill(entry: SkillTaxonomyEntry): readonly string[] {
 }
 
 /**
+ * Word-boundary substring match — not plain `.includes()`. Found via
+ * Milestone 13 Phase 2's real-data verification: the "Rust" Skill (no
+ * `SKILL_KEYWORDS` alias, so it fell back to its bare name "rust") was
+ * matching inside "Fireblocks **Trust** Company" — a job title with zero
+ * relation to the Rust programming language. The same class of bug would
+ * hit "Move" (a common English word) and "Go" (Golang's display name,
+ * `keywordsForSkill`'s fallback for the `golang` Skill) even harder.
+ * `\b` boundaries treat a keyword as matched only when it isn't glued to
+ * an adjacent letter/digit on either side — safe for both single words
+ * ("rust" no longer matches "trust") and multi-word phrases ("smart
+ * contract security" still matches as a whole phrase).
+ */
+function matchesKeyword(haystack: string, keyword: string): boolean {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped}\\b`, "i").test(haystack);
+}
+
+/**
  * Extracts Skill tags from a `JobPosted` Event's title and department
  * names via keyword matching against the Skill taxonomy — a first,
  * explainable version, not NLP. Every candidate cites the triggering
@@ -87,7 +105,7 @@ export const skillKeywordClassifier: SkillClassifier = (
 
   const candidates: SkillClassificationCandidate[] = [];
   for (const entry of context.skills) {
-    const matched = keywordsForSkill(entry).some((keyword) => haystack.includes(keyword));
+    const matched = keywordsForSkill(entry).some((keyword) => matchesKeyword(haystack, keyword));
     if (!matched) {
       continue;
     }
