@@ -132,6 +132,7 @@ async function getViewerRelevanceProfile(viewerId: string): Promise<JobRelevance
     targetRoleSlugs: profileRow.targetRoleSlugs,
     remotePreference: profileRow.remotePreference,
     seniorityPreference: profileRow.seniorityPreference,
+    locationConstraint: profileRow.locationConstraint,
   };
 }
 
@@ -407,6 +408,7 @@ export async function listJobFeed(
           title: row.metadata.title,
           departmentNames: row.metadata.departmentNames,
           workplaceType: asWorkplaceType(row.metadata.workplaceType),
+          locationName: row.metadata.locationName,
         },
         detectedSkillIds,
         viewerProfile,
@@ -483,6 +485,7 @@ export async function listJobFeed(
             title: row.metadata.title,
             departmentNames: row.metadata.departmentNames,
             workplaceType: asWorkplaceType(row.metadata.workplaceType),
+            locationName: row.metadata.locationName,
           },
           detectedSkillIds,
           viewerProfile,
@@ -555,6 +558,7 @@ export async function getJobDetail(id: string, viewerId?: string): Promise<JobFe
           title: row.metadata.title,
           departmentNames: row.metadata.departmentNames,
           workplaceType: asWorkplaceType(row.metadata.workplaceType),
+          locationName: row.metadata.locationName,
         },
         detectedSkillIds,
         viewerProfile,

@@ -148,8 +148,8 @@ export interface CompanyProfileDTO {
 /** See `packages/application/src/job-freshness.ts` for the bucketing rule and why it's based on `updatedAt`, not `postedAt` or our own fetch time. */
 export type JobFreshnessDTO = "fresh" | "recent" | "aging" | "stale";
 
-/** See `packages/application/src/job-relevance.ts` for the scoring rule, the weights, and why each component excludes itself rather than penalizing missing data. */
-export type JobRelevanceTierDTO = "high" | "medium" | "low";
+/** See `packages/application/src/job-relevance.ts` for the scoring rule, the weights, and why each component excludes itself rather than penalizing missing data. `"very-low"` (Milestone 13 Phase A) is distinct from `"low"` — the tier is computed from the pre-clamp score, so a plain unmatched job and a job with two independent negative signals (e.g. an incompatible role *and* a negative keyword) don't collapse into the same bucket just because both display "0%". */
+export type JobRelevanceTierDTO = "high" | "medium" | "low" | "very-low";
 
 export interface JobRelevanceBreakdownEntryDTO {
   label: string;
