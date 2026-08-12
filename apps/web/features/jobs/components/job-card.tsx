@@ -35,13 +35,16 @@ const WORKPLACE_TYPE_LABEL: Record<NonNullable<JobFeedItemDTO["workplaceType"]>,
   onsite: "Onsite",
 };
 
-// Green/amber/gray for high/medium/low — a scannable signal on a page
-// meant to be skimmed fast, not read card-by-card (Milestone 13 Phase
-// 2's "let me rapidly scan and attack opportunities").
+// Green/amber/gray/red for high/medium/low/very-low — a scannable signal
+// on a page meant to be skimmed fast, not read card-by-card (Milestone 13
+// Phase 2's "let me rapidly scan and attack opportunities"). "very-low"
+// (Phase A) gets its own, more muted treatment than "low" so a role-
+// incompatible job never visually reads as merely "a bit less relevant."
 const RELEVANCE_TIER_CLASS: Record<JobRelevanceTierDTO, string> = {
   high: "bg-emerald-600 text-white dark:bg-emerald-500",
   medium: "bg-amber-500 text-white dark:bg-amber-600",
   low: "bg-muted text-muted-foreground",
+  "very-low": "bg-muted text-muted-foreground/70",
 };
 
 /**

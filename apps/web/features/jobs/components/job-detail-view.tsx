@@ -2,7 +2,12 @@ import type { JobFeedItemDTO } from "@web3-hunter/application";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@web3-hunter/ui";
 import Link from "next/link";
 
-const TIER_LABEL = { high: "High match", medium: "Medium match", low: "Low match" } as const;
+const TIER_LABEL = {
+  high: "High match",
+  medium: "Medium match",
+  low: "Low match",
+  "very-low": "Very low match",
+} as const;
 
 /**
  * The Job Detail page (Milestone 13 Phase 2) — what a card in `/jobs`
