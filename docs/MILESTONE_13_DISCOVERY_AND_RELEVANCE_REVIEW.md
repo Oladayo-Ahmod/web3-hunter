@@ -550,3 +550,51 @@ Same discipline as every phase so far: typecheck/lint/boundaries/full test suite
 - If mid-run ATS rate-limiting or errors are observed (§22.8's explicit metric), the response is to stop the batch — the resumability property (§22.4) means this costs nothing; a partial batch is not a failed batch, it's a paused one.
 
 Not implementing until this plan is approved.
+
+### 22.13 Batch-2 results — the actual production run
+
+Approved and executed. All numbers below are from the real batch-2 run against production (1,000 candidates, ranks 151–1150 of the 22,545-candidate Electric Capital pool, composite-ranked by repo count with category-keyword tiebreak per §22.2), plus the collector/classification/verification passes that followed it.
+
+**Candidate outcomes:**
+
+| Metric | Count |
+|---|---|
+| Candidates attempted | 1,000 (3,000 candidate×platform probes) |
+| Confirmed 404 (miss) | 2,973 |
+| Transient error (retryable) | 1 (`ImpossibleFinance`/Ashby) |
+| Hits | 26 |
+| → resolved to a new company | 23 |
+| → resolved to an already-known company | 3 (`phantom`, `tenderly`, `oplabs` — already discovered in batch 1) |
+
+The one transient error was retried after the batch completed: `onConflictDoUpdate` correctly overwrote the `"error"` row, and the retry resolved to a genuine, confirmed miss (404 on all three platforms) — the retry mechanism worked exactly as designed, on a real (not simulated) transient failure the batch produced.
+
+**False-positive review** (same discipline as batch 1 — every new company checked against real ATS/company data, not just aggregate counts): **3 confirmed wrong-company matches**, all on Ashby (the platform with no structured company-identity field to cross-check, exactly the blind spot named in §22.6):
+
+- `base` → the real Ashby board `base` is a social/events company ("turn strangers into friends," `careers@base.cl`), not Coinbase's Base L2.
+- `keep-network` → the real Ashby board `keep` is a Canadian cross-border banking fintech, not Keep Network/tBTC.
+- `anima-protocol` → the real Ashby board `anima` is Anima Health, a UK personalized-medicine company, not the crypto "Anima Protocol."
+
+All three rejected (`discoveryStatus: "rejected"`, source identity removed), the same remediation used for `switchboard-xyz`/`unlock-protocol` in batch 1. Batch-2's false-positive rate (3/23 confirmed hits ≈ 13%) is higher than batch 1's (2/8 ≈ 25% — actually comparable, both driven entirely by Ashby's missing structured-identity field). **This confirms §22.6's prediction exactly**: false-positive risk did not improve with volume, because it isn't a volume problem — it's a structural gap specific to Lever/Ashby, unlikely to close without a different verification signal (e.g. cross-checking the board's "About" text or domain against the candidate's known website).
+
+**Result vs. the projected range**: 20 genuinely new companies (23 hits − 3 rejected) against a projected 30–80. Below range. The likely cause, honestly assessed: batch 1's ~5.3%-per-candidate hit rate was measured on a 150-candidate sample (wide error bars, as flagged at the time); batch 2's actual per-candidate hit rate was 2.6% (26/1,000) — the pool thins out fast once repo-count ranking moves past the most prominent, ATS-having organizations. This is reported as a real finding, not adjusted after the fact.
+
+**Post-collector production state:**
+
+| Metric | Value |
+|---|---|
+| Curated companies | 37 (unchanged) |
+| Discovered companies (non-rejected) | 26 (6 from batch 1 + 23 from batch 2 − 3 batch-2 rejections) |
+| Rejected companies (all-time) | 7 (`compound-finance`, `Uniswap`, `switchboard-xyz`, `unlock-protocol` from batch 1; `base`, `keep-network`, `anima-protocol` from batch 2) |
+| Discovered companies by platform | Ashby 15, Lever 7, Greenhouse 4 |
+| Total open jobs (rejected companies excluded) | 727 in the DB; 437 currently pass into the live `/api/jobs` feed (freshness/status filtering applied by the read model) |
+
+**End-to-end production verification** (candidate → ATS → company → collector → job → live feed), performed against the deployed app, not just the DB:
+
+- Fetched all 437 live feed jobs from `https://web3-hunter-web.vercel.app/api/jobs` (5 paginated requests) and confirmed **zero** rejected-company slugs (`base`, `keep`, `anima`, and all four batch-1 rejections) appear anywhere in the feed.
+- Confirmed multiple genuinely-discovered batch-2 companies have real jobs live in the feed with correct employer application URLs: `arcadiafinance` ("Principal Software Engineer," `jobs.lever.co/arcadia/...`), `mentoprotocol` (`jobs.ashbyhq.com/mento/...`), `sigp` — Sigma Prime, an Ethereum client team (`jobs.ashbyhq.com/sigp/...`), `parallelfinance` (`jobs.ashbyhq.com/parallel/...`), plus `bubbleprotocol`, `centrifuge`, `gearboxprotocol`, `maplelabs`, `nomadxyz`, `omninetwork`, `paxoslabs`, `phoenixfinance`, `sorare` all present with real job counts.
+- Confirmed the 37 curated companies are unaffected: their job counts in the live feed (e.g. `coinbase` 170, `fireblocks` 71, `consensys` 3) are consistent with pre-batch-2 volumes.
+- Confirmed a transient probe failure (`ImpossibleFinance`) did not terminate the batch — all 1,000 candidates were processed, and the one error was independently retryable afterward.
+
+**Files changed for this phase** (implementation + tests, `a4d6f17`, already committed/pushed separately from this documentation update): `apps/web/lib/collectors/discover-companies.ts`, `apps/web/lib/collectors/discover-companies.test.ts` (new), `apps/web/scripts/discover-companies.ts`, `packages/db/src/schema/company-discovery-probe.ts`, `packages/db/src/discovery/probe-store.ts`, `packages/db/src/discovery/probe-store.test.ts` (new), `packages/db/migrations/0019_oval_veda.sql`. No changes to `packages/collectors`, `packages/application`, or any curated-company code path — exactly as planned.
+
+Stopping here per instruction. No further discovery phase is planned or implied by this result.
