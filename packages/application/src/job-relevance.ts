@@ -32,6 +32,20 @@
  * first and dominates (`ROLE_MATCH_POINTS`/`ROLE_MISMATCH_PENALTY`, both
  * larger than the rescaled skill-fit ceiling), exactly per
  * `docs/MILESTONE_13_DISCOVERY_AND_RELEVANCE_REVIEW.md` §9.
+ *
+ * MILESTONE 14 PHASE 1 — recall fix, not a weight change:
+ * Auditing the 26 discovered companies' real jobs against this scorer
+ * (`docs/MILESTONE_14_DISCOVERY_QUALITY_REVIEW.md` §G) found real target-
+ * role jobs scoring as low/very-low purely because `TARGET_ROLES`'
+ * keyword lists didn't recognize common real-world title phrasing
+ * ("Smart Contract Engineer", "Lead Security Engineer", "Senior
+ * Infrastructure Security Engineer" — all real, all currently open).
+ * Two keyword additions below (`solidity-engineer`, `security-researcher`)
+ * fix the three evidenced false negatives. This only expands which
+ * titles count as a *match* — it does not touch any weight, threshold,
+ * or the role-mismatch mechanism, so it cannot reintroduce the Phase A
+ * regression (a title still has to actually contain one of these
+ * phrases; skill overlap still can't manufacture a match on its own).
  */
 
 export const JOB_RELEVANCE_TIERS = ["high", "medium", "low", "very-low"] as const;
@@ -92,7 +106,18 @@ export const TARGET_ROLES: Readonly<
   },
   "solidity-engineer": {
     name: "Solidity Engineer",
-    titleKeywords: ["solidity engineer", "solidity developer"],
+    // "Smart Contract Engineer"/"Smart Contract Developer" are the same
+    // real-world role as "Solidity Engineer"/"Solidity Developer" — Web3
+    // job postings use the two interchangeably for "writes/maintains
+    // Solidity contracts" (Milestone 14 §G/§J: found as a real false
+    // negative on a real production job, "Smart Contract Engineer" @
+    // Paxos Labs, scoring 0 despite being squarely this role).
+    titleKeywords: [
+      "solidity engineer",
+      "solidity developer",
+      "smart contract engineer",
+      "smart contract developer",
+    ],
   },
   "protocol-engineer": {
     name: "Protocol Engineer",
@@ -100,7 +125,16 @@ export const TARGET_ROLES: Readonly<
   },
   "security-researcher": {
     name: "Security Researcher",
-    titleKeywords: ["security researcher"],
+    // Plain "Security Engineer" (no "smart contract"/"blockchain"
+    // qualifier) is deliberately mapped to this broader role, not to
+    // `smart-contract-security-engineer`/`blockchain-security-engineer`
+    // — those stay narrow because their titles do specify a domain; a
+    // bare "Security Engineer" title doesn't claim that specificity, so
+    // it shouldn't be scored as if it did. Found as two real false
+    // negatives (Milestone 14 §G): "Lead Security Engineer" and "Senior
+    // Infrastructure Security Engineer", both scoring low despite being
+    // real security roles at real Web3-native companies.
+    titleKeywords: ["security researcher", "security engineer"],
   },
   "blockchain-engineer": {
     name: "Blockchain Engineer",

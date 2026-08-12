@@ -346,6 +346,82 @@ describe("tierForScore — buckets the raw, unclamped score", () => {
   });
 });
 
+describe("Milestone 14 Phase 1 — recall fix for real production false negatives", () => {
+  const TARGETING_PROFILE = profile({
+    targetRoleSlugs: ALL_TARGET_ROLE_SLUGS,
+    seniorityPreference: ["junior", "mid"],
+  });
+
+  it('recognizes "Smart Contract Engineer" as the Solidity Engineer target role', () => {
+    // Real, currently-open title at Paxos Labs (a discovered company) —
+    // scored 0 before this fix (docs/MILESTONE_14_DISCOVERY_QUALITY_REVIEW.md §G).
+    const result = computeJobRelevance(
+      job({ title: "Smart Contract Engineer" }),
+      [],
+      TARGETING_PROFILE,
+      skillNames,
+    );
+    expect(result.breakdown).toContainEqual({
+      label: "Target role: Solidity Engineer",
+      weight: 45,
+    });
+    expect(["high", "medium"]).toContain(result.tier);
+  });
+
+  it('recognizes "Lead Security Engineer" as the Security Researcher target role, not the narrower smart-contract/blockchain-specific roles', () => {
+    // Real title at Paxos Labs — low tier before this fix. Deliberately
+    // asserting it lands on `security-researcher`, not
+    // `smart-contract-security-engineer`/`blockchain-security-engineer`:
+    // the title doesn't claim smart-contract/blockchain specificity, so
+    // the match shouldn't either.
+    const result = computeJobRelevance(
+      job({ title: "Lead Security Engineer" }),
+      [],
+      TARGETING_PROFILE,
+      skillNames,
+    );
+    expect(result.breakdown).toContainEqual({
+      label: "Target role: Security Researcher",
+      weight: 45,
+    });
+    expect(["high", "medium"]).toContain(result.tier);
+  });
+
+  it('recognizes "Senior Infrastructure Security Engineer" as the Security Researcher target role', () => {
+    // Real title at Matter Labs — low tier before this fix.
+    const result = computeJobRelevance(
+      job({ title: "Senior Infrastructure Security Engineer" }),
+      [],
+      TARGETING_PROFILE,
+      skillNames,
+    );
+    expect(result.breakdown).toContainEqual(
+      expect.objectContaining({ label: "Target role: Security Researcher", weight: 45 }),
+    );
+    expect(["high", "medium"]).toContain(result.tier);
+  });
+
+  it("does not let generic Frontend/Backend/DevOps titles become a high match merely because the User has those Skills", () => {
+    // Confirms the recall fix didn't loosen anything for roles outside
+    // the two specific keyword additions — skill overlap alone still
+    // can't manufacture a match (same guarantee the Phase A regression
+    // test below covers for the exact Coinbase case).
+    const genericTitles = ["DevOps Engineer", "Backend Infrastructure Engineer (Non-Web3)"];
+    for (const title of genericTitles) {
+      const result = computeJobRelevance(
+        job({ title }),
+        [FRONTEND_SKILL, TYPESCRIPT, RUST],
+        profile({
+          skillIds: [FRONTEND_SKILL, TYPESCRIPT, RUST],
+          targetRoleSlugs: ALL_TARGET_ROLE_SLUGS,
+        }),
+        skillNames,
+      );
+      expect(result.tier).not.toBe("high");
+    }
+  });
+});
+
 describe("regression: the real production false positive that triggered Milestone 13 Phase A", () => {
   it('does not let "Senior Software Engineer, Frontend" reach a high match for a security/protocol-targeting profile just because Frontend Engineering is in the Skill list', () => {
     // The exact real scenario: job_skill classified this posting with
