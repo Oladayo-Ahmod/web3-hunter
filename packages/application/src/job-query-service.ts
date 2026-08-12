@@ -1,5 +1,5 @@
 import { getDb, schema } from "@web3-hunter/db";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { JobFeedItemDTO, PaginatedResult, SkillDTO } from "./dto";
 import { computeJobFreshness, JOB_FRESHNESS_LEVELS, type JobFreshness } from "./job-freshness";
@@ -9,7 +9,7 @@ import {
   type JobRelevanceProfile,
   type JobRelevanceResult,
 } from "./job-relevance";
-import { toSkillDTO } from "./mappers";
+import { resolveSkillsById } from "./skill-lookup";
 
 export const JOB_SORT_FIELDS = ["postedAt", "title", "relevance"] as const;
 export type JobSortField = (typeof JOB_SORT_FIELDS)[number];
@@ -137,12 +137,20 @@ async function getViewerRelevanceProfile(viewerId: string): Promise<JobRelevance
 
 /**
  * Batch-fetches `job_skill` for every `(companyId, externalId)` pair
- * among the given rows in one query — filtered by `company_id = ANY(…)`
- * (indexed), not a tuple-IN, then grouped client-side, the same
+ * among the given rows in one query — filtered by `inArray(companyId,
+ * …)` (indexed), not a tuple-IN, then grouped client-side, the same
  * "one query, not N" discipline `resolveSkillsById` follows for Matches.
  * Harmless over-fetch (a company's *other* Jobs' skills come along for
  * the ride) is discarded when grouping, not queried around, since the
  * set of distinct companies on one page is almost always small.
+ *
+ * Uses drizzle's `inArray()` query-builder operator, not a raw SQL
+ * `= ANY(${array})` string — the latter looks equivalent but doesn't
+ * correctly bind a JS array as a Postgres array parameter through
+ * postgres-js (confirmed against real production data: it fails with
+ * "malformed array literal" whenever the array has exactly one element).
+ * `inArray()` is this codebase's one, already-proven way to do this
+ * (see `resolveSkillsById`) — reused here, not reinvented.
  */
 async function fetchJobSkillsByCompanyExternalId(
   rows: readonly Pick<OpenJobRow, "company_id" | "external_id">[],
@@ -152,38 +160,27 @@ async function fetchJobSkillsByCompanyExternalId(
     return new Map();
   }
 
-  const skillRows = await getDb().execute<{
-    company_id: string;
-    external_id: string;
-    skill_id: string;
-  }>(sql`
-    SELECT company_id, external_id, skill_id FROM job_skill WHERE company_id = ANY(${companyIds})
-  `);
+  const skillRows = await getDb()
+    .select({
+      companyId: schema.jobSkill.companyId,
+      externalId: schema.jobSkill.externalId,
+      skillId: schema.jobSkill.skillId,
+    })
+    .from(schema.jobSkill)
+    .where(inArray(schema.jobSkill.companyId, companyIds));
 
   const wanted = new Set(rows.map((row) => `${row.company_id}:${row.external_id}`));
   const bySkillKey = new Map<string, string[]>();
   for (const row of skillRows) {
-    const key = `${row.company_id}:${row.external_id}`;
+    const key = `${row.companyId}:${row.externalId}`;
     if (!wanted.has(key)) {
       continue;
     }
     const existing = bySkillKey.get(key) ?? [];
-    existing.push(row.skill_id);
+    existing.push(row.skillId);
     bySkillKey.set(key, existing);
   }
   return bySkillKey;
-}
-
-async function resolveSkillNamesById(skillIds: readonly string[]): Promise<Map<string, SkillDTO>> {
-  const uniqueIds = [...new Set(skillIds)];
-  if (uniqueIds.length === 0) {
-    return new Map();
-  }
-  const rows = await getDb()
-    .select()
-    .from(schema.skill)
-    .where(sql`${schema.skill.id} = ANY(${uniqueIds})`);
-  return new Map(rows.map((row) => [row.id, toSkillDTO(row)]));
 }
 
 function toJobFeedItemDTO(
@@ -434,7 +431,7 @@ export async function listJobFeed(
       ...entry.detectedSkillIds,
       ...entry.relevance.matchedSkillIds,
     ]);
-    const resolvedSkillById = await resolveSkillNamesById(allSkillIds);
+    const resolvedSkillById = await resolveSkillsById(allSkillIds);
 
     return {
       items: page.map((entry) =>
@@ -499,7 +496,7 @@ export async function listJobFeed(
     ...entry.detectedSkillIds,
     ...(entry.relevance?.matchedSkillIds ?? []),
   ]);
-  const skillById = await resolveSkillNamesById(allSkillIds);
+  const skillById = await resolveSkillsById(allSkillIds);
 
   return {
     items: scoredRows.map((entry) =>
@@ -565,7 +562,7 @@ export async function getJobDetail(id: string, viewerId?: string): Promise<JobFe
       )
     : null;
 
-  const skillById = await resolveSkillNamesById([
+  const skillById = await resolveSkillsById([
     ...detectedSkillIds,
     ...(relevance?.matchedSkillIds ?? []),
   ]);
