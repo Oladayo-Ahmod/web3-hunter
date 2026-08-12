@@ -102,8 +102,7 @@ export const TARGET_ROLES: Readonly<
  * negative signal from the original Milestone 13 pivot request's §6,
  * applied here as a flat penalty rather than through the Skill taxonomy
  * (these aren't "absence of a skill," they're active evidence a role is
- * a mismatch). Padded with spaces at match time to reduce false
- * positives on short tokens like "hr" appearing mid-word.
+ * a mismatch).
  */
 const NEGATIVE_TITLE_KEYWORDS = [
   "aml",
@@ -116,7 +115,7 @@ const NEGATIVE_TITLE_KEYWORDS = [
   "recruiter",
   "customer support",
   "human resources",
-  " hr ",
+  "hr",
 ];
 
 const SENIOR_TITLE_KEYWORDS = ["senior", "sr.", "staff", "principal", "lead"];
@@ -150,14 +149,27 @@ export function tierForScore(score: number): JobRelevanceTier {
   return "low";
 }
 
-function paddedIncludes(haystack: string, needle: string): boolean {
-  return ` ${haystack.toLowerCase()} `.includes(needle);
+/**
+ * Word-boundary substring match — not plain `.includes()`, and not the
+ * "pad the whole haystack with one space" trick this function replaced
+ * (which only ever protected the string's outer edges, not internal word
+ * boundaries: "lead" would still have matched inside "leadership"). `\b`
+ * boundaries are what actually make a bare word like "hr" safe, the same
+ * fix applied to `packages/classification`'s `skillKeywordClassifier`
+ * after "rust" was found matching inside "Trust" on real production data
+ * (Milestone 13 Phase 2) — this module has the identical risk (e.g. "hr"
+ * inside a word, "lead" inside "leadership"), hardened here proactively
+ * rather than waiting for its own production false positive.
+ */
+function matchesKeyword(haystack: string, keyword: string): boolean {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped}\\b`, "i").test(haystack);
 }
 
 function findMatchingRoleSlug(title: string, targetRoleSlugs: readonly string[]): string | null {
   for (const slug of targetRoleSlugs) {
     const role = TARGET_ROLES[slug];
-    if (role && role.titleKeywords.some((keyword) => paddedIncludes(title, keyword))) {
+    if (role && role.titleKeywords.some((keyword) => matchesKeyword(title, keyword))) {
       return slug;
     }
   }
@@ -165,7 +177,7 @@ function findMatchingRoleSlug(title: string, targetRoleSlugs: readonly string[])
 }
 
 function findNegativeKeyword(title: string): string | null {
-  return NEGATIVE_TITLE_KEYWORDS.find((keyword) => paddedIncludes(title, keyword)) ?? null;
+  return NEGATIVE_TITLE_KEYWORDS.find((keyword) => matchesKeyword(title, keyword)) ?? null;
 }
 
 /**
@@ -175,10 +187,10 @@ function findNegativeKeyword(title: string): string | null {
  * above is excluded rather than guessed.
  */
 export function inferSeniorityFromTitle(title: string): "senior" | "junior" | null {
-  if (SENIOR_TITLE_KEYWORDS.some((keyword) => paddedIncludes(title, keyword))) {
+  if (SENIOR_TITLE_KEYWORDS.some((keyword) => matchesKeyword(title, keyword))) {
     return "senior";
   }
-  if (JUNIOR_TITLE_KEYWORDS.some((keyword) => paddedIncludes(title, keyword))) {
+  if (JUNIOR_TITLE_KEYWORDS.some((keyword) => matchesKeyword(title, keyword))) {
     return "junior";
   }
   return null;
