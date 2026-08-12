@@ -2,13 +2,17 @@
 // side effect — the same convention packages/scoring's detectors use.
 import "./classifiers/skill-classifier";
 
-export { persistOpportunitySkill } from "./classification-store";
-export { OpportunitySkillDetected } from "./event-types";
+export { persistJobSkill, persistOpportunitySkill } from "./classification-store";
+export { JobSkillDetected, OpportunitySkillDetected } from "./event-types";
 export { listSkillClassifiers, registerSkillClassifier } from "./registry";
 export {
   runClassificationPipeline,
   type ClassificationPipelineResult,
 } from "./run-classification-pipeline";
+export {
+  runJobClassificationPipeline,
+  type JobClassificationPipelineResult,
+} from "./run-job-classification-pipeline";
 export type {
   ClassificationContext,
   RecentCompanyEvent,
