@@ -1,25 +1,46 @@
 "use client";
 
-import type { SkillDTO } from "@web3-hunter/application";
+import { TARGET_ROLES, type SkillDTO, type UserProfileSummaryDTO } from "@web3-hunter/application";
 import { Button } from "@web3-hunter/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+const FIELD_CLASS =
+  "h-9 rounded-md border bg-background px-3 text-sm shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50";
+
+const SENIORITY_OPTIONS = ["junior", "mid", "senior"] as const;
 
 interface ProfileFormProps {
   allSkills: SkillDTO[];
   currentSkillIds: string[];
   currentDealBreakerSkillIds: string[];
+  currentTargetRoleSlugs: string[];
+  currentRemotePreference: UserProfileSummaryDTO["remotePreference"];
+  currentLocationConstraint: string | null;
+  currentSeniorityPreference: string[];
 }
 
 export function ProfileForm({
   allSkills,
   currentSkillIds,
   currentDealBreakerSkillIds,
+  currentTargetRoleSlugs,
+  currentRemotePreference,
+  currentLocationConstraint,
+  currentSeniorityPreference,
 }: ProfileFormProps) {
   const router = useRouter();
   const [skillIds, setSkillIds] = useState<Set<string>>(new Set(currentSkillIds));
   const [dealBreakerSkillIds, setDealBreakerSkillIds] = useState<Set<string>>(
     new Set(currentDealBreakerSkillIds),
+  );
+  const [targetRoleSlugs, setTargetRoleSlugs] = useState<Set<string>>(
+    new Set(currentTargetRoleSlugs),
+  );
+  const [remotePreference, setRemotePreference] = useState(currentRemotePreference ?? "");
+  const [locationConstraint, setLocationConstraint] = useState(currentLocationConstraint ?? "");
+  const [seniorityPreference, setSeniorityPreference] = useState<Set<string>>(
+    new Set(currentSeniorityPreference),
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +66,10 @@ export function ProfileForm({
       body: JSON.stringify({
         skillIds: [...skillIds],
         dealBreakerSkillIds: [...dealBreakerSkillIds],
+        targetRoleSlugs: [...targetRoleSlugs],
+        remotePreference: remotePreference || null,
+        locationConstraint: locationConstraint.trim() || null,
+        seniorityPreference: [...seniorityPreference],
       }),
     });
 
@@ -63,7 +88,7 @@ export function ProfileForm({
       <section className="space-y-2">
         <h2 className="text-lg font-medium">Your Skills</h2>
         <p className="text-sm text-muted-foreground">
-          Used to compute your Match with each Opportunity.
+          Used to compute your Match with each Opportunity and Job.
         </p>
         <SkillChecklist
           skills={allSkills}
@@ -82,6 +107,66 @@ export function ProfileForm({
           selected={dealBreakerSkillIds}
           onToggle={(id) => toggle(dealBreakerSkillIds, setDealBreakerSkillIds, id)}
         />
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-medium">Target Roles</h2>
+        <p className="text-sm text-muted-foreground">
+          Used for Job relevance scoring — matched against each posting&apos;s title. Leave empty to
+          skip this component of the score entirely, rather than penalize every Job for it.
+        </p>
+        <div className="grid max-h-48 grid-cols-1 gap-2 overflow-y-auto rounded-lg border p-4 sm:grid-cols-2">
+          {Object.entries(TARGET_ROLES).map(([slug, role]) => (
+            <label key={slug} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={targetRoleSlugs.has(slug)}
+                onChange={() => toggle(targetRoleSlugs, setTargetRoleSlugs, slug)}
+              />
+              {role.name}
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-medium">Remote Preference</h2>
+        <select
+          value={remotePreference}
+          onChange={(event) => setRemotePreference(event.target.value)}
+          className={FIELD_CLASS}
+        >
+          <option value="">No preference</option>
+          <option value="remote_only">Remote only</option>
+          <option value="remote_friendly">Remote-friendly (remote or hybrid)</option>
+        </select>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-medium">Location Constraint</h2>
+        <input
+          type="text"
+          value={locationConstraint}
+          onChange={(event) => setLocationConstraint(event.target.value)}
+          placeholder="e.g. Worldwide, USA, EU"
+          className={`${FIELD_CLASS} w-64`}
+        />
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-medium">Seniority Preference</h2>
+        <div className="flex gap-4">
+          {SENIORITY_OPTIONS.map((level) => (
+            <label key={level} className="flex items-center gap-2 text-sm capitalize">
+              <input
+                type="checkbox"
+                checked={seniorityPreference.has(level)}
+                onChange={() => toggle(seniorityPreference, setSeniorityPreference, level)}
+              />
+              {level}
+            </label>
+          ))}
+        </div>
       </section>
 
       {error && <p className="text-sm text-destructive">{error}</p>}

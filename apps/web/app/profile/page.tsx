@@ -32,6 +32,10 @@ export default async function ProfilePage() {
         currentDealBreakerSkillIds={
           profileSummary?.dealBreakerSkills.map((skill) => skill.id) ?? []
         }
+        currentTargetRoleSlugs={profileSummary?.targetRoles.map((role) => role.slug) ?? []}
+        currentRemotePreference={profileSummary?.remotePreference ?? null}
+        currentLocationConstraint={profileSummary?.locationConstraint ?? null}
+        currentSeniorityPreference={profileSummary?.seniorityPreference ?? []}
       />
       {profileSummary && (
         <AIContentSection
