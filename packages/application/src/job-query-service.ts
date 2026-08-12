@@ -275,6 +275,13 @@ const openJobsCte = sql`
     FROM latest_state ls
     JOIN posted p ON p.company_id = ls.company_id AND p.external_id = ls.external_id
     LEFT JOIN closures cl ON cl.company_id = ls.company_id AND cl.external_id = ls.external_id
+    -- Milestone 13 Phase C: a "rejected" Company (discovery-probe.md's
+    -- doc comment - a probe hit that resolved to the wrong real-world
+    -- company, or a duplicate of an already-curated one) must never
+    -- surface jobs, no matter which query below reads from this CTE.
+    -- Filtered once, here, rather than at each of listJobFeed's several
+    -- call sites, so this can't be forgotten at a new one later.
+    JOIN company c ON c.id = ls.company_id AND c.discovery_status != 'rejected'
     WHERE cl.closed_at IS NULL OR cl.closed_at < ls.state_at
   )
 `;

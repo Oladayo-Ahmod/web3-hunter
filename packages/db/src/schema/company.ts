@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../columns";
 
 /**
@@ -24,6 +24,30 @@ export const companyCategory = pgEnum("company_category", [
   "ai",
   "gaming",
   "other",
+]);
+
+/**
+ * How a Company entered the system — Milestone 13 Phase C. A closed
+ * vocabulary, same reasoning as `companyCategory`: this only realistically
+ * grows by addition (a new discovery channel), not by renaming existing
+ * values.
+ *
+ * `curated`: added by hand (`apps/web/data/companies/*.json` via
+ * `seed:companies`) — every Company through Milestone 12.
+ * `discovered`: a probe (`packages/db/src/discovery`) found a live
+ * Greenhouse/Lever/Ashby board for it and created this row automatically —
+ * unreviewed.
+ * `verified`: a `discovered` Company that's since been confirmed
+ * legitimate — the promotion path, never a new row.
+ * `rejected`: a probe hit that turned out to be noise or the wrong
+ * company — kept, not deleted, so it's never re-probed and never shows up
+ * as "not yet checked."
+ */
+export const companyDiscoveryStatus = pgEnum("company_discovery_status", [
+  "curated",
+  "discovered",
+  "verified",
+  "rejected",
 ]);
 
 /**
@@ -69,5 +93,19 @@ export const company = pgTable("company", {
   fundingStage: text("funding_stage"),
   category: companyCategory("category"),
   tags: text("tags").array(),
+  // Milestone 13 Phase C — discovery provenance. Defaults to "discovered"
+  // for every *new* row from here on; the migration that adds this column
+  // backfills every pre-existing row to "curated" explicitly (see
+  // migrations/ - never left to the default, since "discovered" would be
+  // factually wrong for the 37 companies actually added by hand).
+  discoveryStatus: companyDiscoveryStatus("discovery_status").notNull().default("discovered"),
+  // Which discovery channel found it, e.g. "ats-probe:electric-capital" -
+  // null for curated Companies (there's nothing to attribute).
+  discoverySource: text("discovery_source"),
+  discoveredAt: timestamp("discovered_at", { withTimezone: true }),
+  // Updated on every successful Collector run against this Company's
+  // board(s) - the "is this ATS board still valid" signal, independent of
+  // discoveryStatus (a curated Company's board can also go stale).
+  lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }),
   ...timestamps(),
 });
