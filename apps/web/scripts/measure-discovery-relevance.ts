@@ -78,8 +78,6 @@ type ScoredJob = {
   tier: string;
 };
 
-const TIERS = ["high", "medium", "low", "very-low"] as const;
-
 function summarize(label: string, subset: ScoredJob[]): void {
   const n = subset.length;
   const counts: Record<string, number> = { high: 0, medium: 0, low: 0, "very-low": 0 };
