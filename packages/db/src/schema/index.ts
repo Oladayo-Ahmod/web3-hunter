@@ -5,6 +5,7 @@ export * from "./company";
 export * from "./company-intelligence";
 export * from "./company-source-identity";
 export * from "./event";
+export * from "./job-skill";
 export * from "./match";
 export * from "./opportunity";
 export * from "./opportunity-skill";
