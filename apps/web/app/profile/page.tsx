@@ -1,4 +1,4 @@
-import { getUserProfileSummary, listSkills } from "@web3-hunter/application";
+import { getUserProfileSummary, listSkills, TARGET_ROLES } from "@web3-hunter/application";
 import { redirect } from "next/navigation";
 import { AIContentSection } from "@/features/ai/components/ai-content-section";
 import { ProfileForm } from "@/features/profile/components/profile-form";
@@ -32,6 +32,10 @@ export default async function ProfilePage() {
         currentDealBreakerSkillIds={
           profileSummary?.dealBreakerSkills.map((skill) => skill.id) ?? []
         }
+        targetRoles={Object.entries(TARGET_ROLES).map(([slug, role]) => ({
+          slug,
+          name: role.name,
+        }))}
         currentTargetRoleSlugs={profileSummary?.targetRoles.map((role) => role.slug) ?? []}
         currentRemotePreference={profileSummary?.remotePreference ?? null}
         currentLocationConstraint={profileSummary?.locationConstraint ?? null}
