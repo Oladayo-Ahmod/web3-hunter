@@ -148,6 +148,27 @@ export interface CompanyProfileDTO {
 /** See `packages/application/src/job-freshness.ts` for the bucketing rule and why it's based on `updatedAt`, not `postedAt` or our own fetch time. */
 export type JobFreshnessDTO = "fresh" | "recent" | "aging" | "stale";
 
+/** See `packages/application/src/job-relevance.ts` for the scoring rule, the weights, and why each component excludes itself rather than penalizing missing data. */
+export type JobRelevanceTierDTO = "high" | "medium" | "low";
+
+export interface JobRelevanceBreakdownEntryDTO {
+  label: string;
+  weight: number;
+}
+
+/**
+ * A Job's fit against the *viewing User's* Profile — present only when a
+ * `viewerId` was supplied and that User has a Profile (mirrors
+ * `MatchSummaryDTO`'s equivalent role for Opportunities: the score is
+ * never returned without the evidence that produced it).
+ */
+export interface JobRelevanceDTO {
+  score: number;
+  tier: JobRelevanceTierDTO;
+  breakdown: JobRelevanceBreakdownEntryDTO[];
+  matchedSkills: SkillDTO[];
+}
+
 /**
  * An open job posting, derived at read time from the Event log
  * (`JobPosted`/`JobUpdated`/`JobClosed` — see
@@ -166,9 +187,7 @@ export type JobFreshnessDTO = "fresh" | "recent" | "aging" | "stale";
  * `null` whenever the source genuinely doesn't provide them (Greenhouse
  * has no structured employment/workplace type at all — see
  * `packages/collectors/src/greenhouse/normalize.ts`), never a guess.
- * Salary and per-job Skill tags remain absent entirely (Milestone 13
- * Phase 2), the same "not present until a real extraction step exists"
- * discipline this type has followed since Milestone 12.
+ * Salary remains absent entirely — no Collector captures it.
  */
 export interface JobFeedItemDTO {
   id: string;
@@ -189,6 +208,9 @@ export interface JobFeedItemDTO {
   /** When this posting's state last changed (its latest `JobPosted`/`JobUpdated` Event's `occurredAt`, i.e. the source's own last-modified timestamp) — equal to `postedAt` if it has never been updated. This, not `postedAt`, is what `freshness` is computed from. */
   updatedAt: string;
   freshness: JobFreshnessDTO;
+  /** Milestone 13 Phase 2 — this Job's own classified Skills (`job_skill`), independent of whether a viewer is present. Empty, not absent, when classification hasn't run yet or found nothing. */
+  detectedSkills: SkillDTO[];
+  relevance: JobRelevanceDTO | null;
 }
 
 export interface PaginatedResult<T> {
@@ -204,10 +226,20 @@ export interface SearchResultDTO {
   opportunities: OpportunityFeedItemDTO[];
 }
 
+export interface TargetRoleDTO {
+  slug: string;
+  name: string;
+}
+
 /** The current state of a User's Profile — for pre-filling the profile-editing form. */
 export interface UserProfileSummaryDTO {
   skills: SkillDTO[];
   dealBreakerSkills: SkillDTO[];
+  /** Milestone 13 Phase 2 — job-hunt preferences `job-relevance.ts` reads. Every field is independently optional; see that module's doc comment for how "not set" is scored. */
+  targetRoles: TargetRoleDTO[];
+  remotePreference: "remote_only" | "remote_friendly" | "no_preference" | null;
+  locationConstraint: string | null;
+  seniorityPreference: string[];
   /** AI-generated, supplemental — see `OpportunityDetailDTO.aiSummary`. */
   aiInsight: AIArtifactSummaryDTO | null;
 }

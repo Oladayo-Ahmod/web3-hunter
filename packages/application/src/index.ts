@@ -11,6 +11,9 @@ export type {
   IntelligenceTrendDTO,
   JobFeedItemDTO,
   JobFreshnessDTO,
+  JobRelevanceBreakdownEntryDTO,
+  JobRelevanceDTO,
+  JobRelevanceTierDTO,
   MatchSummaryDTO,
   OpportunityDetailDTO,
   OpportunityFeedItemDTO,
@@ -24,6 +27,7 @@ export type {
   SearchResultDTO,
   SkillDTO,
   SignalSummaryDTO,
+  TargetRoleDTO,
   UserProfileSummaryDTO,
 } from "./dto";
 export {
@@ -36,6 +40,7 @@ export {
   type OpportunitySortField,
 } from "./opportunity-query-service";
 export {
+  getJobDetail,
   JOB_SORT_FIELDS,
   jobFeedQuerySchema,
   listJobFeed,
@@ -43,6 +48,17 @@ export {
   type JobSortField,
 } from "./job-query-service";
 export { computeJobFreshness, JOB_FRESHNESS_LEVELS, type JobFreshness } from "./job-freshness";
+export {
+  computeJobRelevance,
+  inferSeniorityFromTitle,
+  JOB_RELEVANCE_TIERS,
+  TARGET_ROLES,
+  tierForScore,
+  type JobRelevanceJobInput,
+  type JobRelevanceProfile,
+  type JobRelevanceResult,
+  type JobRelevanceTier,
+} from "./job-relevance";
 export {
   listPipelineRuns,
   pipelineRunQuerySchema,

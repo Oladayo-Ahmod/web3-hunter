@@ -2,6 +2,7 @@ import { getDb, schema } from "@web3-hunter/db";
 import { eq } from "drizzle-orm";
 import { getLatestProfileInsight } from "./ai-artifact-lookup";
 import type { SkillDTO, UserProfileSummaryDTO } from "./dto";
+import { TARGET_ROLES } from "./job-relevance";
 import { toSkillDTO } from "./mappers";
 
 /**
@@ -40,6 +41,12 @@ export async function getUserProfileSummary(userId: string): Promise<UserProfile
     dealBreakerSkills: profileRow.dealBreakerSkillIds
       .map((skillId) => skillById.get(skillId))
       .filter(isSkill),
+    targetRoles: profileRow.targetRoleSlugs
+      .map((slug) => (TARGET_ROLES[slug] ? { slug, name: TARGET_ROLES[slug].name } : undefined))
+      .filter((role): role is { slug: string; name: string } => role !== undefined),
+    remotePreference: profileRow.remotePreference,
+    locationConstraint: profileRow.locationConstraint,
+    seniorityPreference: profileRow.seniorityPreference,
     aiInsight,
   };
 }
