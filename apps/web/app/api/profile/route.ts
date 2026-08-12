@@ -1,5 +1,10 @@
 import { runDecisionPipeline } from "@web3-hunter/decision";
-import { runMatchingPipeline, setDealBreakerSkills, setUserSkills } from "@web3-hunter/matching";
+import {
+  runMatchingPipeline,
+  setDealBreakerSkills,
+  setJobHuntPreferences,
+  setUserSkills,
+} from "@web3-hunter/matching";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { recordPipelineRun } from "@/lib/observability/record-pipeline-run";
@@ -10,6 +15,16 @@ export const dynamic = "force-dynamic";
 const updateProfileSchema = z.object({
   skillIds: z.array(z.string().uuid()),
   dealBreakerSkillIds: z.array(z.string().uuid()),
+  // Milestone 13 Phase 2 — job-hunt preferences. Optional at the request
+  // level (defaulted empty/null) so this route stays backward-compatible
+  // with any caller that only ever sent the two fields above.
+  targetRoleSlugs: z.array(z.string()).default([]),
+  remotePreference: z
+    .enum(["remote_only", "remote_friendly", "no_preference"])
+    .nullable()
+    .default(null),
+  locationConstraint: z.string().max(200).nullable().default(null),
+  seniorityPreference: z.array(z.string()).default([]),
 });
 
 export async function POST(request: Request) {
@@ -28,6 +43,12 @@ export async function POST(request: Request) {
 
   await setUserSkills(userId, parsed.data.skillIds);
   await setDealBreakerSkills(userId, parsed.data.dealBreakerSkillIds);
+  await setJobHuntPreferences(userId, {
+    targetRoleSlugs: parsed.data.targetRoleSlugs,
+    remotePreference: parsed.data.remotePreference,
+    locationConstraint: parsed.data.locationConstraint,
+    seniorityPreference: parsed.data.seniorityPreference,
+  });
 
   // Recompute this User's Matches, then their Recommendations, immediately
   // — so both the feed and the Recommendation Feed reflect their updated
