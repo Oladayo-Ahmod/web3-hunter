@@ -134,6 +134,13 @@
       "when": 1786536587302,
       "tag": "0018_thin_dazzler",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1786541561500,
+      "tag": "0019_oval_veda",
+      "breakpoints": true
     }
   ]
 }

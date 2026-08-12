@@ -38,7 +38,8 @@ export interface DiscoveryCandidate {
 export interface DiscoveryOutcome {
   candidateName: string;
   collectorSlug: string;
-  result: "hit" | "miss" | "already-known";
+  /** `"error"` means the probe couldn't be completed for any slug variant tried (transient failure) — distinct from a confident `"miss"`. See `packages/db/src/schema/company-discovery-probe.ts`'s doc comment. */
+  result: "hit" | "miss" | "error";
   matchedSlug?: string;
   companyId?: string;
   resolution?: "existing" | "created";
@@ -81,6 +82,26 @@ function extractClaimedCompanyName(collectorSlug: string, jobs: readonly unknown
   return typeof first?.company_name === "string" ? first.company_name : null;
 }
 
+/**
+ * Classifies a failed fetch as a confident `"miss"` (a genuine `404` —
+ * "no board exists at this slug," permanent) or an `"error"` (anything
+ * else — a `5xx`, a timeout, DNS failure, etc. — the probe simply
+ * couldn't be completed, and must stay retryable rather than being
+ * recorded as a permanent not-found).
+ *
+ * `fetchGreenhouseJobs`/`fetchLeverPostings`/`fetchAshbyJobs` all throw a
+ * plain `Error` embedding the HTTP status in its message text (e.g.
+ * `"...failed for board \"x\": 404 Not Found"`) for any non-`ok`
+ * response, and something differently-shaped for a network-level failure
+ * (no HTTP response at all). Parsing the message is the only signal
+ * available without changing those functions themselves, which this
+ * milestone's collectors are explicitly not to be modified for.
+ */
+export function classifyFetchFailure(error: unknown): "miss" | "error" {
+  const message = error instanceof Error ? error.message : String(error);
+  return /\b404\b/.test(message) ? "miss" : "error";
+}
+
 /** Returns whether a row was actually inserted — `false` means this exact `(collectorSlug, sourceIdentifier)` pair was already claimed by another Company (see the caller's handling of that case for a newly-*created* Company). */
 async function attachSourceIdentity(
   collectorSlug: string,
@@ -116,6 +137,12 @@ async function probeCandidateAgainstCollector(
   discoverySource: string,
 ): Promise<DiscoveryOutcome> {
   const db = getDb();
+  // Tracks the least-confident outcome seen across this candidate's slug
+  // variants, for the fallback return below — a single "error" among
+  // otherwise-confirmed "miss"es means the candidate as a whole isn't
+  // fully resolved yet and should stay open to retry (see the doc
+  // comment on `classifyFetchFailure`/`hasBeenProbed`).
+  let sawError = false;
 
   for (const slug of candidate.slugs) {
     const alreadyProbed = await hasBeenProbed(db, slug, collectorConfig.slug);
@@ -187,18 +214,33 @@ async function probeCandidateAgainstCollector(
         companyId: resolution.companyId,
         resolution: resolution.kind,
       };
-    } catch {
+    } catch (error) {
+      const classification = classifyFetchFailure(error);
+      sawError = sawError || classification === "error";
       await recordProbe(db, {
         candidateName: candidate.name,
         candidateSlug: slug,
         collectorSlug: collectorConfig.slug,
-        result: "miss",
+        result: classification,
       });
     }
   }
 
-  return { candidateName: candidate.name, collectorSlug: collectorConfig.slug, result: "miss" };
+  return {
+    candidateName: candidate.name,
+    collectorSlug: collectorConfig.slug,
+    result: sawError ? "error" : "miss",
+  };
 }
+
+// Matches `run-collector.ts`'s `FETCH_CONCURRENCY` (ADR 0001) — the same
+// three ATS platforms, the same "bounded concurrent external calls, don't
+// overwhelm the endpoint" reasoning. Kept as the one shared convention
+// rather than a second, independently-tuned concurrency value: a
+// discovery batch is a much larger *volume* of requests than a normal
+// Collector run even though each one is cheaper, which is a reason to
+// stay aligned with the proven-safe number, not to raise it.
+const DISCOVERY_CONCURRENCY = 5;
 
 /**
  * Runs the full discovery pipeline over a candidate list, against all
@@ -207,13 +249,27 @@ async function probeCandidateAgainstCollector(
  * sequential so a hit on the first variant skips the rest) - the same
  * "many independent external calls" reasoning `run-collector.ts`'s fetch
  * phase already uses.
+ *
+ * Each task is individually isolated (its own try/catch) - a single
+ * unexpected failure (e.g. a transient DB error, not an ATS fetch
+ * failure, which `probeCandidateAgainstCollector` already handles on its
+ * own) only costs that one `(candidate, platform)` pair, not the whole
+ * batch. Before this, an uncaught exception from one concurrent worker
+ * would reject the entire `Promise.all`, silently discarding whatever
+ * every other concurrent worker was mid-way through - a real gap found
+ * by inspection before scaling past the first, 150-candidate batch (see
+ * docs/MILESTONE_13_DISCOVERY_AND_RELEVANCE_REVIEW.md §22.4). A task
+ * that fails this way is simply never recorded, so it stays "unprobed"
+ * and is retried automatically on the next run - no special handling
+ * needed beyond not crashing.
  */
 export async function discoverCompanies(
   candidates: readonly DiscoveryCandidate[],
   discoverySource: string,
-  concurrency = 8,
+  concurrency = DISCOVERY_CONCURRENCY,
 ): Promise<DiscoveryOutcome[]> {
   const results: DiscoveryOutcome[] = [];
+  const errors: { candidateName: string; collectorSlug: string; error: unknown }[] = [];
   const tasks = candidates.flatMap((candidate) =>
     ATS_COLLECTORS.map((collectorConfig) => ({ candidate, collectorConfig })),
   );
@@ -223,15 +279,33 @@ export async function discoverCompanies(
     while (next < tasks.length) {
       const index = next++;
       const task = tasks[index]!;
-      const outcome = await probeCandidateAgainstCollector(
-        task.candidate,
-        task.collectorConfig,
-        discoverySource,
-      );
-      results.push(outcome);
+      try {
+        const outcome = await probeCandidateAgainstCollector(
+          task.candidate,
+          task.collectorConfig,
+          discoverySource,
+        );
+        results.push(outcome);
+      } catch (error) {
+        // Deliberately not re-thrown: an unexpected failure here (not a
+        // classified ATS fetch failure, which never reaches this catch)
+        // must not take down the other concurrent workers' progress.
+        errors.push({
+          candidateName: task.candidate.name,
+          collectorSlug: task.collectorConfig.slug,
+          error,
+        });
+      }
     }
   }
   await Promise.all(Array.from({ length: concurrency }, runner));
+
+  if (errors.length > 0) {
+    console.error(
+      `[discover] ${errors.length} task(s) failed unexpectedly and were skipped (not recorded - will retry next run):`,
+      errors.map((e) => `${e.candidateName}/${e.collectorSlug}: ${String(e.error)}`),
+    );
+  }
 
   return results;
 }
