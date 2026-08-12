@@ -1,6 +1,6 @@
 "use client";
 
-import { TARGET_ROLES, type SkillDTO, type UserProfileSummaryDTO } from "@web3-hunter/application";
+import type { SkillDTO, UserProfileSummaryDTO } from "@web3-hunter/application";
 import { Button } from "@web3-hunter/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,6 +14,18 @@ interface ProfileFormProps {
   allSkills: SkillDTO[];
   currentSkillIds: string[];
   currentDealBreakerSkillIds: string[];
+  /**
+   * The full `TARGET_ROLES` vocabulary, pre-resolved to plain `{slug,
+   * name}` pairs by the Server Component parent — never imported as a
+   * value here. `TARGET_ROLES` lives in `@web3-hunter/application`,
+   * whose barrel also re-exports DB-backed query services; a Client
+   * Component importing *any* value (not just a type) from that barrel
+   * pulls the whole module graph — including `postgres` and `node:crypto`
+   * — into the browser bundle, which `next build` refuses to compile.
+   * `import type` elsewhere in this file is exactly why those imports
+   * stay safe and this one didn't.
+   */
+  targetRoles: { slug: string; name: string }[];
   currentTargetRoleSlugs: string[];
   currentRemotePreference: UserProfileSummaryDTO["remotePreference"];
   currentLocationConstraint: string | null;
@@ -24,6 +36,7 @@ export function ProfileForm({
   allSkills,
   currentSkillIds,
   currentDealBreakerSkillIds,
+  targetRoles,
   currentTargetRoleSlugs,
   currentRemotePreference,
   currentLocationConstraint,
@@ -116,12 +129,12 @@ export function ProfileForm({
           skip this component of the score entirely, rather than penalize every Job for it.
         </p>
         <div className="grid max-h-48 grid-cols-1 gap-2 overflow-y-auto rounded-lg border p-4 sm:grid-cols-2">
-          {Object.entries(TARGET_ROLES).map(([slug, role]) => (
-            <label key={slug} className="flex items-center gap-2 text-sm">
+          {targetRoles.map((role) => (
+            <label key={role.slug} className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                checked={targetRoleSlugs.has(slug)}
-                onChange={() => toggle(targetRoleSlugs, setTargetRoleSlugs, slug)}
+                checked={targetRoleSlugs.has(role.slug)}
+                onChange={() => toggle(targetRoleSlugs, setTargetRoleSlugs, role.slug)}
               />
               {role.name}
             </label>
