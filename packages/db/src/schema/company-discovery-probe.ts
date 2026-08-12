@@ -15,12 +15,20 @@ import { company } from "./company";
  * `result: "hit"` always pairs with a `resolvedCompanyId` — the Company
  * that candidate/collector combination resolved to (see
  * `./company-resolution.ts`'s conservative, exact-match-only hierarchy).
- * `result: "miss"` means the platform returned no valid board for that
- * slug — ordinary, expected, not an error.
+ * `result: "miss"` means the platform gave a confirmed, confident "no
+ * board here" (a genuine `404`) — ordinary, expected, permanent.
+ * `result: "error"` (added for the second discovery batch,
+ * docs/MILESTONE_13_DISCOVERY_AND_RELEVANCE_REVIEW.md §22.5) means the
+ * probe *couldn't be completed* — a transient network failure, a `5xx`,
+ * anything that isn't a confident 404 — and is deliberately excluded from
+ * `hasBeenProbed`'s "already checked" query, so it stays eligible for
+ * retry on the next run rather than being permanently misrecorded as "no
+ * board exists here."
  */
 export const companyDiscoveryProbeResult = pgEnum("company_discovery_probe_result", [
   "hit",
   "miss",
+  "error",
 ]);
 
 export const companyDiscoveryProbe = pgTable(

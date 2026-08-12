@@ -27,11 +27,15 @@ async function main() {
   const outcomes = await discoverCompanies(candidates, "electric-capital:ats-probe");
 
   const hits = outcomes.filter((o) => o.result === "hit");
+  const misses = outcomes.filter((o) => o.result === "miss");
+  const errors = outcomes.filter((o) => o.result === "error");
   const created = hits.filter((o) => o.resolution === "created");
   const existing = hits.filter((o) => o.resolution === "existing");
 
-  console.log(`\n[discover] Total probes: ${outcomes.length}`);
+  console.log(`\n[discover] Total candidate/platform outcomes: ${outcomes.length}`);
   console.log(`[discover] Hits: ${hits.length}`);
+  console.log(`[discover] Misses (confirmed 404): ${misses.length}`);
+  console.log(`[discover] Errors (transient - retryable next run): ${errors.length}`);
   console.log(`[discover] -> resolved to a NEW discovered company: ${created.length}`);
   console.log(`[discover] -> resolved to an already-known company: ${existing.length}`);
 
@@ -39,6 +43,13 @@ async function main() {
     console.log(
       `  [${hit.result}] ${hit.candidateName} -> ${hit.collectorSlug}:${hit.matchedSlug} (${hit.resolution})`,
     );
+  }
+
+  if (errors.length > 0) {
+    console.log("\n[discover] Candidates needing retry (transient errors):");
+    for (const e of errors) {
+      console.log(`  ${e.candidateName} / ${e.collectorSlug}`);
+    }
   }
 }
 

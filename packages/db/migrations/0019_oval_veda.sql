@@ -1,0 +1,1 @@
+ALTER TYPE "public"."company_discovery_probe_result" ADD VALUE 'error';
