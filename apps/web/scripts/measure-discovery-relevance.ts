@@ -15,6 +15,12 @@ import {
  * additional volume? Read-only — never mutates data, never probes an
  * ATS, never runs a collector. Safe to re-run at any time.
  *
+ * Milestone 15 addition: also breaks "discovered" down by
+ * `company.discoverySource` — the whole point of that column (already
+ * populated per-company since Milestone 13 Phase C) is comparing one
+ * candidate source's yield against another's, e.g. DeFiLlama vs. Electric
+ * Capital, without a second measurement tool.
+ *
  *   pnpm --filter @web3-hunter/web exec tsx scripts/measure-discovery-relevance.ts [email]
  *
  * `email` defaults to the product's one real user
@@ -67,11 +73,13 @@ type OpenJobRow = {
   company_slug: string;
   company_name: string;
   discovery_status: string;
+  discovery_source: string | null;
 };
 
 type ScoredJob = {
   companySlug: string;
   discoveryStatus: string;
+  discoverySource: string | null;
   collector: string;
   title: string;
   score: number;
@@ -117,7 +125,8 @@ async function main() {
 
   const rows = await db.execute<OpenJobRow>(sql`
     ${OPEN_JOBS_CTE}
-    SELECT oj.company_id, oj.external_id, oj.metadata, c.slug AS company_slug, c.name AS company_name, c.discovery_status
+    SELECT oj.company_id, oj.external_id, oj.metadata, c.slug AS company_slug, c.name AS company_name,
+      c.discovery_status, c.discovery_source
     FROM open_jobs oj JOIN company c ON c.id = oj.company_id
   `);
 
@@ -157,6 +166,7 @@ async function main() {
     return {
       companySlug: row.company_slug,
       discoveryStatus: row.discovery_status,
+      discoverySource: row.discovery_source,
       collector: collectorByCompanyId.get(row.company_id) ?? "unknown",
       title: row.metadata.title,
       score: relevance.score,
@@ -181,6 +191,18 @@ async function main() {
       `discovered/${platform}`,
       scored.filter((s) => s.discoveryStatus === "discovered" && s.collector === platform),
     );
+  }
+
+  const discovered = scored.filter((s) => s.discoveryStatus === "discovered");
+  const sources = [...new Set(discovered.map((s) => s.discoverySource ?? "unknown"))].sort();
+  if (sources.length > 1) {
+    console.log("\n=== By discovery source ===");
+    for (const source of sources) {
+      summarize(
+        source,
+        discovered.filter((s) => (s.discoverySource ?? "unknown") === source),
+      );
+    }
   }
 
   console.log("\n=== Sample discovered-company jobs now scoring medium/high ===");
