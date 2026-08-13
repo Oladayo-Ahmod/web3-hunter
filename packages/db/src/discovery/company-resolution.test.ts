@@ -89,6 +89,53 @@ describe("resolveDiscoveredCompany", () => {
     expect(acmeLabsRow?.slug).not.toBe("acme-protocol-co");
   });
 
+  it("persists websiteUrl on a newly-created Company when a candidateDomain is supplied, so a later cross-source candidate can resolve to it by domain", async () => {
+    // Milestone 15 — the real "Paxos" vs. "paxoslabs" gap: Electric
+    // Capital's "paxoslabs" candidate created a Company with no domain
+    // (the only signal available at the time), so a later DeFiLlama
+    // "Paxos" candidate — a completely different-looking name — had no
+    // way to resolve to it and created a duplicate instead. Persisting
+    // websiteUrl at creation time is what closes this for future
+    // candidates on either side.
+    const first = await resolveDiscoveredCompany(
+      testDb.db,
+      { candidateName: "paxoslabs", candidateDomain: "https://paxos.com" },
+      "electric-capital:ats-probe",
+    );
+    expect(first.kind).toBe("created");
+
+    const [firstRow] = await testDb.db
+      .select()
+      .from(company)
+      .where(eq(company.id, first.companyId))
+      .limit(1);
+    expect(firstRow?.websiteUrl).toBe("https://paxos.com");
+
+    const second = await resolveDiscoveredCompany(
+      testDb.db,
+      { candidateName: "Paxos", candidateDomain: "https://paxos.com" },
+      "defillama:ats-probe",
+    );
+    expect(second.kind).toBe("existing");
+    expect(second.companyId).toBe(first.companyId);
+  });
+
+  it("does not create a false match when domains merely resemble each other — still exact only", async () => {
+    await resolveDiscoveredCompany(
+      testDb.db,
+      { candidateName: "Some Company", candidateDomain: "https://paxos.com" },
+      "test-source",
+    );
+
+    const result = await resolveDiscoveredCompany(
+      testDb.db,
+      // A different real subdomain/path, not the same canonical domain.
+      { candidateName: "Unrelated Company", candidateDomain: "https://app.paxos.com.evil.com" },
+      "test-source",
+    );
+    expect(result.kind).toBe("created");
+  });
+
   it("treats a corporate-suffix-only difference as the same company (Inc./Ltd./LLC stripped)", async () => {
     const [existing] = await testDb.db
       .insert(company)
