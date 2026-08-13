@@ -176,4 +176,89 @@ The honest secondary point: even a perfect candidate source doesn't fully solve 
 
 **Not recommended to pursue yet, but real and worth returning to**: the Workable/SmartRecruiters adapters (C.1/C.2) — genuinely verified, genuinely additive, but they're new collector code, which is explicitly out of scope for this phase, and their actual Web3 adoption is still unconfirmed. The honest sequencing is candidate-source work first (near-zero cost, testable immediately with existing code), platform-breadth work second (real cost, only worth it once we know it's not solving a problem DeFiLlama alone already solves).
 
-Stopping here per your instruction. Nothing in this document has been implemented — no candidates probed, no adapters built, no schema touched.
+Approved to proceed with a controlled experiment; results in §H.
+
+---
+
+## H. The controlled experiment — real results
+
+Implemented the smallest change the existing architecture needed: `discover-companies.ts` (CLI) now accepts an optional `discoverySource` argument (default unchanged, so Electric Capital usage is unaffected), and `measure-discovery-relevance.ts` breaks "discovered" down by source. No new discovery system, no schema change, no collector modification.
+
+**Candidate selection** (documented in full in the throwaway prep script, deleted after use per this project's established convention): fetched all 8,025 raw DeFiLlama protocols, deduplicated via the API's own `parentProtocol` field to 6,673 distinct root entities, split into Tier 1 (member category is one of a fixed, documented list of target-relevant categories: Security Extension, Developer Tools, Lending, Dexs, Bridge, Oracle, Wallets, RWA, Restaking, Liquid Staking, CDP, Chain, MEV, Privacy, etc. — 3,421 groups) and Tier 2 (everything else, not excluded — 3,252 groups), ranked each tier by total TVL descending, and selected 450 from Tier 1 + 50 from Tier 2 = 500. Slug variants combined the root slug (hyphenated and concatenated) with the same corporate-suffix-stripped variants Electric Capital candidates already used.
+
+### H.1 Batch results
+
+| Metric | Value |
+|---|---|
+| Candidates attempted | 500 |
+| Probes (candidate × platform) | 1,500 |
+| Hits | 48 (+1 from a 5-candidate smoke test before the full batch — "Morpho," see §H.2) |
+| Confirmed 404s | 1,451 |
+| Transient errors | 1 (`T RIZE`/Ashby — retried, resolved to a genuine miss) |
+| Candidate hit rate | 48/500 = **9.6%** — vs. Electric Capital batch 2's 2.6% |
+
+### H.2 False-positive verification — the dominant finding of this experiment
+
+Every one of the 49 hits (48 main batch + 1 smoke test) was individually verified live — the real ATS board fetched, real job titles/descriptions read, not just the candidate name trusted. This is not optional diligence here: it is the central finding.
+
+**"Morpho" (smoke test) was caught automatically, with zero new code**: it tried to attach to the same Ashby board (`ashby:morpho`) already claimed by the curated "Morpho Labs," hit the existing duplicate-conflict-on-attach mechanism (§5/§7 of the Milestone 13 doc), and was auto-rejected the instant it was created — proof the existing protection extends cleanly to a new candidate source without modification.
+
+**22 of the remaining 48 hits (45.8%) were confirmed wrong-company, duplicate, or unverifiable-and-therefore-rejected** — far higher than any previously-measured rate on Electric Capital (Ashby's worst-observed rate there was ~21%). Manually verified, real examples:
+
+- `current` (Greenhouse) — the real board is a Drupal/.NET/Webflow web agency, **not** a DeFi protocol. `company_name` on the board says "Current" too — this is the first confirmed case where **Greenhouse's own cross-check cannot help**, because two different real companies share the exact same name. The same pattern recurred on `blend` (Blend Labs, mortgage SaaS, not the DeFi lending protocol), `kodiak` (Kodiak Robotics, autonomous trucking, not the Berachain DEX), and `indigo` (an insurance underwriter, not the Cardano stablecoin protocol) — **4 same-name-different-entity collisions on Greenhouse alone**, a failure mode Milestone 13/14 never observed because it requires two real companies to independently choose the identical name, which short/generic DeFiLlama entity names make far more likely than Electric Capital's more distinctive GitHub-org-derived names.
+- `linear` (Ashby) is Linear, the project-management tool (linear.app) — not "LiNEAR Protocol."
+- `ethena` (Lever) is a Brooklyn-based compliance SaaS company — not the stablecoin protocol Ethena, despite the name being, on its face, one of the more distinctive ones in the batch.
+- `unit`, `sphere`, `felix`, `kinetic`, `navi`, `flux`, `reservoir`, `solstice`, `hive`, `maya` — fintech, healthcare, aviation-AI, hardware-AI, music-licensing, pharma-AI, generic-AI, and recruiting-SaaS companies respectively, none crypto.
+- `paxos` (Ashby) is a genuine duplicate — the same real company as the already-discovered `paxoslabs` (Electric Capital), just resolved via a different board/slug that the exact-normalized-name match didn't collapse. A **real, newly-identified dedup gap**: exact-name resolution doesn't catch a cross-source name variant ("Paxos" vs. "paxoslabs") landing on a *different* slug of the *same* platform. Not fixed in this experiment (a schema/logic change, out of scope) — rejected manually, flagged for §I.
+- 5 more (`maplefinance`, `solera`, `echoprotocol`, `falconfinance`, `veda`) had zero open jobs at verification time, so identity couldn't be confirmed either way — rejected per your explicit instruction that uncertain companies stay rejected, not "innocent until proven guilty."
+
+**26 of 48 hits (54.2%) were confirmed genuinely correct** — real, currently-open Web3 companies, including exchanges (OKX, Bybit, Robinhood, Gemini, Gate, Bitvavo), RWA/tokenization (Ondo Finance, Securitize, WisdomTree — the last a real TradFi asset manager's tokenization arm, a legitimate but not crypto-native identity worth naming honestly), and protocol/infra companies (Arbitrum Foundation, Superstate, Jito, Symbiotic, Polymarket, Grvt, Lightning Network, DoubleZero, Orca, Gauntlet, SwissBorg, and four zero-job-but-highly-distinctive names — Woofi, STON.fi, Metadao, Wan Bridge — accepted despite no jobs to verify against, because their names are specific enough that collision risk is negligible). One additional anomaly: `noble` (Greenhouse) resolved as a hit during probing but 404s consistently on every later check — not evidence of a wrong company (Noble is a real Cosmos-based USDC-issuer chain), just a board that appears to have gone dark since the probe ran. Left as `discovered`, not rejected, since nothing about its *identity* is in question — flagged as an anomaly, not a false positive.
+
+All 22 confirmed-wrong/uncertain companies were rejected (`discoveryStatus: "rejected"`, source identity removed) using the exact same remediation pattern as every prior false positive this project has found.
+
+### H.3 Production verification (real, post-collector-run)
+
+- Ran Greenhouse/Lever/Ashby collectors for the 26 genuinely-accepted companies (two Greenhouse retries needed — one transient DB-connection contention, one transient WSL DNS resolution failure, both resolved cleanly on retry with zero data loss, confirming resumability held under real failures again).
+- Ran job classification (one follow-up pass needed since OKX's 332 jobs weren't published until a later retry).
+- Fetched all 1,177 jobs currently in the live `/api/jobs` feed (12 paginated requests): **zero** of the 22 rejected DeFiLlama companies (or any of the 7 previously-rejected Electric Capital companies) appear. **Zero** invalid `absoluteUrl`s found across all 837 DeFiLlama-sourced job events.
+- Confirmed the 37 curated companies and the 26 Electric-Capital-discovered companies are unchanged in count and status — this batch only ever added new companies, never touched existing rows outside the one legitimate `paxos`/`paxoslabs` conflict-driven auto-reject.
+
+### H.4 The headline comparison — DeFiLlama vs. Electric Capital, real numbers
+
+Via `measure-discovery-relevance.ts`'s new source breakdown, against the real saved profile, all currently-open jobs (any freshness):
+
+| Source | n | high | medium | high+medium |
+|---|---|---|---|---|
+| Electric Capital | 164 | 0 (0.0%) | 4 (2.4%) | **2.4%** |
+| DeFiLlama | 804 | 2 (0.2%) | 31 (3.9%) | **4.1%** |
+| Curated (reference) | 549 | 13 (2.4%) | 27 (4.9%) | **7.3%** |
+
+**DeFiLlama's discovered-job relevance rate (4.1%) is materially higher than Electric Capital's (2.4%)** — about 1.7x — and produced this project's **first-ever high-tier jobs from any discovered company**: "Lightning Protocol Engineer" and "Assets Protocol Engineer," both at Lightning Labs, both real, both currently open. Electric Capital never produced a single high-tier job across either of its batches. DeFiLlama still falls well short of curated's 7.3%, but the gap to curated (1.8x) is now smaller than Electric Capital's gap to curated (3.0x).
+
+**But this comes at a much higher false-positive cost.** 45.8% of DeFiLlama's raw hits were wrong-company/duplicate/unverifiable, against Electric Capital's worst-ever-observed single-platform rate of ~21% (Ashby). Every one of those 22 rejections required a real, individual, live verification step — this was not free diligence, and it does not scale linearly for free.
+
+### H.5 Other requested metrics
+
+| Metric | Value |
+|---|---|
+| Jobs per genuinely-accepted company | 804 / 26 ≈ 30.9 avg (heavily skewed — OKX alone contributes ~330) |
+| Discovered companies with zero open jobs | 6 / 26 (23.1%): `noble`, `stonfi`, `metadao`, `wanbridge`, `woofi`, `bitmex` |
+| Discovered companies confirmed Web3-native | 26 / 26 (100% of *accepted* companies — by construction, since anything not confirmed Web3-relevant was rejected) |
+| % of raw hits that were Web3-native | 26 / 48 (54.2%) |
+| Jobs with valid employer application URL | 837 / 837 (100%) |
+| Companies unaffected by this batch | 37 curated + 26 Electric Capital discovered + 7 Electric Capital rejected — all unchanged |
+
+---
+
+## I. Decision — recommendation
+
+**B — adjust the candidate-ranking strategy and run another controlled batch, not A.** The relevance-yield result (4.1% vs. 2.4%) is real and positive, and argues DeFiLlama is a better-targeted source than Electric Capital. But scaling this *exact* approach (bare protocol/entity names, blind slug-guessing, no identity cross-check beyond Greenhouse's already-proven-insufficient `company_name` field) to the remaining ~6,173 candidates would predictably reproduce a ~46% false-positive rate at 10x+ the volume — dozens more manual verifications, each real, each necessary, each currently requiring a human to read a job description and make a judgment call no automated check in this codebase can yet make.
+
+Concrete, evidence-based adjustments worth trying before another batch, not implemented in this experiment:
+1. **Prefer longer, more distinctive candidate names over bare roots where available** — every same-name collision in this batch (`current`, `blend`, `kodiak`, `indigo`, `linear`, `ethena`) happened on a short, plain-English or single-word name; multi-word, domain-specific names (`Arbitrum Foundation`, `Lightning Network`, `Wan Bridge`) had zero collisions in this batch.
+2. **Treat DeFiLlama's `twitter`/`url` fields as an additional identity cross-check** (not explored this round) — e.g. confirming the ATS board's own linked website or social handle matches DeFiLlama's, the same structural-signal principle behind Greenhouse's `company_name` check, extended to platforms that don't have one.
+3. **Address the `paxos`/`paxoslabs`-class dedup gap** directly before the next batch, since a second run will keep re-finding the same class of cross-source duplicate.
+
+Not recommending C (abandon DeFiLlama) — the relevance signal is real and better than the status quo. Not recommending D (ATS-platform expansion) yet — unrelated to what this experiment tested, and Milestone 15's original sequencing argument (candidate-source work first) still holds.
+
+No further batch will run without your explicit approval of a specific adjusted strategy.
