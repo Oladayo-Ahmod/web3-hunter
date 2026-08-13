@@ -85,6 +85,16 @@ export async function resolveDiscoveredCompany(
       discoveryStatus: "discovered",
       discoverySource,
       discoveredAt: new Date(),
+      // Milestone 15 — the domain-match tier above has always existed
+      // but was structurally dead: no caller ever supplied a
+      // `candidateDomain`, and no discovered Company ever got a
+      // `websiteUrl`, so it could never fire for anything discovery
+      // itself created. Persisting it here is what lets a *future*
+      // candidate from a *different* source resolve to an *existing*
+      // discovered Company by domain instead of creating a duplicate
+      // (the exact "Paxos" vs. "paxoslabs" gap found in the DeFiLlama
+      // experiment) — still an exact match, nothing fuzzier.
+      websiteUrl: input.candidateDomain ?? null,
     })
     .onConflictDoNothing({ target: company.slug })
     .returning();

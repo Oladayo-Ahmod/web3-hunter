@@ -33,6 +33,17 @@ export interface DiscoveryCandidate {
   name: string;
   /** Slug variants to try, in order — stops at the first hit. */
   slugs: readonly string[];
+  /**
+   * The candidate's own known website/domain, when the discovery source
+   * exposes one (Milestone 15 — e.g. DeFiLlama's `url` field). Passed
+   * through to `resolveDiscoveredCompany`'s domain-match tier so a
+   * candidate from one source can resolve to an already-discovered
+   * Company from a *different* source by exact domain match, instead of
+   * creating a duplicate (see the "Paxos" vs. "paxoslabs" case in
+   * `docs/MILESTONE_15_JOB_DISCOVERY_EXPANSION_RESEARCH.md` §H.2).
+   * Optional — Electric Capital candidates don't have one.
+   */
+  domain?: string | null;
 }
 
 export interface DiscoveryOutcome {
@@ -172,7 +183,7 @@ async function probeCandidateAgainstCollector(
 
       const resolution = await resolveDiscoveredCompany(
         db,
-        { candidateName: candidate.name },
+        { candidateName: candidate.name, candidateDomain: candidate.domain },
         discoverySource,
       );
       await recordProbe(db, {
