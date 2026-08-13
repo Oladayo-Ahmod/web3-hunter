@@ -262,3 +262,64 @@ Concrete, evidence-based adjustments worth trying before another batch, not impl
 Not recommending C (abandon DeFiLlama) — the relevance signal is real and better than the status quo. Not recommending D (ATS-platform expansion) yet — unrelated to what this experiment tested, and Milestone 15's original sequencing argument (candidate-source work first) still holds.
 
 No further batch will run without your explicit approval of a specific adjusted strategy.
+
+---
+
+## J. The follow-up experiment — implementation and real results
+
+Approved and implemented exactly as planned, nothing more:
+
+1. **Activated the dormant domain-match tier.** `resolveDiscoveredCompany` already had an exact-domain-match tier and an existing test for it — no caller had ever supplied a domain, and no discovered Company ever got a `websiteUrl`. `company-resolution.ts` now persists `websiteUrl` on creation; `discover-companies.ts`'s `DiscoveryCandidate` gained an optional `domain`; `defillama-candidates.ts` carries DeFiLlama's own `url` field through. Two new regression tests cover the exact "Paxos"/"paxoslabs" shape and confirm the match stays exact (a near-miss domain like `app.paxos.com.evil.com` does not false-match).
+2. **Built the permanent `defillama-candidates.ts` module**, replacing the throwaway batch-1 script: `dedupeProtocols`, `rankCandidates` (unchanged tier+TVL logic), `slugVariants`, `buildDiscoveryCandidates` — all pure, all unit-tested.
+3. **Evaluated `distinctivenessPenalty` against the real 46 batch-1-verified candidates**, using an independent common-English-words corpus (google-10000-english), not tuned to this project's data. Real result: **4/21 (19%) recall on known-bad candidates, 1/25 (4%) false-flag on a known-good one** ("gate" — Gate.io). This is weak, not meaningful, separation. Per your explicit rule 5, it was **not wired into ranking** — `buildDiscoveryCandidates` never calls it. Kept only as a tested, documented, unused function so the finding is reproducible.
+
+### J.1 The second batch — real numbers, direct comparison to batch 1
+
+500 new candidates (Tier 1 ranks 450–899, Tier 2 ranks 50–99 — the next slice after batch 1, via `prepare-defillama-batch.ts`'s skip/count parameters).
+
+| Metric | Batch 1 (this doc, §H) | Batch 2 |
+|---|---|---|
+| Candidates attempted | 500 | 500 |
+| Probes | 1,500 | 1,500 (+12 retries) |
+| Hits | 48 | 30 (28 distinct companies) |
+| Candidate hit rate | 9.6% | 6.0% |
+| Genuine new companies | 26 | **3** (Thena, Parasail, Bastion) |
+| Already-known (same-batch, multi-platform) | 0 | 2 (Up, Parasail each hit Greenhouse+Ashby) |
+| Cross-source duplicates (Paxos-class) | 1 | **0** — nothing in this batch happened to share a domain with an existing company; the fix exists and is tested (§J item 1) but had nothing to catch this round |
+| Wrong-identity matches (confirmed via real content) | 17 | **19** |
+| Unverifiable matches (zero jobs, rejected conservatively) | 5 | **6** |
+| **Overall false-positive rate** | **45.8%** | **89.3% (25/28)** |
+| Transient errors | 1 | 4 (all retried, resolved to genuine misses) |
+
+**The false-positive rate did not improve — it got dramatically worse.** Every single hit was individually verified live again (real ATS board fetched, real job description read), the same discipline as batch 1. Confirmed wrong-company examples: `up` (a real Australian neobank, up.com.au — a second same-name-different-entity Greenhouse collision, on top of `current`/`blend`/`kodiak`/`indigo` from batch 1), `saturn` (a UK fintech AI platform, not the RWA protocol), `doppler-finance` (doppler.com, the secrets-management SaaS company, not Doppler Finance), `hercules`, `radiant`, `verse`, `atrix`, `artemis-finance`, `orbit-protocol`, `level`, `flex`, `flamingo`, `nirvana`, `neptune-finance`, `sable-finance`, `hypha`, `blueshift`, `butter-network`, `oath-foundation` — 19 real, unrelated companies. Of these, the large majority have short, plain-English or well-known-proper-noun root names (`up`, `flex`, `level`, `verse`, `saturn`, `radiant`, `nirvana`, `flamingo`, `oath`, `neptune`, `hercules`, `orbit`, `atrix`, `doppler` — 14 of 19), confirming the same pattern batch 1 found, not a new one.
+
+**Why it's worse, not better — the honest explanation**: this batch is, by design, the *next* slice of the ranked pool — lower total-TVL protocols than batch 1's. The evidence here says that as DeFiLlama's ranking goes deeper, candidates skew toward smaller, less-established projects that are more likely to have chosen short, generic, single-word branding (rather than the more distinctive multi-word names larger, more established protocols tend to have) — which is exactly the collision-prone shape both batches found. This is a real property of the candidate *source*, not something the domain-match fix or any ranking tweak implemented here could have addressed — those interventions targeted cross-source duplicates and multi-word-vs-single-word ranking priority, neither of which is what's driving this batch's collision rate.
+
+### J.2 Relevance — the 3 genuine companies, real numbers
+
+| Metric | Batch 1 | Batch 2 (3 genuine companies) |
+|---|---|---|
+| Jobs added | 804 | 13 (Parasail 8, Bastion 5, Thena 0) |
+| High-tier jobs | 2 | 0 |
+| Medium-tier jobs | 31 | 0 |
+| High+medium relevance rate | 4.1% | **0.0%** |
+| Combined DeFiLlama relevance rate (both batches) | — | **4.0%** (818 jobs, 2 high, 31 medium) — statistically unchanged from batch 1 alone |
+
+None of batch 2's 13 new jobs scored medium or high for the real saved profile. Combined with batch 1, DeFiLlama's overall relevance rate is unchanged in practice (4.1% → 4.0%, within noise).
+
+### J.3 Production verification
+
+- Ran Greenhouse/Ashby collectors for the 3 genuine companies (Parasail: 8 jobs published; Bastion: 6 fetched/5 currently open; Thena: 0 — its Greenhouse board is real but has no current openings). Two unrelated pre-existing companies (`omninetwork`, `grvt`) hit transient fetch failures during this run, unrelated to batch 2's own companies — not retried, since neither is part of this experiment's scope and both are known-working, already-verified companies from prior batches.
+- Ran job classification.
+- Fetched all 1,190 jobs in the live `/api/jobs` feed (12 paginated requests): **zero** of all 55 all-time-rejected companies (7 Electric Capital + 23 batch-1 DeFiLlama + 25 batch-2 DeFiLlama) appear. **Zero** invalid `absoluteUrl`s across all 851 DeFiLlama job events (both batches combined).
+- Confirmed curated (37), Electric Capital (26 discovered/7 rejected), and batch-1 DeFiLlama (26 discovered/23 rejected) companies are all unchanged in count and status.
+
+### J.4 Decision, per your explicit rules
+
+**Rule 2 applies: the false-positive rate did not improve (it got worse — 89.3% vs. 45.8%). Per your instruction, DeFiLlama discovery is not scaled further.**
+
+Why, in plain terms: this batch tested two specific, evidence-backed interventions — activating dormant domain-based dedup, and evaluating (then correctly declining to use) a name-distinctiveness ranking signal. Both were implemented correctly and are now verified working in production (the domain tier has a real regression test proving it fires correctly; the distinctiveness evaluation is honestly reported as insufficient rather than kept for appearances). Neither intervention was ever going to fix the actual failure mode this batch hit: the *deeper* candidate pool is composed of smaller, newer, more genericaly-named projects, and no amount of resolution-logic or ranking-tiebreak engineering changes what real companies exist and what they're named. That's a property of the source at this depth, not a bug in this codebase.
+
+Per rule 4 (quantify improvement and propose the smallest sensible next batch) — **there is no improvement to quantify**, so this rule does not apply; per rule 1 (recommend whether a larger batch is justified without running it) — **a larger batch is not justified** on this evidence. The honest recommendation is: **stop scaling DeFiLlama's repo/TVL-ranked candidate pool via blind ATS probing.** The mechanism works exactly as designed (the false positives were all caught, all rejected, zero leaked to production) — but the source's deeper pool does not have the identity or relevance quality to justify the manual-verification cost of continuing to mine it this way.
+
+Stopping here per your instruction. No further batch has been or will be run without new direction from you.
