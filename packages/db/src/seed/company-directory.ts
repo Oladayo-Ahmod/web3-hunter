@@ -1,5 +1,13 @@
+import { eq } from "drizzle-orm";
 import type { Database } from "../client";
-import { company, companySourceIdentity, type companyCategory } from "../schema";
+import {
+  company,
+  companyContact,
+  companySourceIdentity,
+  type companyCategory,
+  type companyContactRole,
+  type companyPriority,
+} from "../schema";
 import { resolveOrCreateCollector } from "./collector-resolution";
 
 /**
@@ -22,6 +30,19 @@ export interface CompanyDirectorySource {
   sourceIdentifier: string;
 }
 
+/**
+ * Milestone 16/17 — a named, individually-verified person worth
+ * contacting at this Company. See `company-contact.ts`'s own doc comment
+ * for why `name`/`profileUrl` are both required: a contact only belongs
+ * here because it was actually found, never a placeholder.
+ */
+export interface CompanyDirectoryContact {
+  name: string;
+  role: (typeof companyContactRole.enumValues)[number];
+  profileUrl: string;
+  notes?: string | null;
+}
+
 export interface CompanyDirectoryEntry {
   companySlug: string;
   companyName: string;
@@ -38,6 +59,8 @@ export interface CompanyDirectoryEntry {
   fundingStage?: string | null;
   category?: (typeof companyCategory.enumValues)[number] | null;
   tags?: readonly string[] | null;
+  priority?: (typeof companyPriority.enumValues)[number] | null;
+  contacts?: readonly CompanyDirectoryContact[];
   sources: readonly CompanyDirectorySource[];
 }
 
@@ -95,6 +118,7 @@ export async function upsertCompanyDirectory(
       fundingStage: entry.fundingStage ?? null,
       category: entry.category ?? null,
       tags: entry.tags ? [...entry.tags] : null,
+      priority: entry.priority ?? null,
     };
 
     const [row] = await db
@@ -108,6 +132,26 @@ export async function upsertCompanyDirectory(
 
     if (!row) {
       throw new Error(`Failed to upsert company "${entry.companySlug}".`);
+    }
+
+    // The directory file is the source of truth for a Company's contacts,
+    // the same way it already is for every profile field above - replace
+    // rather than merge, so removing a contact from the file removes it
+    // here too, and there's no separate unique-constraint/conflict story
+    // to maintain for what is still hand-curated, low-volume data.
+    if (entry.contacts) {
+      await db.delete(companyContact).where(eq(companyContact.companyId, row.id));
+      if (entry.contacts.length > 0) {
+        await db.insert(companyContact).values(
+          entry.contacts.map((contact) => ({
+            companyId: row.id,
+            name: contact.name,
+            role: contact.role,
+            profileUrl: contact.profileUrl,
+            notes: contact.notes ?? null,
+          })),
+        );
+      }
     }
 
     for (const source of entry.sources) {

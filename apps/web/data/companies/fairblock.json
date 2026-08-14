@@ -1,0 +1,11 @@
+{
+  "companySlug": "fairblock",
+  "companyName": "Fairblock",
+  "websiteUrl": "https://www.fairblock.network",
+  "linkedinUrl": "https://www.linkedin.com/company/fairblock",
+  "description": "Encryption coprocessor built on applied cryptography (threshold identity-based and homomorphic encryption) for MEV-resistant, encrypted onchain transactions.",
+  "category": "infrastructure",
+  "tags": ["protocol", "encryption", "mev", "cosmos"],
+  "priority": "high",
+  "sources": []
+}

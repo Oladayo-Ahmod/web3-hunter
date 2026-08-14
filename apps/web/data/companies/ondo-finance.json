@@ -1,0 +1,16 @@
+{
+  "companySlug": "ondo-finance",
+  "companyName": "Ondo Finance",
+  "websiteUrl": "https://ondo.finance/",
+  "careersPageUrl": "https://job-boards.greenhouse.io/ondofinance",
+  "description": "Builds tokenized real-world-asset (RWA) products, including tokenized US Treasuries, for onchain access to institutional-grade yield.",
+  "category": "defi",
+  "tags": ["defi", "rwa", "stablecoins", "solidity"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "ondofinance"
+    }
+  ]
+}

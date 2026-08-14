@@ -1,0 +1,26 @@
+{
+  "companySlug": "turnkey",
+  "companyName": "Turnkey",
+  "websiteUrl": "https://www.turnkey.com",
+  "careersPageUrl": "https://jobs.ashbyhq.com/turnkey",
+  "twitterUrl": "https://x.com/turnkeyhq",
+  "linkedinUrl": "https://www.linkedin.com/company/turnkeyhq/",
+  "description": "Provides secure, programmable wallet infrastructure -- key management and signing built on secure enclaves -- for crypto and fintech applications.",
+  "category": "wallet",
+  "tags": ["wallet", "account-abstraction"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Jack Kearney",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/jack-kearney-0b693b44/",
+      "notes": "Co-founder of Turnkey"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "turnkey"
+    }
+  ]
+}

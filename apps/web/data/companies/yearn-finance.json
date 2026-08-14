@@ -1,0 +1,11 @@
+{
+  "companySlug": "yearn-finance",
+  "companyName": "Yearn Finance",
+  "websiteUrl": "https://yearn.fi/",
+  "linkedinUrl": "https://www.linkedin.com/company/yearn",
+  "description": "Decentralized collective building yield-aggregation vaults that automate DeFi yield-farming strategies for depositors.",
+  "category": "defi",
+  "tags": ["defi", "yield", "vaults", "solidity"],
+  "priority": "high",
+  "sources": []
+}

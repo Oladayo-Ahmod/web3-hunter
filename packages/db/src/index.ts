@@ -8,6 +8,7 @@ export { resolveOrCreateCollector } from "./seed/collector-resolution";
 export {
   KNOWN_COLLECTORS,
   upsertCompanyDirectory,
+  type CompanyDirectoryContact,
   type CompanyDirectoryEntry,
   type CompanyDirectorySource,
   type CompanyDirectoryUpsertResult,

@@ -1,0 +1,12 @@
+{
+  "companySlug": "blocksec",
+  "companyName": "BlockSec",
+  "websiteUrl": "https://blocksec.com",
+  "twitterUrl": "https://x.com/blocksecteam",
+  "linkedinUrl": "https://www.linkedin.com/company/blocksec",
+  "description": "Web3 security company offering smart contract audits, 24/7 threat monitoring, and automated exploit prevention.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "threat-monitoring"],
+  "priority": "medium",
+  "sources": []
+}

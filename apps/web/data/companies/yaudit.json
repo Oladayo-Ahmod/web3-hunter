@@ -1,0 +1,11 @@
+{
+  "companySlug": "yaudit",
+  "companyName": "yAudit",
+  "websiteUrl": "https://www.yaudit.dev",
+  "twitterUrl": "https://x.com/yAuditDAO",
+  "description": "Security collective born out of yearn.finance's yAcademy fellowship, offering smart contract and ZK audits, research, and training.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "sources": []
+}

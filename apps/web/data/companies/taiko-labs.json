@@ -1,0 +1,19 @@
+{
+  "companySlug": "taiko-labs",
+  "companyName": "Taiko Labs",
+  "websiteUrl": "https://www.taiko.xyz",
+  "careersPageUrl": "https://taiko.xyz/careers",
+  "description": "Builds Taiko, an Ethereum-equivalent (Type-1) zkEVM Layer 2 rollup using based/contestable rollup architecture.",
+  "category": "l2",
+  "tags": ["protocol", "l2", "zkevm", "based-rollup"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Daniel Wang",
+      "role": "founder",
+      "profileUrl": "https://x.com/realdantaik",
+      "notes": "Founder and CEO of Taiko Labs, previously founder of Loopring"
+    }
+  ],
+  "sources": []
+}

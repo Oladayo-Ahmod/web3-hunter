@@ -1,0 +1,19 @@
+{
+  "companySlug": "scroll",
+  "companyName": "Scroll",
+  "websiteUrl": "https://scroll.io",
+  "linkedinUrl": "https://www.linkedin.com/company/scroll-io",
+  "description": "Native zkEVM Layer 2 for Ethereum offering equivalent security with cheaper, faster transactions.",
+  "category": "l2",
+  "tags": ["protocol", "l2", "zkevm", "zero-knowledge"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Ye Zhang",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/ye-zhang-70b072148",
+      "notes": "Co-founder of Scroll"
+    }
+  ],
+  "sources": []
+}

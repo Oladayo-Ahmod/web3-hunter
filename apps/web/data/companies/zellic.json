@@ -1,0 +1,13 @@
+{
+  "companySlug": "zellic",
+  "companyName": "Zellic",
+  "websiteUrl": "https://www.zellic.io",
+  "careersPageUrl": "https://zellic-inc.notion.site/Jobs-at-Zellic-82cab8ab2be84a3b9fa443e56196fdfa",
+  "twitterUrl": "https://x.com/zellic_io",
+  "linkedinUrl": "https://www.linkedin.com/company/zellic",
+  "description": "Blockchain security firm specializing in smart contract audits and cryptographic research across EVM, Solana, and other chains, offering a premium 'Zenith' audit tier.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "sources": []
+}

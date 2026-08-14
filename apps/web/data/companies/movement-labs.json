@@ -1,0 +1,12 @@
+{
+  "companySlug": "movement-labs",
+  "companyName": "Movement Labs",
+  "websiteUrl": "https://movementlabs.xyz",
+  "careersPageUrl": "https://ecosystem.movementlabs.xyz/",
+  "linkedinUrl": "https://www.linkedin.com/company/movementlabsxyz",
+  "description": "Builds Movement Network, a modular Move-language based Layer 2 execution environment for Ethereum.",
+  "category": "l2",
+  "tags": ["protocol", "l2", "move", "modular"],
+  "priority": "medium",
+  "sources": []
+}

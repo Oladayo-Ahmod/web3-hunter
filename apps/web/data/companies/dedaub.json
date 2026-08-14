@@ -1,0 +1,13 @@
+{
+  "companySlug": "dedaub",
+  "companyName": "Dedaub",
+  "websiteUrl": "https://dedaub.com",
+  "careersPageUrl": "https://dedaub.com/company/careers",
+  "twitterUrl": "https://x.com/dedaub",
+  "linkedinUrl": "https://mt.linkedin.com/company/dedaub",
+  "description": "Malta-based smart contract security firm offering audits and decompilation-based security tooling, with 300+ audits completed for clients like Ethereum Foundation and Lido.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "phoenix-labs-spark",
+  "companyName": "Phoenix Labs",
+  "websiteUrl": "https://www.phoenixlabs.dev/",
+  "linkedinUrl": "https://www.linkedin.com/company/phoenix-labs-defi",
+  "description": "R&D company specializing in smart contract development for DeFi, and the team behind Spark Protocol, the DAI/USDS-centric lending protocol in the Sky (MakerDAO) ecosystem.",
+  "category": "defi",
+  "tags": ["defi", "lending", "solidity"],
+  "priority": "high",
+  "sources": []
+}

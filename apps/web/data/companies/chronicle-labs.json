@@ -1,0 +1,16 @@
+{
+  "companySlug": "chronicle-labs",
+  "companyName": "Chronicle Labs (Chronicle Protocol)",
+  "websiteUrl": "https://chroniclelabs.org",
+  "careersPageUrl": "https://chroniclelabs.org/careers",
+  "description": "Builds Chronicle Protocol, a fully verifiable decentralized oracle originally spun out of MakerDAO/Sky, securing billions in DeFi TVL.",
+  "category": "infrastructure",
+  "tags": ["protocol", "oracle", "verifiable-computation"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "chronicle-labs"
+    }
+  ]
+}

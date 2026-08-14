@@ -1,0 +1,11 @@
+{
+  "companySlug": "contango",
+  "companyName": "Contango",
+  "websiteUrl": "https://contango.xyz/",
+  "twitterUrl": "https://x.com/Contango_xyz",
+  "description": "Onchain leveraged-trading protocol that builds perpetual-like exposure by automating looped lending/borrowing across money markets.",
+  "category": "defi",
+  "tags": ["defi", "derivatives", "lending", "solidity"],
+  "priority": "high",
+  "sources": []
+}

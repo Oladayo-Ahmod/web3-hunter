@@ -1,0 +1,13 @@
+{
+  "companySlug": "aleph-zero",
+  "companyName": "Aleph Zero",
+  "websiteUrl": "https://alephzero.org",
+  "careersPageUrl": "https://alephzero.org/careers/",
+  "twitterUrl": "https://x.com/Aleph__Zero",
+  "linkedinUrl": "https://www.linkedin.com/company/alephzero",
+  "description": "Privacy-enabled, modular Layer-1 blockchain incorporating zero-knowledge features for scalable, confidential applications.",
+  "category": "infrastructure",
+  "tags": ["zk", "privacy"],
+  "priority": "medium",
+  "sources": []
+}

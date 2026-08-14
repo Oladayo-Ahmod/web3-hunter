@@ -1,0 +1,12 @@
+{
+  "companySlug": "candide",
+  "companyName": "Candide",
+  "websiteUrl": "https://www.candide.dev",
+  "twitterUrl": "https://x.com/candidelabs",
+  "linkedinUrl": "https://www.linkedin.com/company/candidelabs",
+  "description": "Builds smart account infrastructure and SDKs (AbstractionKit) supporting ERC-4337 and EIP-7702 account abstraction.",
+  "category": "infrastructure",
+  "tags": ["account-abstraction", "wallet"],
+  "priority": "medium",
+  "sources": []
+}

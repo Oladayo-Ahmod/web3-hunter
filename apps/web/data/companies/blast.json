@@ -1,0 +1,24 @@
+{
+  "companySlug": "blast",
+  "companyName": "Blast",
+  "websiteUrl": "https://blast.io",
+  "careersPageUrl": "https://jobs.ashbyhq.com/blast-io",
+  "description": "Ethereum Layer 2 offering native yield on bridged ETH and stablecoins, built by the team behind the Blur NFT marketplace.",
+  "category": "l2",
+  "tags": ["protocol", "l2", "yield", "evm"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Tieshun Roquerre (Pacman)",
+      "role": "founder",
+      "profileUrl": "https://x.com/blast_pacman",
+      "notes": "Founder of Blast, co-founder of Blur"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "blast-io"
+    }
+  ]
+}

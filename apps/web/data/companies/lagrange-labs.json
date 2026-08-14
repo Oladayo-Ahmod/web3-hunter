@@ -1,0 +1,26 @@
+{
+  "companySlug": "lagrange-labs",
+  "companyName": "Lagrange Labs",
+  "websiteUrl": "https://www.lagrange.dev",
+  "careersPageUrl": "https://job-boards.greenhouse.io/lagrange",
+  "twitterUrl": "https://x.com/lagrangedev",
+  "linkedinUrl": "https://www.linkedin.com/company/lagrange-labs",
+  "description": "Zero-knowledge coprocessor and proof network providing verifiable off-chain computation and cross-chain state proofs for blockchains.",
+  "category": "infrastructure",
+  "tags": ["zk"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Ismael Hishon-Rezaizadeh",
+      "role": "founder",
+      "profileUrl": "https://x.com/Ismael_H_R",
+      "notes": "Founder and CEO of Lagrange Labs"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "lagrange"
+    }
+  ]
+}

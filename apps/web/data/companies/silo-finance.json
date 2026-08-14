@@ -1,0 +1,11 @@
+{
+  "companySlug": "silo-finance",
+  "companyName": "Silo Finance",
+  "websiteUrl": "https://www.silo.finance/",
+  "linkedinUrl": "https://www.linkedin.com/company/silo-finance",
+  "description": "Risk-isolated lending protocol that lets any token have its own isolated lending market, live on Ethereum and Arbitrum.",
+  "category": "defi",
+  "tags": ["defi", "lending", "solidity"],
+  "priority": "high",
+  "sources": []
+}

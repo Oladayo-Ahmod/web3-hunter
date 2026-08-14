@@ -1,0 +1,11 @@
+{
+  "companySlug": "enigma-dark",
+  "companyName": "Enigma Dark",
+  "websiteUrl": "https://www.enigmadark.com",
+  "twitterUrl": "https://x.com/EnigmadarkLabs",
+  "description": "Security research firm of specialist auditors, cryptographers, and fuzzing/formal-verification engineers providing principal-led security reviews for a curated set of EVM protocols.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,12 @@
+{
+  "companySlug": "salus-security",
+  "companyName": "Salus Security",
+  "websiteUrl": "https://salusec.io",
+  "careersPageUrl": "https://salusec.io/careers/",
+  "linkedinUrl": "https://www.linkedin.com/company/salusec",
+  "description": "Blockchain security firm, backed by Binance Labs, offering smart contract audits and Web3 penetration testing.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "penetration-testing"],
+  "priority": "medium",
+  "sources": []
+}

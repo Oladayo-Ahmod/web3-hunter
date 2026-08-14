@@ -1,0 +1,20 @@
+{
+  "companySlug": "redstone-oracles",
+  "companyName": "RedStone Oracles",
+  "websiteUrl": "https://www.redstone.finance",
+  "careersPageUrl": "https://www.redstone.finance/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/redstone-finance",
+  "description": "Modular blockchain oracle delivering yield-bearing and real-world asset price data, securing tens of billions in TVL across 150+ DeFi protocols.",
+  "category": "infrastructure",
+  "tags": ["protocol", "oracle", "defi", "price-feeds"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Marcin Kazmierczak",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/MarcinRedStone",
+      "notes": "Co-founder of RedStone Oracles"
+    }
+  ],
+  "sources": []
+}

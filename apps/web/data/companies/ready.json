@@ -1,0 +1,26 @@
+{
+  "companySlug": "ready",
+  "companyName": "Ready (formerly Argent)",
+  "websiteUrl": "https://ready.co",
+  "careersPageUrl": "https://jobs.ashbyhq.com/ready",
+  "twitterUrl": "https://x.com/ready_co",
+  "linkedinUrl": "https://www.linkedin.com/company/readyco",
+  "description": "Smart contract wallet (rebranded from Argent in 2025) offering self-custody, on-chain banking features, and DeFi access on Ethereum and Starknet.",
+  "category": "wallet",
+  "tags": ["wallet", "account-abstraction"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Itamar Lesuisse",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/itamarl",
+      "notes": "Co-founder and CEO of Ready (formerly Argent)"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "ready"
+    }
+  ]
+}

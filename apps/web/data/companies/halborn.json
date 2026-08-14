@@ -1,0 +1,21 @@
+{
+  "companySlug": "halborn",
+  "companyName": "Halborn",
+  "websiteUrl": "https://www.halborn.com",
+  "careersPageUrl": "https://www.halborn.com/careers",
+  "twitterUrl": "https://x.com/HalbornSecurity",
+  "linkedinUrl": "https://www.linkedin.com/company/halborn",
+  "description": "Blockchain cybersecurity firm founded in 2019 offering smart contract audits, penetration testing, and offensive security for crypto organizations.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "penetration-testing"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Rob Behnke",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/rbehnke/",
+      "notes": "Co-founder"
+    }
+  ],
+  "sources": []
+}

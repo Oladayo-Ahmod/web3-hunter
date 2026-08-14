@@ -1,0 +1,10 @@
+{
+  "companySlug": "index-coop",
+  "companyName": "Index Coop",
+  "websiteUrl": "https://www.indexcoop.com/",
+  "description": "DAO that builds and maintains onchain structured products and index/leverage tokens such as the DeFi Pulse Index.",
+  "category": "defi",
+  "tags": ["defi", "index", "structured-products"],
+  "priority": "medium",
+  "sources": []
+}

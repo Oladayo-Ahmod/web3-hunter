@@ -1,0 +1,12 @@
+{
+  "companySlug": "three-sigma",
+  "companyName": "Three Sigma",
+  "websiteUrl": "https://threesigma.xyz",
+  "careersPageUrl": "https://threesigma.xyz/about",
+  "twitterUrl": "https://x.com/threesigmaxyz",
+  "description": "Web3 security firm providing smart contract audits and economic/risk modeling for DeFi protocols, having secured over $10B in client assets.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "economic-risk"],
+  "priority": "high",
+  "sources": []
+}

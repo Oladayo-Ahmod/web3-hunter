@@ -1,0 +1,18 @@
+{
+  "companySlug": "socket-protocol",
+  "companyName": "Socket Protocol (Bungee)",
+  "websiteUrl": "https://www.socket.tech",
+  "description": "Chain-abstraction protocol powering Bungee, letting apps read state from and route transactions across 20+ blockchains through a unified API.",
+  "category": "infrastructure",
+  "tags": ["protocol", "interoperability", "chain-abstraction", "bridge"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Vaibhav Chellani",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/vaibhavchellani",
+      "notes": "Founder and CEO of Socket Protocol; not to be confused with Socket.dev, a separate company"
+    }
+  ],
+  "sources": []
+}

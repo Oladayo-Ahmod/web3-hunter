@@ -1,0 +1,11 @@
+{
+  "companySlug": "notional-finance",
+  "companyName": "Notional Finance",
+  "websiteUrl": "https://notional.finance/",
+  "linkedinUrl": "https://www.linkedin.com/company/notionalfinance",
+  "description": "DeFi protocol enabling fixed-rate, fixed-term crypto lending and borrowing on Ethereum.",
+  "category": "defi",
+  "tags": ["defi", "lending", "fixed-rate", "solidity"],
+  "priority": "high",
+  "sources": []
+}

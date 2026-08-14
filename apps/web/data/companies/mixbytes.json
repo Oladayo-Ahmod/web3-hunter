@@ -1,0 +1,13 @@
+{
+  "companySlug": "mixbytes",
+  "companyName": "MixBytes",
+  "websiteUrl": "https://mixbytes.io",
+  "careersPageUrl": "https://mixbytes.io/careers",
+  "twitterUrl": "https://x.com/MixBytes",
+  "linkedinUrl": "https://www.linkedin.com/company/mixbytes",
+  "description": "Blockchain security firm founded in 2017 providing smart contract audits and code reviews for DeFi and infrastructure protocols.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "sources": []
+}

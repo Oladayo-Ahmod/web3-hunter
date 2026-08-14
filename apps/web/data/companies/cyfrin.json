@@ -1,0 +1,20 @@
+{
+  "companySlug": "cyfrin",
+  "companyName": "Cyfrin",
+  "websiteUrl": "https://www.cyfrin.io",
+  "twitterUrl": "https://x.com/Cyfrin",
+  "linkedinUrl": "https://www.linkedin.com/company/cyfrin/",
+  "description": "Web3 security firm that performs smart contract audits and runs Cyfrin Updraft, a training platform for smart contract security auditors.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Patrick Collins",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/PatrickAlphaC",
+      "notes": "CEO & co-founder"
+    }
+  ],
+  "sources": []
+}

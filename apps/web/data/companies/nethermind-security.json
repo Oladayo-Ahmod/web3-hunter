@@ -1,0 +1,26 @@
+{
+  "companySlug": "nethermind-security",
+  "companyName": "Nethermind Security",
+  "websiteUrl": "https://www.nethermind.io/nethermind-security",
+  "careersPageUrl": "https://jobs.ashbyhq.com/nethermind",
+  "twitterUrl": "https://x.com/NethermindEth",
+  "linkedinUrl": "https://uk.linkedin.com/company/nethermind",
+  "description": "The dedicated security arm of Nethermind, performing smart contract, Cairo, and zero-knowledge audits for Ethereum and Starknet ecosystem protocols.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "zk-security"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Cristiano Silva",
+      "role": "security_lead",
+      "profileUrl": "https://www.linkedin.com/in/0xchris/",
+      "notes": "Head of Nethermind Security"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "nethermind"
+    }
+  ]
+}

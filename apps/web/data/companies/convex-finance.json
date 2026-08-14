@@ -1,0 +1,10 @@
+{
+  "companySlug": "convex-finance",
+  "companyName": "Convex Finance",
+  "websiteUrl": "https://www.convexfinance.com/",
+  "description": "Boosts yields and voting power for Curve (and Frax) liquidity providers and CRV stakers via a single non-custodial staking platform.",
+  "category": "defi",
+  "tags": ["defi", "yield", "staking", "solidity"],
+  "priority": "high",
+  "sources": []
+}

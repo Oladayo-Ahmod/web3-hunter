@@ -1,0 +1,25 @@
+{
+  "companySlug": "aztec-network",
+  "companyName": "Aztec Network",
+  "websiteUrl": "https://aztec.network",
+  "careersPageUrl": "https://jobs.ashbyhq.com/aztec-labs",
+  "twitterUrl": "https://x.com/aztecnetwork",
+  "description": "Builds Aztec, a privacy-focused zero-knowledge rollup on Ethereum that enables confidential smart contracts.",
+  "category": "infrastructure",
+  "tags": ["zk", "privacy"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Zac Williamson",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/Zac_Aztec",
+      "notes": "Co-founder and CEO of Aztec Labs"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "aztec-labs"
+    }
+  ]
+}

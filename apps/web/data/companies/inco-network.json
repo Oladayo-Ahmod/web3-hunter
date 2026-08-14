@@ -1,0 +1,25 @@
+{
+  "companySlug": "inco-network",
+  "companyName": "Inco Network",
+  "websiteUrl": "https://www.inco.org",
+  "careersPageUrl": "https://jobs.ashbyhq.com/inco",
+  "twitterUrl": "https://x.com/inconetwork",
+  "description": "Builds a confidentiality layer for Web3 powered by Fully Homomorphic Encryption (FHE), enabling confidential smart contracts secured by Ethereum.",
+  "category": "infrastructure",
+  "tags": ["fhe", "privacy", "zk"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Remi Gai",
+      "role": "founder",
+      "profileUrl": "https://x.com/remi_gai",
+      "notes": "Founder and CEO of Inco"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "inco"
+    }
+  ]
+}

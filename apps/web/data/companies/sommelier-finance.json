@@ -1,0 +1,10 @@
+{
+  "companySlug": "sommelier-finance",
+  "companyName": "Sommelier",
+  "websiteUrl": "https://www.sommelier.finance/",
+  "description": "Cosmos SDK proof-of-stake chain that coordinates automated, cross-chain DeFi investment vaults known as \"cellars.\"",
+  "category": "defi",
+  "tags": ["defi", "vaults", "cross-chain"],
+  "priority": "high",
+  "sources": []
+}

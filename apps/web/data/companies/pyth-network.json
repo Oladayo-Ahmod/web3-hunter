@@ -1,0 +1,18 @@
+{
+  "companySlug": "pyth-network",
+  "companyName": "Pyth Network (Douro Labs)",
+  "websiteUrl": "https://www.pyth.network",
+  "description": "First-party financial oracle network delivering low-latency, institutional-grade market data onchain, built by core contributor Douro Labs.",
+  "category": "infrastructure",
+  "tags": ["protocol", "oracle", "market-data"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Mike Cahill",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/mdomcahill",
+      "notes": "CEO and co-founder of Douro Labs, core contributor to Pyth Network"
+    }
+  ],
+  "sources": []
+}

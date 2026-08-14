@@ -1,0 +1,11 @@
+{
+  "companySlug": "family",
+  "companyName": "Family",
+  "websiteUrl": "https://family.co",
+  "twitterUrl": "https://x.com/family",
+  "description": "Self-custody iOS crypto wallet with NFT support and simple send, swap, and portfolio-management features.",
+  "category": "wallet",
+  "tags": ["wallet"],
+  "priority": "low",
+  "sources": []
+}

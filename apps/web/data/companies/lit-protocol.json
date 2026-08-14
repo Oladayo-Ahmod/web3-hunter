@@ -1,0 +1,12 @@
+{
+  "companySlug": "lit-protocol",
+  "companyName": "Lit Protocol",
+  "websiteUrl": "https://www.litprotocol.com",
+  "careersPageUrl": "https://www.litprotocol.com/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/lit-protocol",
+  "description": "Decentralized key-management network providing programmable signing and encryption for cross-chain apps, agents and automations.",
+  "category": "infrastructure",
+  "tags": ["protocol", "key-management", "mpc", "encryption"],
+  "priority": "high",
+  "sources": []
+}

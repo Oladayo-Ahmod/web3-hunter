@@ -1,0 +1,12 @@
+{
+  "companySlug": "rainbow",
+  "companyName": "Rainbow",
+  "websiteUrl": "https://rainbow.me",
+  "careersPageUrl": "https://rainbow.crew.work/",
+  "twitterUrl": "https://x.com/rainbowdotme",
+  "description": "Mobile and browser Ethereum wallet focused on simple, secure onboarding to Web3, DeFi, and NFTs.",
+  "category": "wallet",
+  "tags": ["wallet"],
+  "priority": "medium",
+  "sources": []
+}

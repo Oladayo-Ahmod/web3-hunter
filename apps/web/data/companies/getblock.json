@@ -1,0 +1,12 @@
+{
+  "companySlug": "getblock",
+  "companyName": "GetBlock",
+  "websiteUrl": "https://getblock.io/",
+  "careersPageUrl": "https://getblock.io/careers/",
+  "linkedinUrl": "https://www.linkedin.com/company/getblock",
+  "description": "Blockchain RPC node provider offering instant API access to full nodes across 50+ networks for Web3 developers.",
+  "category": "infrastructure",
+  "tags": ["infrastructure", "rpc", "nodes"],
+  "priority": "medium",
+  "sources": []
+}

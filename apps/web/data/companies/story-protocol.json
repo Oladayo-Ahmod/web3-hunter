@@ -1,0 +1,20 @@
+{
+  "companySlug": "story-protocol",
+  "companyName": "Story Protocol (PIP Labs)",
+  "websiteUrl": "https://www.storyprotocol.xyz",
+  "twitterUrl": "https://x.com/storyprotocol",
+  "linkedinUrl": "https://www.linkedin.com/company/story-protocol",
+  "description": "Purpose-built Layer 1 blockchain that turns intellectual property into programmable onchain assets with automated licensing and royalties.",
+  "category": "l1",
+  "tags": ["protocol", "l1", "intellectual-property", "nft"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Seung Yoon Lee",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/s-y-seung-yoon-lee-8205a444",
+      "notes": "CEO and co-founder of Story Protocol / PIP Labs"
+    }
+  ],
+  "sources": []
+}

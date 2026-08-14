@@ -1,0 +1,12 @@
+{
+  "companySlug": "api3",
+  "companyName": "API3",
+  "websiteUrl": "https://api3.org",
+  "twitterUrl": "https://x.com/api3dao",
+  "linkedinUrl": "https://www.linkedin.com/company/api3",
+  "description": "First-party oracle network and DAO that lets data providers run their own oracle nodes, paying dApps directly for data usage.",
+  "category": "infrastructure",
+  "tags": ["protocol", "oracle", "dao"],
+  "priority": "low",
+  "sources": []
+}

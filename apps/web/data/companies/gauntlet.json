@@ -1,0 +1,16 @@
+{
+  "companySlug": "gauntlet",
+  "companyName": "Gauntlet",
+  "websiteUrl": "https://www.gauntlet.xyz/",
+  "careersPageUrl": "https://www.gauntlet.xyz/careers",
+  "description": "Quantitative risk management and economic parameter optimization for DeFi lending, trading, and liquid-staking protocols.",
+  "category": "defi",
+  "tags": ["defi", "risk-management", "quant"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "gauntlet"
+    }
+  ]
+}

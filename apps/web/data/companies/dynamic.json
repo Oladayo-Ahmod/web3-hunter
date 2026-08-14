@@ -1,0 +1,18 @@
+{
+  "companySlug": "dynamic",
+  "companyName": "Dynamic",
+  "websiteUrl": "https://www.dynamic.xyz",
+  "careersPageUrl": "https://jobs.ashbyhq.com/dynamic",
+  "twitterUrl": "https://x.com/dynamic_xyz",
+  "linkedinUrl": "https://www.linkedin.com/company/dynamiclabs",
+  "description": "Provides embedded wallet and authentication infrastructure, including account abstraction, for fintechs, neobanks, and crypto apps.",
+  "category": "wallet",
+  "tags": ["wallet", "account-abstraction"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "dynamic"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "companySlug": "dydx-trading",
+  "companyName": "dYdX Trading",
+  "websiteUrl": "https://dydx.trade",
+  "description": "Builds dYdX Chain, a standalone Cosmos-based app-chain powering a decentralized perpetuals exchange.",
+  "category": "defi",
+  "tags": ["protocol", "defi", "perpetuals", "appchain", "cosmos"],
+  "priority": "medium",
+  "sources": []
+}

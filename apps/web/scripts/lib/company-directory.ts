@@ -32,6 +32,15 @@ const sourceSchema = z.object({
 });
 
 const categoryEnumValues = schema.companyCategory.enumValues;
+const priorityEnumValues = schema.companyPriority.enumValues;
+const contactRoleEnumValues = schema.companyContactRole.enumValues;
+
+const contactSchema = z.object({
+  name: z.string().min(1),
+  role: z.enum(contactRoleEnumValues),
+  profileUrl: z.string().url(),
+  notes: textField,
+});
 
 const entrySchema = z.object({
   companySlug: z.string().min(1),
@@ -49,6 +58,8 @@ const entrySchema = z.object({
   fundingStage: textField,
   category: z.enum(categoryEnumValues).nullable().optional(),
   tags: z.array(z.string()).nullable().optional(),
+  priority: z.enum(priorityEnumValues).nullable().optional(),
+  contacts: z.array(contactSchema).optional(),
   sources: z.array(sourceSchema),
 });
 

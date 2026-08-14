@@ -1,0 +1,25 @@
+{
+  "companySlug": "sequence",
+  "companyName": "Sequence",
+  "websiteUrl": "https://sequence.xyz",
+  "careersPageUrl": "https://jobs.ashbyhq.com/sequence",
+  "twitterUrl": "https://x.com/0xsequence",
+  "description": "Smart contract wallet and account abstraction platform (by Horizon Blockchain Games) built for Web3 games and consumer apps.",
+  "category": "wallet",
+  "tags": ["wallet", "account-abstraction"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Peter Kieltyka",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/peterk",
+      "notes": "Co-founder and CEO of Sequence / Horizon Blockchain Games"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "sequence"
+    }
+  ]
+}

@@ -4,7 +4,10 @@ export type {
   AIArtifactSummaryDTO,
   CollectorHealthDTO,
   CollectorStatusDTO,
+  CompanyContactDTO,
+  CompanyContactRoleDTO,
   CompanyIntelligenceSummaryDTO,
+  CompanyPriorityDTO,
   CompanyProfileDTO,
   CompanySummaryDTO,
   CompanyTechnologyProfileDTO,
@@ -18,6 +21,8 @@ export type {
   OpportunityDetailDTO,
   OpportunityFeedItemDTO,
   OpportunityStatusDTO,
+  OpportunityTypeDTO,
+  OutreachTargetDTO,
   PaginatedResult,
   PipelineRunDTO,
   PipelineRunStatusDTO,
@@ -30,6 +35,7 @@ export type {
   TargetRoleDTO,
   UserProfileSummaryDTO,
 } from "./dto";
+export { classifyOpportunityType, listOutreachTargets } from "./outreach-query-service";
 export {
   getOpportunityDetail,
   listOpportunityFeed,

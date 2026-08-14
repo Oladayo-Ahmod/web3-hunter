@@ -1,0 +1,24 @@
+{
+  "companySlug": "composable-security",
+  "companyName": "Composable Security",
+  "websiteUrl": "https://composable-security.com",
+  "description": "Smart contract audit and threat modeling firm run by managing partners Paweł Kuryłowicz and Damian Rusinek.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Paweł Kuryłowicz",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/pkurylowicz/",
+      "notes": "Managing Partner"
+    },
+    {
+      "name": "Damian Rusinek",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/damianrusinek/",
+      "notes": "Managing Partner"
+    }
+  ],
+  "sources": []
+}

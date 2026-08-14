@@ -1,0 +1,16 @@
+{
+  "companySlug": "centrifuge",
+  "companyName": "Centrifuge",
+  "websiteUrl": "https://centrifuge.io/",
+  "careersPageUrl": "https://centrifuge.io/careers",
+  "description": "Brings real-world assets (private credit, treasuries) onchain, providing the infrastructure behind onchain RWA lending pools used by MakerDAO and Aave.",
+  "category": "defi",
+  "tags": ["defi", "rwa", "lending", "solidity"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "centrifuge"
+    }
+  ]
+}

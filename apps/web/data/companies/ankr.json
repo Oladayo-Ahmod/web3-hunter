@@ -1,0 +1,12 @@
+{
+  "companySlug": "ankr",
+  "companyName": "Ankr",
+  "websiteUrl": "https://www.ankr.com/",
+  "careersPageUrl": "https://www.ankr.com/careers/",
+  "twitterUrl": "https://twitter.com/ankr",
+  "description": "Decentralized Web3 infrastructure provider offering RPC nodes, staking, and rollup/appchain deployment tools across 70+ blockchains.",
+  "category": "infrastructure",
+  "tags": ["infrastructure", "rpc", "nodes", "staking"],
+  "priority": "medium",
+  "sources": []
+}

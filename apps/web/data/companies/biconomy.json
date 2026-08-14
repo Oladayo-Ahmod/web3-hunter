@@ -1,0 +1,24 @@
+{
+  "companySlug": "biconomy",
+  "companyName": "Biconomy",
+  "websiteUrl": "https://www.biconomy.io",
+  "careersPageUrl": "https://jobs.ashbyhq.com/biconomy",
+  "description": "Provides account abstraction infrastructure -- bundlers, paymasters, and smart accounts -- enabling gasless transactions across chains.",
+  "category": "infrastructure",
+  "tags": ["account-abstraction", "wallet"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Ahmed Al-Balaghi",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/AraBalaghi",
+      "notes": "Co-founder and CEO of Biconomy"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "biconomy"
+    }
+  ]
+}

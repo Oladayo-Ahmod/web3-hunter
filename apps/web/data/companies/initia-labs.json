@@ -1,0 +1,12 @@
+{
+  "companySlug": "initia-labs",
+  "companyName": "Initia",
+  "websiteUrl": "https://initia.xyz",
+  "careersPageUrl": "https://initia-labs.breezy.hr/",
+  "linkedinUrl": "https://www.linkedin.com/company/initia-labs",
+  "description": "Builds a network of app-specific L2 rollups fused with an L1 settlement layer for an omnichain, interwoven modular blockchain ecosystem.",
+  "category": "l1",
+  "tags": ["protocol", "l1", "modular", "rollups"],
+  "priority": "high",
+  "sources": []
+}

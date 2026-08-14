@@ -1,0 +1,13 @@
+{
+  "companySlug": "sherlock",
+  "companyName": "Sherlock",
+  "websiteUrl": "https://sherlock.xyz",
+  "careersPageUrl": "https://sherlock.xyz/about",
+  "twitterUrl": "https://x.com/sherlockdefi",
+  "linkedinUrl": "https://www.linkedin.com/company/sherlock-protocol",
+  "description": "Web3 security platform combining incentive-aligned audit contests, collaborative audits, and bug bounties for protocols like Aave and Optimism.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "bug-bounty"],
+  "priority": "medium",
+  "sources": []
+}

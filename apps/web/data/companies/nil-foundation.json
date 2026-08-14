@@ -1,0 +1,21 @@
+{
+  "companySlug": "nil-foundation",
+  "companyName": "=nil; Foundation",
+  "websiteUrl": "https://nil.foundation",
+  "careersPageUrl": "https://nil.foundation/careers",
+  "twitterUrl": "https://x.com/nil_foundation",
+  "linkedinUrl": "https://www.linkedin.com/company/nil-foundation",
+  "description": "Develops zero-knowledge infrastructure and zkSharding technology to scale Ethereum through a zkRollup architecture.",
+  "category": "infrastructure",
+  "tags": ["zk"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Konstantin Lomashuk",
+      "role": "other",
+      "profileUrl": "https://x.com/lomashuk",
+      "notes": "CEO of =nil; Foundation"
+    }
+  ],
+  "sources": []
+}

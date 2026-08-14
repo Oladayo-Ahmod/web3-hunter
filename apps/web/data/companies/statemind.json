@@ -1,0 +1,12 @@
+{
+  "companySlug": "statemind",
+  "companyName": "Statemind",
+  "websiteUrl": "https://statemind.io",
+  "careersPageUrl": "https://statemind.io/careers",
+  "twitterUrl": "https://x.com/statemindio",
+  "description": "Smart contract audit and blockchain security firm specializing in Solidity and Vyper code review, with clients including Curve Finance and Lido.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "sources": []
+}

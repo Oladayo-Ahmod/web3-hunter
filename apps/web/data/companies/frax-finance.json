@@ -1,0 +1,12 @@
+{
+  "companySlug": "frax-finance",
+  "companyName": "Frax Finance",
+  "websiteUrl": "https://frax.com/",
+  "careersPageUrl": "https://frax.com/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/fraxco",
+  "description": "Decentralized stablecoin and DeFi infrastructure protocol behind frxUSD/FRAX and the Fraxtal L2.",
+  "category": "defi",
+  "tags": ["defi", "stablecoins", "solidity"],
+  "priority": "high",
+  "sources": []
+}

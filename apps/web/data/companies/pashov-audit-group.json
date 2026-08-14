@@ -1,0 +1,12 @@
+{
+  "companySlug": "pashov-audit-group",
+  "companyName": "Pashov Audit Group",
+  "websiteUrl": "https://www.pashov.com",
+  "careersPageUrl": "https://www.pashov.com/jobs",
+  "twitterUrl": "https://x.com/PashovAuditGrp",
+  "description": "Smart contract security audit group led by researcher Krum Pashov, providing manual security reviews for blockchain protocols.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "sources": []
+}

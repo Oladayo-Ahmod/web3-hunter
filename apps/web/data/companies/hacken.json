@@ -1,0 +1,21 @@
+{
+  "companySlug": "hacken",
+  "companyName": "Hacken",
+  "websiteUrl": "https://hacken.io",
+  "careersPageUrl": "https://hacken.io/careers/",
+  "twitterUrl": "https://x.com/hackenclub",
+  "linkedinUrl": "https://www.linkedin.com/company/hackenclub",
+  "description": "Cybersecurity auditor founded in 2017 providing smart contract audits, penetration testing, and compliance services for crypto exchanges and protocols.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Dyma Budorin",
+      "role": "founder",
+      "profileUrl": "https://ae.linkedin.com/in/dyma-budorin-acca-ccssa-56a98035",
+      "notes": "Co-founder & CEO"
+    }
+  ],
+  "sources": []
+}
