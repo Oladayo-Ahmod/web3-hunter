@@ -1,0 +1,26 @@
+{
+  "companySlug": "aleo",
+  "companyName": "Aleo",
+  "websiteUrl": "https://aleo.org",
+  "careersPageUrl": "https://jobs.ashbyhq.com/provable",
+  "twitterUrl": "https://x.com/AleoHQ",
+  "linkedinUrl": "https://www.linkedin.com/company/provable",
+  "description": "Privacy-focused L1 blockchain using zero-knowledge proofs for confidential payments and applications, built by Provable Inc. (formerly Aleo Systems).",
+  "category": "infrastructure",
+  "tags": ["zk", "privacy"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Alex Pruden",
+      "role": "other",
+      "profileUrl": "https://x.com/apruden08",
+      "notes": "Executive Director, Aleo Foundation"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "provable"
+    }
+  ]
+}

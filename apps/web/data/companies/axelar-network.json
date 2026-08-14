@@ -1,0 +1,11 @@
+{
+  "companySlug": "axelar-network",
+  "companyName": "Axelar",
+  "websiteUrl": "https://www.axelar.network",
+  "careersPageUrl": "https://www.axelar.network/careers",
+  "description": "Decentralized interoperability network and development platform securely connecting blockchains and financial infrastructure.",
+  "category": "infrastructure",
+  "tags": ["protocol", "interoperability", "bridge", "cross-chain"],
+  "priority": "medium",
+  "sources": []
+}

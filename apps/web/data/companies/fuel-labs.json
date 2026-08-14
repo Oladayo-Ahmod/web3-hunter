@@ -1,0 +1,11 @@
+{
+  "companySlug": "fuel-labs",
+  "companyName": "Fuel Labs",
+  "websiteUrl": "https://fuel.network",
+  "linkedinUrl": "https://www.linkedin.com/company/fuel-labs",
+  "description": "Builds Fuel, a modular execution layer (\"Rollup OS\") for Ethereum with a parallelized FuelVM for high-throughput dApps.",
+  "category": "l2",
+  "tags": ["protocol", "l2", "modular", "execution-layer"],
+  "priority": "high",
+  "sources": []
+}

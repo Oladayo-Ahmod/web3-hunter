@@ -1,0 +1,16 @@
+{
+  "companySlug": "zircuit",
+  "companyName": "Zircuit",
+  "websiteUrl": "https://www.zircuit.com",
+  "careersPageUrl": "https://jobs.ashbyhq.com/zircuit",
+  "description": "EVM-compatible zk-rollup Layer 2 that adds AI-powered sequencer-level security to detect and block exploit transactions.",
+  "category": "l2",
+  "tags": ["protocol", "l2", "zk-rollup", "security"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "zircuit"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "curve-finance",
+  "companyName": "Curve Finance",
+  "websiteUrl": "https://curve.finance/",
+  "careersPageUrl": "https://curve.finance/careers",
+  "description": "AMM/DEX protocol specialized in low-slippage trading of stablecoins and pegged assets, a core DeFi liquidity primitive.",
+  "category": "defi",
+  "tags": ["defi", "amm", "dex", "solidity"],
+  "priority": "high",
+  "sources": []
+}

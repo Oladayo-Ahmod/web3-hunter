@@ -1,0 +1,21 @@
+{
+  "companySlug": "zama",
+  "companyName": "Zama",
+  "websiteUrl": "https://www.zama.org",
+  "careersPageUrl": "https://jobs.zama.ai",
+  "twitterUrl": "https://x.com/zama",
+  "linkedinUrl": "https://www.linkedin.com/company/34914422/",
+  "description": "Builds open-source Fully Homomorphic Encryption (FHE) tooling, including fhEVM and TFHE-rs, for confidential smart contracts and encrypted data processing.",
+  "category": "infrastructure",
+  "tags": ["fhe", "privacy", "zk"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Rand Hindi",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/randhindi",
+      "notes": "Co-founder and CEO of Zama"
+    }
+  ],
+  "sources": []
+}

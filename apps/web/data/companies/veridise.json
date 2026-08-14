@@ -1,0 +1,20 @@
+{
+  "companySlug": "veridise",
+  "companyName": "Veridise",
+  "websiteUrl": "https://veridise.com",
+  "careersPageUrl": "https://veridise.com/careers/",
+  "twitterUrl": "https://x.com/VeridiseInc",
+  "description": "Blockchain security firm specializing in formal methods, DeFi, and zero-knowledge circuit audits, built around in-house vulnerability detection tooling.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "zk-security"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Jon Stephens",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/jon-stephens-729ba622a/",
+      "notes": "CEO & co-founder"
+    }
+  ],
+  "sources": []
+}

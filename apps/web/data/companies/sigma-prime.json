@@ -1,0 +1,18 @@
+{
+  "companySlug": "sigma-prime",
+  "companyName": "Sigma Prime",
+  "websiteUrl": "https://sigmaprime.io",
+  "careersPageUrl": "https://jobs.ashbyhq.com/sigp",
+  "twitterUrl": "https://x.com/sigp_io",
+  "linkedinUrl": "https://www.linkedin.com/company/sigma-prime",
+  "description": "Remote-first Ethereum security and infrastructure firm offering smart contract, offchain, and ZK system audits, and building the Lighthouse consensus client.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "protocol-engineering"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "sigp"
+    }
+  ]
+}

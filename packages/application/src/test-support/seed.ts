@@ -9,13 +9,54 @@ import { getDb, schema } from "@web3-hunter/db";
  * already covered by `packages/scoring`'s own tests.
  */
 
-export async function seedCompany(overrides: { slug: string; name?: string }) {
+export async function seedCompany(overrides: {
+  slug: string;
+  name?: string;
+  discoveryStatus?: "curated" | "discovered" | "verified" | "rejected";
+  priority?: "high" | "medium" | "low" | null;
+  fundingStage?: string | null;
+}) {
   const db = getDb();
   const [company] = await db
     .insert(schema.company)
-    .values({ slug: overrides.slug, name: overrides.name ?? overrides.slug })
+    .values({
+      slug: overrides.slug,
+      name: overrides.name ?? overrides.slug,
+      discoveryStatus: overrides.discoveryStatus ?? "curated",
+      priority: overrides.priority ?? null,
+      fundingStage: overrides.fundingStage ?? null,
+    })
     .returning();
   return company!;
+}
+
+/** Milestone 17: a named Outreach Target contact — see `packages/db`'s `company_contact`. */
+export async function seedCompanyContact(input: {
+  companyId: string;
+  name: string;
+  role?:
+    | "founder"
+    | "cofounder"
+    | "cto"
+    | "head_of_engineering"
+    | "security_lead"
+    | "protocol_lead"
+    | "other";
+  profileUrl?: string;
+  notes?: string | null;
+}) {
+  const db = getDb();
+  const [row] = await db
+    .insert(schema.companyContact)
+    .values({
+      companyId: input.companyId,
+      name: input.name,
+      role: input.role ?? "founder",
+      profileUrl: input.profileUrl ?? "https://x.com/test",
+      notes: input.notes ?? null,
+    })
+    .returning();
+  return row!;
 }
 
 export async function seedOpportunity(input: {

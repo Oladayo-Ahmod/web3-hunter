@@ -1,0 +1,16 @@
+{
+  "companySlug": "across-protocol",
+  "companyName": "Across Protocol (Risk Labs)",
+  "websiteUrl": "https://across.to",
+  "careersPageUrl": "https://jobs.ashbyhq.com/risklabs",
+  "description": "Cross-chain bridge for L2s and rollups secured by UMA's optimistic oracle, built and maintained by Risk Labs.",
+  "category": "infrastructure",
+  "tags": ["protocol", "bridge", "l2", "interoperability"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "risklabs"
+    }
+  ]
+}

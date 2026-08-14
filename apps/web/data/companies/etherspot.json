@@ -1,0 +1,12 @@
+{
+  "companySlug": "etherspot",
+  "companyName": "Etherspot",
+  "websiteUrl": "https://etherspot.io",
+  "twitterUrl": "https://x.com/etherspot",
+  "linkedinUrl": "https://www.linkedin.com/company/etherspotsdk",
+  "description": "Account abstraction development platform providing SDKs and bundler infrastructure for building smart contract wallet experiences.",
+  "category": "infrastructure",
+  "tags": ["account-abstraction", "wallet"],
+  "priority": "medium",
+  "sources": []
+}

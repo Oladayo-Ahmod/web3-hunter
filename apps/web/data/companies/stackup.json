@@ -1,0 +1,10 @@
+{
+  "companySlug": "stackup",
+  "companyName": "Stackup",
+  "websiteUrl": "https://stackup.sh",
+  "description": "Builds ERC-4337 account abstraction infrastructure, including an open-source Golang bundler and paymaster services.",
+  "category": "infrastructure",
+  "tags": ["account-abstraction", "wallet"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,20 @@
+{
+  "companySlug": "debridge",
+  "companyName": "deBridge",
+  "websiteUrl": "https://debridge.finance",
+  "careersPageUrl": "https://debridge.peopleforce.io/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/debridge-finance",
+  "description": "Cross-chain interoperability and liquidity transport protocol for moving messages and assets across blockchains in real time.",
+  "category": "infrastructure",
+  "tags": ["protocol", "interoperability", "bridge", "messaging"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Alex Smirnov",
+      "role": "founder",
+      "profileUrl": "https://x.com/AlexSmirnov__",
+      "notes": "CEO and co-founder of deBridge"
+    }
+  ],
+  "sources": []
+}

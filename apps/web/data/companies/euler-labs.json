@@ -1,0 +1,12 @@
+{
+  "companySlug": "euler-labs",
+  "companyName": "Euler Labs",
+  "websiteUrl": "https://www.eulerlabs.com/",
+  "careersPageUrl": "https://eulerapp.com/careers",
+  "linkedinUrl": "https://uk.linkedin.com/company/euler-xyz",
+  "description": "Fully remote team building the Euler lending protocol and the Ethereum Vault Connector (EVC), a primitive for composable DeFi lending markets.",
+  "category": "defi",
+  "tags": ["defi", "lending", "solidity"],
+  "priority": "high",
+  "sources": []
+}

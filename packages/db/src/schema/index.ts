@@ -2,6 +2,7 @@ export * from "./ai-artifact";
 export * from "./auth";
 export * from "./collector";
 export * from "./company";
+export * from "./company-contact";
 export * from "./company-discovery-probe";
 export * from "./company-intelligence";
 export * from "./company-source-identity";

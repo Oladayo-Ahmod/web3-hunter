@@ -1,0 +1,16 @@
+{
+  "companySlug": "mantle",
+  "companyName": "Mantle",
+  "websiteUrl": "https://www.mantle.xyz",
+  "careersPageUrl": "https://jobs.ashbyhq.com/mantle",
+  "description": "Ethereum Layer 2 network and treasury-backed ecosystem spanning an EVM rollup, liquid staking, and onchain financial products.",
+  "category": "l2",
+  "tags": ["protocol", "l2", "evm", "liquid-staking"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "mantle"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "companySlug": "hyperlane",
+  "companyName": "Hyperlane",
+  "websiteUrl": "https://www.hyperlane.xyz",
+  "description": "Permissionless interoperability protocol letting any chain or rollup connect to the Hyperlane network without needing approval.",
+  "category": "infrastructure",
+  "tags": ["protocol", "interoperability", "bridge", "messaging"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Jon Kol",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/thePalenimbus",
+      "notes": "Co-founder of Hyperlane"
+    }
+  ],
+  "sources": []
+}

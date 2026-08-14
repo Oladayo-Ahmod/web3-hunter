@@ -1,0 +1,10 @@
+{
+  "companySlug": "superform",
+  "companyName": "Superform",
+  "websiteUrl": "https://www.superform.xyz/",
+  "description": "Cross-chain DeFi yield-aggregation protocol that has evolved into a non-custodial onchain neobank for saving, earning, and swapping.",
+  "category": "defi",
+  "tags": ["defi", "yield", "cross-chain", "solidity"],
+  "priority": "high",
+  "sources": []
+}

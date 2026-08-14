@@ -1,0 +1,13 @@
+{
+  "companySlug": "pendle-finance",
+  "companyName": "Pendle Finance",
+  "websiteUrl": "https://www.pendle.finance/",
+  "careersPageUrl": "https://www.pendle.finance/",
+  "twitterUrl": "https://x.com/pendle_fi",
+  "linkedinUrl": "https://www.linkedin.com/company/pendlefinance",
+  "description": "Onchain yield-trading protocol that lets users tokenize and trade future yield separately from principal.",
+  "category": "defi",
+  "tags": ["defi", "yield", "derivatives", "solidity"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,13 @@
+{
+  "companySlug": "privy",
+  "companyName": "Privy",
+  "websiteUrl": "https://www.privy.io",
+  "careersPageUrl": "https://jobs.ashbyhq.com/privy",
+  "twitterUrl": "https://x.com/privy_io",
+  "linkedinUrl": "https://www.linkedin.com/company/privyio",
+  "description": "Provides embedded wallet and authentication infrastructure for onboarding users into crypto apps; acquired by Stripe in 2025 and continues operating as an independent product.",
+  "category": "wallet",
+  "tags": ["wallet", "account-abstraction"],
+  "priority": "medium",
+  "sources": []
+}

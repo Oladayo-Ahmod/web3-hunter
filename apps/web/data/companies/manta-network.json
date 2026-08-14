@@ -1,0 +1,25 @@
+{
+  "companySlug": "manta-network",
+  "companyName": "Manta Network (p0x labs)",
+  "websiteUrl": "https://www.manta.network",
+  "careersPageUrl": "https://jobs.lever.co/MantaNetwork",
+  "linkedinUrl": "https://www.linkedin.com/company/mantanetwork",
+  "description": "Modular Layer 2 blockchain focused on zk-powered privacy and scalable execution, developed by p0x labs.",
+  "category": "l2",
+  "tags": ["protocol", "l2", "zero-knowledge", "privacy"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Kenny Li",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/superanonymousk",
+      "notes": "Co-founder and COO of Manta Network / p0x labs"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "MantaNetwork"
+    }
+  ]
+}

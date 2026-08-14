@@ -1,0 +1,25 @@
+{
+  "companySlug": "eigen-labs",
+  "companyName": "Eigen Labs (EigenLayer)",
+  "websiteUrl": "https://www.eigenlayer.xyz",
+  "careersPageUrl": "https://jobs.ashbyhq.com/eigen-labs",
+  "linkedinUrl": "https://www.linkedin.com/company/eigenlabsorg",
+  "description": "Builds EigenLayer/EigenCloud, the restaking protocol that lets ETH stakers extend Ethereum's cryptoeconomic security to other networks and services (AVSs).",
+  "category": "infrastructure",
+  "tags": ["protocol", "restaking", "shared-security", "eigenlayer"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Sreeram Kannan",
+      "role": "founder",
+      "profileUrl": "https://x.com/sreeramkannan",
+      "notes": "Founder and CEO of Eigen Labs"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "eigen-labs"
+    }
+  ]
+}

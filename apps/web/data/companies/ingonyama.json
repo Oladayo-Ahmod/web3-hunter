@@ -1,0 +1,13 @@
+{
+  "companySlug": "ingonyama",
+  "companyName": "Ingonyama",
+  "websiteUrl": "https://www.ingonyama.com",
+  "careersPageUrl": "https://www.ingonyama.com/careers",
+  "twitterUrl": "https://x.com/Ingo_zk",
+  "linkedinUrl": "https://il.linkedin.com/company/ingonyama",
+  "description": "Semiconductor company designing hardware and acceleration software to speed up zero-knowledge proof generation.",
+  "category": "infrastructure",
+  "tags": ["zk"],
+  "priority": "high",
+  "sources": []
+}

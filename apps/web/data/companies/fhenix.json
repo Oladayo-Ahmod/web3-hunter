@@ -1,0 +1,20 @@
+{
+  "companySlug": "fhenix",
+  "companyName": "Fhenix",
+  "websiteUrl": "https://www.fhenix.io",
+  "careersPageUrl": "https://www.fhenix.io/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/fhenix",
+  "description": "Blockchain R&D company building a confidential EVM-compatible chain using Fully Homomorphic Encryption (FHE) for encrypted smart contracts.",
+  "category": "infrastructure",
+  "tags": ["protocol", "fhe", "privacy", "evm"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Guy Itzhaki",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/GuyItz",
+      "notes": "CEO of Fhenix, former Intel FHE & Blockchain Division director"
+    }
+  ],
+  "sources": []
+}

@@ -10,9 +10,12 @@ export default function HomePage() {
           Explainable, deterministic hiring-intent Opportunities for Web3 engineers.
         </p>
       </div>
-      <div className="flex gap-3">
+      <div className="flex flex-wrap justify-center gap-3">
         <Button asChild>
-          <Link href="/opportunities">Browse Opportunities</Link>
+          <Link href="/outreach">Who to Contact Today</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/jobs">Browse Jobs</Link>
         </Button>
         <Button asChild variant="outline">
           <Link href="/sign-up">Create your Profile</Link>

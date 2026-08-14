@@ -1,0 +1,20 @@
+{
+  "companySlug": "monad-labs",
+  "companyName": "Monad Labs",
+  "websiteUrl": "https://www.monad.xyz",
+  "careersPageUrl": "https://www.monad.xyz/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/monadlabs",
+  "description": "Builds Monad, a high-throughput parallel-execution EVM-compatible Layer 1 blockchain.",
+  "category": "l1",
+  "tags": ["protocol", "l1", "evm", "parallel-execution"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Keone Hon",
+      "role": "founder",
+      "profileUrl": "https://x.com/keonehd",
+      "notes": "CEO and co-founder of Monad Labs"
+    }
+  ],
+  "sources": []
+}

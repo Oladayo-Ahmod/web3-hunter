@@ -1,0 +1,18 @@
+{
+  "companySlug": "consensys-diligence",
+  "companyName": "Consensys Diligence",
+  "websiteUrl": "https://diligence.security",
+  "careersPageUrl": "https://consensys.io/open-roles",
+  "twitterUrl": "https://x.com/ConsenSysAudits",
+  "linkedinUrl": "https://www.linkedin.com/company/consensys-diligence",
+  "description": "Consensys' dedicated smart contract audit and security review team, hiring through the shared Consensys careers board.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "consensys"
+    }
+  ]
+}

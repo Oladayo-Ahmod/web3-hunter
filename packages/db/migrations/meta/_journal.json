@@ -141,6 +141,13 @@
       "when": 1786541561500,
       "tag": "0019_oval_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1786629686570,
+      "tag": "0020_friendly_jetstream",
+      "breakpoints": true
     }
   ]
 }

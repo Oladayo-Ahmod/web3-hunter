@@ -1,0 +1,11 @@
+{
+  "companySlug": "instadapp-fluid",
+  "companyName": "Instadapp (Fluid)",
+  "websiteUrl": "https://instadapp.io/",
+  "linkedinUrl": "https://www.linkedin.com/company/instadapp",
+  "description": "DeFi smart-account platform whose team also builds Fluid, a unified liquidity layer combining lending, DEX, and vault products.",
+  "category": "defi",
+  "tags": ["defi", "smart-accounts", "lending", "dex", "solidity"],
+  "priority": "high",
+  "sources": []
+}

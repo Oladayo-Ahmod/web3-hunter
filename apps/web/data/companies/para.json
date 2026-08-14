@@ -1,0 +1,18 @@
+{
+  "companySlug": "para",
+  "companyName": "Para (formerly Capsule)",
+  "websiteUrl": "https://www.getpara.com",
+  "careersPageUrl": "https://jobs.ashbyhq.com/capsule",
+  "twitterUrl": "https://x.com/get_para",
+  "linkedinUrl": "https://www.linkedin.com/company/parahq",
+  "description": "Provides MPC-based embedded wallet infrastructure (rebranded from Capsule) for fintech, crypto, and agentic-AI applications.",
+  "category": "wallet",
+  "tags": ["wallet"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "capsule"
+    }
+  ]
+}

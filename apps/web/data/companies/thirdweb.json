@@ -1,0 +1,13 @@
+{
+  "companySlug": "thirdweb",
+  "companyName": "thirdweb",
+  "websiteUrl": "https://thirdweb.com/",
+  "careersPageUrl": "https://thirdweb.com/careers",
+  "twitterUrl": "https://x.com/thirdweb",
+  "linkedinUrl": "https://www.linkedin.com/company/third-web/",
+  "description": "Full-stack Web3 development platform providing SDKs, smart contracts, and infrastructure for building and scaling onchain applications.",
+  "category": "infrastructure",
+  "tags": ["infrastructure", "developer-tooling", "solidity"],
+  "priority": "medium",
+  "sources": []
+}

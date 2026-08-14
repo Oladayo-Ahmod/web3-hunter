@@ -51,6 +51,18 @@ export const companyDiscoveryStatus = pgEnum("company_discovery_status", [
 ]);
 
 /**
+ * Milestone 17 — an explainable, hand-assigned outreach priority, not a
+ * computed score. Deliberately three values with no numeric weighting
+ * behind them (docs/MILESTONE_16... §9's "do not pretend these are
+ * scientifically precise" instruction) — a curator's judgment call at
+ * seed time, the same "curated, operator-entered reference data" category
+ * `fundingStage`/`headquarters` already are on this table, not a new
+ * scoring subsystem. Nullable: most Companies (anything not part of the
+ * outreach-focused curation pass) simply have no opinion recorded.
+ */
+export const companyPriority = pgEnum("company_priority", ["high", "medium", "low"]);
+
+/**
  * The Company Aggregate (docs/DATABASE.md §3). Milestone 2 established
  * minimal identity (`slug`, `name`) — enough for a Source Event to
  * reference a stable Company record via `event.relatedEntityId`.
@@ -107,5 +119,6 @@ export const company = pgTable("company", {
   // board(s) - the "is this ATS board still valid" signal, independent of
   // discoveryStatus (a curated Company's board can also go stale).
   lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }),
+  priority: companyPriority("priority"),
   ...timestamps(),
 });

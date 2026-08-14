@@ -1,0 +1,17 @@
+{
+  "companySlug": "aave-labs",
+  "companyName": "Aave Labs",
+  "websiteUrl": "https://aave.com/",
+  "careersPageUrl": "https://aave.com/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/avaraxyz/",
+  "description": "Development company behind the Aave lending protocol, the GHO stablecoin, and the Lens decentralized social protocol (parent entity Avara).",
+  "category": "defi",
+  "tags": ["defi", "lending", "stablecoins", "solidity"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "aavelabs"
+    }
+  ]
+}

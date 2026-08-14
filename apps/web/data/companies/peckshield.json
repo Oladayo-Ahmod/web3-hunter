@@ -1,0 +1,20 @@
+{
+  "companySlug": "peckshield",
+  "companyName": "PeckShield",
+  "websiteUrl": "https://peckshield.com",
+  "twitterUrl": "https://x.com/peckshield",
+  "linkedinUrl": "https://www.linkedin.com/company/peckshield",
+  "description": "Blockchain security company founded in 2018 offering smart contract audits, threat intelligence, and on-chain incident analysis.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "threat-intelligence"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Xuxian Jiang",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/xuxianjiang/",
+      "notes": "Founder & CEO"
+    }
+  ],
+  "sources": []
+}

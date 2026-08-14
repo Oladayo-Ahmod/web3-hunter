@@ -1,0 +1,10 @@
+{
+  "companySlug": "rabby-wallet",
+  "companyName": "Rabby Wallet (DeBank)",
+  "websiteUrl": "https://rabby.io",
+  "description": "Open-source multi-chain Ethereum wallet built by the DeBank team, focused on DeFi security and pre-transaction previews.",
+  "category": "wallet",
+  "tags": ["wallet"],
+  "priority": "medium",
+  "sources": []
+}

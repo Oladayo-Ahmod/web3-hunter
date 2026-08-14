@@ -33,6 +33,7 @@ describe("createTestDatabase", () => {
       "classification_ledger",
       "collector",
       "company",
+      "company_contact",
       "company_discovery_probe",
       "company_intelligence",
       "company_source_identity",

@@ -1,0 +1,18 @@
+{
+  "companySlug": "osmosis-labs",
+  "companyName": "Osmosis Labs",
+  "websiteUrl": "https://osmosis.zone",
+  "description": "Builds Osmosis, the leading interchain DEX and app-chain in the Cosmos ecosystem built with the Cosmos SDK and IBC.",
+  "category": "defi",
+  "tags": ["protocol", "defi", "dex", "cosmos", "appchain"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Sunny Aggarwal",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/sunnya97",
+      "notes": "Co-founder of Osmosis Labs, former Cosmos SDK core developer"
+    }
+  ],
+  "sources": []
+}

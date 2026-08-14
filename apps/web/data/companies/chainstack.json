@@ -1,0 +1,11 @@
+{
+  "companySlug": "chainstack",
+  "companyName": "Chainstack",
+  "websiteUrl": "https://chainstack.com/",
+  "careersPageUrl": "https://chainstack.com/careers/",
+  "description": "Managed blockchain infrastructure provider offering RPC nodes, archive data, and streaming across 70+ protocols for production Web3 applications.",
+  "category": "infrastructure",
+  "tags": ["infrastructure", "rpc", "nodes"],
+  "priority": "medium",
+  "sources": []
+}

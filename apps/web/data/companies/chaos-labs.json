@@ -1,0 +1,16 @@
+{
+  "companySlug": "chaos-labs",
+  "companyName": "Chaos Labs",
+  "websiteUrl": "https://chaoslabs.xyz/",
+  "careersPageUrl": "https://chaoslabs.xyz/careers",
+  "description": "Onchain economic security and risk-management platform providing automated risk monitoring and oracle infrastructure for DeFi protocols such as Aave and Ethena.",
+  "category": "defi",
+  "tags": ["defi", "risk-management", "oracles"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "chaoslabs"
+    }
+  ]
+}

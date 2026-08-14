@@ -1,0 +1,13 @@
+{
+  "companySlug": "trail-of-bits",
+  "companyName": "Trail of Bits",
+  "websiteUrl": "https://trailofbits.com",
+  "careersPageUrl": "https://trailofbits.com/careers/",
+  "twitterUrl": "https://x.com/trailofbits",
+  "linkedinUrl": "https://www.linkedin.com/company/trail-of-bits",
+  "description": "Security research and consulting firm performing smart contract, application, and systems security audits, founded in 2012.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "sources": []
+}

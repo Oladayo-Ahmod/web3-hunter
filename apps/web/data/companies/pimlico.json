@@ -1,0 +1,11 @@
+{
+  "companySlug": "pimlico",
+  "companyName": "Pimlico",
+  "websiteUrl": "https://pimlico.io",
+  "twitterUrl": "https://x.com/pimlicoHQ",
+  "description": "Provides ERC-4337 account abstraction infrastructure, including bundlers and paymasters, for smart contract wallets.",
+  "category": "infrastructure",
+  "tags": ["account-abstraction", "wallet"],
+  "priority": "high",
+  "sources": []
+}

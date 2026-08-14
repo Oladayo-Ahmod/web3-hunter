@@ -1,0 +1,13 @@
+{
+  "companySlug": "guardian-audits",
+  "companyName": "Guardian Audits",
+  "websiteUrl": "https://guardianaudits.com",
+  "careersPageUrl": "https://guardianaudits.com/careers/",
+  "twitterUrl": "https://x.com/GuardianAudits",
+  "linkedinUrl": "https://www.linkedin.com/company/guardian-audits/",
+  "description": "Smart contract audit firm offering audits, pentests, monitoring, and risk compliance, having secured tens of billions in digital assets for clients like Synthetix and GMX.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "sources": []
+}

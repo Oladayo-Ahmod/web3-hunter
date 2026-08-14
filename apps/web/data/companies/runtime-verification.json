@@ -1,0 +1,13 @@
+{
+  "companySlug": "runtime-verification",
+  "companyName": "Runtime Verification",
+  "websiteUrl": "https://runtimeverification.com",
+  "careersPageUrl": "https://runtimeverification.com/careers",
+  "twitterUrl": "https://x.com/rv_inc",
+  "linkedinUrl": "https://www.linkedin.com/company/runtimeverification",
+  "description": "High-assurance security firm using formal verification and the K Framework to audit smart contracts and critical systems.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "formal-verification"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "karak",
+  "companyName": "Karak",
+  "websiteUrl": "https://opengdp.network",
+  "twitterUrl": "https://twitter.com/Karak_Network",
+  "description": "Universal restaking layer enabling any asset to secure decentralized networks and applications; karak.network now redirects to its opengdp.network rebrand.",
+  "category": "infrastructure",
+  "tags": ["protocol", "restaking", "shared-security"],
+  "priority": "high",
+  "sources": []
+}

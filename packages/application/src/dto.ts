@@ -321,3 +321,62 @@ export interface PipelineRunDTO {
   metrics: Record<string, unknown> | null;
   errorMessage: string | null;
 }
+
+export type CompanyPriorityDTO = "high" | "medium" | "low";
+
+export type CompanyContactRoleDTO =
+  | "founder"
+  | "cofounder"
+  | "cto"
+  | "head_of_engineering"
+  | "security_lead"
+  | "protocol_lead"
+  | "other";
+
+/**
+ * A named, individually-verified person worth contacting at an Outreach
+ * Target Company — `company_contact`'s DTO. Never a placeholder: a row
+ * only exists because a real profile was found (Milestone 17).
+ */
+export interface CompanyContactDTO {
+  name: string;
+  role: CompanyContactRoleDTO;
+  profileUrl: string;
+  notes: string | null;
+}
+
+/**
+ * The single strongest reason to reach out to an Outreach Target Company
+ * today — Milestone 17's four-section UX (docs: "WHO SHOULD I CONTACT
+ * TODAY"). Every Company `listOutreachTargets` returns gets exactly one,
+ * chosen by `outreach-query-service.ts`'s fixed precedence: an open role
+ * is always the strongest, most actionable reason (apply now); otherwise
+ * a stated recent funding round; otherwise a hand-curated "high priority"
+ * judgment call; otherwise it's still worth a speculative outreach.
+ */
+export type OpportunityTypeDTO =
+  "OPEN_ROLE" | "RECENTLY_FUNDED" | "HIGH_PRIORITY_STARTUP" | "SPECULATIVE_OUTREACH";
+
+/**
+ * One row of the Outreach Target list — "who should I contact today"
+ * (Milestone 17). Deliberately not a `CompanyProfileDTO` extension: this
+ * view exists to answer a different question (who to contact and why),
+ * not to describe a Company's full intelligence profile.
+ */
+export interface OutreachTargetDTO {
+  id: string;
+  slug: string;
+  name: string;
+  websiteUrl: string | null;
+  careersPageUrl: string | null;
+  twitterUrl: string | null;
+  linkedinUrl: string | null;
+  description: string | null;
+  category: string | null;
+  tags: string[];
+  priority: CompanyPriorityDTO | null;
+  fundingStage: string | null;
+  opportunityType: OpportunityTypeDTO;
+  openJobCount: number;
+  contacts: CompanyContactDTO[];
+}

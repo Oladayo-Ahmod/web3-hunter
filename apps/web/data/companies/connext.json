@@ -1,0 +1,24 @@
+{
+  "companySlug": "connext",
+  "companyName": "Connext",
+  "websiteUrl": "https://www.connext.network",
+  "careersPageUrl": "https://jobs.lever.co/connext-network",
+  "description": "Interoperability protocol enabling fast, trust-minimized asset and data transfers across Ethereum L2s and chains.",
+  "category": "infrastructure",
+  "tags": ["protocol", "interoperability", "bridge", "l2"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Arjun Bhuptani",
+      "role": "founder",
+      "profileUrl": "https://x.com/arjun_bhuptani",
+      "notes": "Founder of Connext; also now leads Everclear, a related project he spun out"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "connext-network"
+    }
+  ]
+}

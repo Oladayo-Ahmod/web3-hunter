@@ -1,0 +1,13 @@
+{
+  "companySlug": "chainsecurity",
+  "companyName": "ChainSecurity",
+  "websiteUrl": "https://www.chainsecurity.com",
+  "careersPageUrl": "https://www.chainsecurity.com/about",
+  "twitterUrl": "https://x.com/chain_security",
+  "linkedinUrl": "https://linkedin.com/company/chainsecurity/",
+  "description": "Zurich-based smart contract audit firm (legal entity Decentralized Security AG) working with DeFi protocols and institutions since 2017.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "sources": []
+}

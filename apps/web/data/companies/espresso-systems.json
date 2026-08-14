@@ -1,0 +1,24 @@
+{
+  "companySlug": "espresso-systems",
+  "companyName": "Espresso Systems",
+  "websiteUrl": "https://www.espressosys.com",
+  "careersPageUrl": "https://jobs.lever.co/Espresso",
+  "description": "Builds the Espresso Network, a decentralized shared sequencer and confirmation layer providing scalability and interoperability for rollups.",
+  "category": "infrastructure",
+  "tags": ["protocol", "sequencer", "rollup-infrastructure", "interoperability"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Ben Fisch",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/benafisch",
+      "notes": "CEO and co-founder of Espresso Systems"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "Espresso"
+    }
+  ]
+}

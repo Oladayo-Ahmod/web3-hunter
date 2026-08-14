@@ -1,0 +1,24 @@
+{
+  "companySlug": "magic",
+  "companyName": "Magic (Magic Labs)",
+  "websiteUrl": "https://magic.link",
+  "careersPageUrl": "https://boards.greenhouse.io/magic",
+  "description": "Wallet-as-a-service infrastructure enabling passwordless, non-custodial wallet creation via email and social logins.",
+  "category": "wallet",
+  "tags": ["wallet"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Sean Li",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/_seanli",
+      "notes": "Co-founder and CEO of Magic Labs"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "magic"
+    }
+  ]
+}

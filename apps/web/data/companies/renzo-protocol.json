@@ -1,0 +1,12 @@
+{
+  "companySlug": "renzo-protocol",
+  "companyName": "Renzo Protocol",
+  "websiteUrl": "https://www.renzoprotocol.com",
+  "twitterUrl": "https://twitter.com/RenzoProtocol",
+  "linkedinUrl": "https://www.linkedin.com/company/renzoprotocol",
+  "description": "Liquid restaking protocol that lets users deposit ETH and LSTs into EigenLayer, Symbiotic and other restaking ecosystems and receive liquid tokens like ezETH.",
+  "category": "infrastructure",
+  "tags": ["protocol", "restaking", "liquid-restaking", "defi"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "balancer-labs",
+  "companyName": "Balancer Labs",
+  "websiteUrl": "https://balancer.fi/",
+  "careersPageUrl": "https://balancer.fi/careers",
+  "description": "Programmable AMM/DEX protocol on Ethereum enabling custom-weighted liquidity pools and building blocks for other DeFi products.",
+  "category": "defi",
+  "tags": ["defi", "amm", "dex", "solidity"],
+  "priority": "high",
+  "sources": []
+}

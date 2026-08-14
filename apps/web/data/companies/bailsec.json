@@ -1,0 +1,20 @@
+{
+  "companySlug": "bailsec",
+  "companyName": "BailSec",
+  "websiteUrl": "https://www.bailsec.io",
+  "twitterUrl": "https://x.com/bailsecurity",
+  "linkedinUrl": "https://www.linkedin.com/company/bail-security/",
+  "description": "Smart contract audit and Web3 security review firm.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Charles Wang",
+      "role": "other",
+      "profileUrl": "https://x.com/0xCharlesWang",
+      "notes": "Core team member referenced in client testimonials"
+    }
+  ],
+  "sources": []
+}

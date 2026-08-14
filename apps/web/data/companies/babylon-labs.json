@@ -1,0 +1,20 @@
+{
+  "companySlug": "babylon-labs",
+  "companyName": "Babylon Labs",
+  "websiteUrl": "https://babylonlabs.io",
+  "careersPageUrl": "https://babylonlabs.io/jobs",
+  "linkedinUrl": "https://www.linkedin.com/company/babylon-labs-official",
+  "description": "Builds Bitcoin staking protocols that let BTC holders secure Proof-of-Stake chains and earn yield without bridging or custody risk.",
+  "category": "infrastructure",
+  "tags": ["protocol", "bitcoin", "staking", "shared-security"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "David Tse",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/dntse",
+      "notes": "Stanford professor and co-founder of Babylon"
+    }
+  ],
+  "sources": []
+}

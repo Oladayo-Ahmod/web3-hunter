@@ -1,0 +1,10 @@
+{
+  "companySlug": "enzyme-finance",
+  "companyName": "Enzyme Finance",
+  "websiteUrl": "https://enzyme.finance/",
+  "description": "Onchain asset-management protocol (formerly Melon) letting users create, manage, and invest in custom onchain investment vehicles.",
+  "category": "defi",
+  "tags": ["defi", "asset-management", "solidity"],
+  "priority": "medium",
+  "sources": []
+}

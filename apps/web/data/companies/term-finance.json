@@ -1,0 +1,10 @@
+{
+  "companySlug": "term-finance",
+  "companyName": "Term Finance",
+  "websiteUrl": "https://www.term.finance/",
+  "description": "Noncustodial fixed-rate lending protocol that uses onchain double-auctions to set borrowing/lending rates on Ethereum.",
+  "category": "defi",
+  "tags": ["defi", "lending", "fixed-rate", "solidity"],
+  "priority": "high",
+  "sources": []
+}

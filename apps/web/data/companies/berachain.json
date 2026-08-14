@@ -1,0 +1,19 @@
+{
+  "companySlug": "berachain",
+  "companyName": "Berachain",
+  "websiteUrl": "https://www.berachain.com",
+  "careersPageUrl": "https://careers.berachain.com/",
+  "description": "EVM-identical Layer 1 blockchain built around Proof-of-Liquidity, aligning liquidity and network security incentives.",
+  "category": "l1",
+  "tags": ["protocol", "l1", "evm", "defi"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Smokey the Bera",
+      "role": "founder",
+      "profileUrl": "https://twitter.com/SmokeyTheBera",
+      "notes": "Pseudonymous co-founder leading ecosystem, growth and operations"
+    }
+  ],
+  "sources": []
+}

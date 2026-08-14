@@ -1,0 +1,24 @@
+{
+  "companySlug": "succinct-labs",
+  "companyName": "Succinct",
+  "websiteUrl": "https://www.succinct.xyz",
+  "careersPageUrl": "https://jobs.ashbyhq.com/succinct",
+  "description": "Applied cryptography company building SP1, an open-source performant zero-knowledge (RISC-V) zkVM, and a decentralized proving network.",
+  "category": "infrastructure",
+  "tags": ["protocol", "zero-knowledge", "zkvm", "proving"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Uma Roy",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/pumatheuma",
+      "notes": "Co-founder and CEO of Succinct"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "succinct"
+    }
+  ]
+}

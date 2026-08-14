@@ -1,0 +1,21 @@
+{
+  "companySlug": "ambire",
+  "companyName": "Ambire",
+  "websiteUrl": "https://www.ambire.com",
+  "careersPageUrl": "https://ambire.com/about/careers",
+  "twitterUrl": "https://x.com/ambire",
+  "linkedinUrl": "https://www.linkedin.com/company/ambiretech",
+  "description": "Self-custodial, account-abstraction-based Web3 wallet for Ethereum and EVM chains with DeFi and multi-network support.",
+  "category": "wallet",
+  "tags": ["wallet", "account-abstraction"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Ivo Georgiev",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/Ivshti",
+      "notes": "Co-founder and CEO of Ambire"
+    }
+  ],
+  "sources": []
+}

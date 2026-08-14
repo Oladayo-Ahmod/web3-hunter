@@ -1,0 +1,24 @@
+{
+  "companySlug": "symbiotic",
+  "companyName": "Symbiotic",
+  "websiteUrl": "https://symbiotic.fi",
+  "careersPageUrl": "https://jobs.ashbyhq.com/symbiotic",
+  "description": "Universal, permissionless shared-security/staking protocol letting networks build custom restaking configurations with any asset.",
+  "category": "infrastructure",
+  "tags": ["protocol", "restaking", "shared-security"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Misha Putiatin",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/Psalom",
+      "notes": "Co-founder and CEO of Symbiotic"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "symbiotic"
+    }
+  ]
+}

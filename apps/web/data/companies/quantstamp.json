@@ -1,0 +1,21 @@
+{
+  "companySlug": "quantstamp",
+  "companyName": "Quantstamp",
+  "websiteUrl": "https://quantstamp.com",
+  "careersPageUrl": "https://jobs.ashbyhq.com/quantstamp",
+  "twitterUrl": "https://x.com/Quantstamp",
+  "linkedinUrl": "https://www.linkedin.com/company/quantstamp",
+  "description": "Blockchain security company performing smart contract audits, having secured over $200B in digital assets across 750+ audits.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Richard Ma",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/rtmtd/",
+      "notes": "Co-founder & CEO"
+    }
+  ],
+  "sources": []
+}

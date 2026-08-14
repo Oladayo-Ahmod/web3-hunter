@@ -1,0 +1,12 @@
+{
+  "companySlug": "risc-zero",
+  "companyName": "RISC Zero",
+  "websiteUrl": "https://www.risczero.com",
+  "careersPageUrl": "https://jobs.ashbyhq.com/RiscZero",
+  "linkedinUrl": "https://www.linkedin.com/company/risczero",
+  "description": "Builds a general-purpose zero-knowledge virtual machine (zkVM) allowing developers to write verifiable computation in Rust.",
+  "category": "infrastructure",
+  "tags": ["protocol", "zero-knowledge", "zkvm", "proving"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,20 @@
+{
+  "companySlug": "slowmist",
+  "companyName": "SlowMist",
+  "websiteUrl": "https://www.slowmist.com",
+  "twitterUrl": "https://x.com/SlowMist_Team",
+  "linkedinUrl": "https://sg.linkedin.com/company/slowmist",
+  "description": "Blockchain ecosystem security firm established in 2018 offering smart contract audits, threat intelligence, and incident response.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "threat-intelligence"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Yu Xian (\"Cos\")",
+      "role": "founder",
+      "profileUrl": "https://x.com/evilcos",
+      "notes": "Founder, goes by \"Mr. Cos\""
+    }
+  ],
+  "sources": []
+}

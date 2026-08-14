@@ -1,0 +1,26 @@
+{
+  "companySlug": "axiom",
+  "companyName": "Axiom",
+  "websiteUrl": "https://www.axiom.xyz",
+  "careersPageUrl": "https://jobs.ashbyhq.com/axiom",
+  "twitterUrl": "https://x.com/axiom_xyz",
+  "linkedinUrl": "https://www.linkedin.com/company/axiom-xyz",
+  "description": "Zero-knowledge coprocessor for Ethereum that gives smart contracts trustless access to historical on-chain data and arbitrary off-chain compute.",
+  "category": "infrastructure",
+  "tags": ["zk"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Yi Sun",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/theyisun",
+      "notes": "Co-founder of Axiom"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "axiom"
+    }
+  ]
+}

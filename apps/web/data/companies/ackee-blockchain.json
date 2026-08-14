@@ -1,0 +1,21 @@
+{
+  "companySlug": "ackee-blockchain",
+  "companyName": "Ackee Blockchain Security",
+  "websiteUrl": "https://ackee.xyz",
+  "careersPageUrl": "https://ackeeblockchain.recruitee.com/",
+  "twitterUrl": "https://x.com/ackeeblockchain",
+  "linkedinUrl": "https://in.linkedin.com/company/ackee-blockchain",
+  "description": "Prague-based smart contract audit firm specializing in Solana and Ethereum security, and creator of the Wake development/security toolkit.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Josef Gattermayer",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/josefgattermayer/",
+      "notes": "CEO & co-founder"
+    }
+  ],
+  "sources": []
+}

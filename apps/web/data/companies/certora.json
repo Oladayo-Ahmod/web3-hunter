@@ -1,0 +1,21 @@
+{
+  "companySlug": "certora",
+  "companyName": "Certora",
+  "websiteUrl": "https://www.certora.com",
+  "careersPageUrl": "https://careers.certora.com/#jobs",
+  "twitterUrl": "https://x.com/certora_inc",
+  "linkedinUrl": "https://www.linkedin.com/company/certora",
+  "description": "Formal verification firm building the Certora Prover and performing smart contract security audits for DeFi protocols.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "formal-verification"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Mooly Sagiv",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/mooly-sagiv-87a36010/",
+      "notes": "Co-founder & CEO"
+    }
+  ],
+  "sources": []
+}

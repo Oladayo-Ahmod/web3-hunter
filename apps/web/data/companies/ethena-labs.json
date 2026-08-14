@@ -1,0 +1,16 @@
+{
+  "companySlug": "ethena-labs",
+  "companyName": "Ethena Labs",
+  "websiteUrl": "https://ethena.fi/",
+  "careersPageUrl": "https://jobs.lever.co/ethenalabs",
+  "description": "Builds USDe, a synthetic dollar backed by a delta-neutral hedged basis strategy on staked ETH and other collateral.",
+  "category": "defi",
+  "tags": ["defi", "stablecoins", "derivatives"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "ethenalabs"
+    }
+  ]
+}
