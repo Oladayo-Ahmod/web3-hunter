@@ -67,6 +67,44 @@ export async function seedCompanyContact(input: {
   return row!;
 }
 
+/**
+ * A `JobPosted` Event, minimal enough for `daily-digest-service.test.ts`'s
+ * "Apply" candidates — read at query time the same way
+ * `job-query-service.ts`'s own `open_jobs` CTE does, not via a persisted
+ * `job` table (see that file's doc comment for why).
+ */
+export async function seedJobPostedEvent(input: {
+  companyId: string;
+  externalId: string;
+  title: string;
+  locationName?: string | null;
+  workplaceType?: "remote" | "hybrid" | "onsite" | null;
+  description?: string | null;
+  absoluteUrl?: string;
+  occurredAt?: Date;
+}) {
+  const db = getDb();
+  await db.insert(schema.event).values({
+    type: "JobPosted",
+    category: "source",
+    version: 1,
+    sourceLabel: "test",
+    occurredAt: input.occurredAt ?? new Date(),
+    relatedEntityType: "company",
+    relatedEntityId: input.companyId,
+    confidence: 1,
+    metadata: {
+      externalId: input.externalId,
+      title: input.title,
+      locationName: input.locationName ?? null,
+      workplaceType: input.workplaceType ?? null,
+      description: input.description ?? null,
+      absoluteUrl: input.absoluteUrl ?? `https://example.test/jobs/${input.externalId}`,
+      departmentNames: [],
+    },
+  });
+}
+
 export async function seedOpportunity(input: {
   companyId: string;
   opportunityType?: string;
