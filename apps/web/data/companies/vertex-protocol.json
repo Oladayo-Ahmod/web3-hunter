@@ -1,0 +1,18 @@
+{
+  "companySlug": "vertex-protocol",
+  "companyName": "Vertex Protocol",
+  "websiteUrl": "https://vertex.exchange/",
+  "description": "Cross-margined DEX offering spot trading, perpetual futures and integrated money markets in a single orderbook-and-AMM hybrid on Arbitrum.",
+  "category": "defi",
+  "tags": ["defi", "perpetuals", "dex", "money-market"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Darius Tabatabai",
+      "role": "cofounder",
+      "profileUrl": "https://wellfound.com/company/vertex-protocol-1/people",
+      "notes": "Listed as co-founder on Vertex Protocol's Wellfound company page; no direct personal profile URL verified."
+    }
+  ],
+  "sources": []
+}

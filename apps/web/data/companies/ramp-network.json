@@ -1,0 +1,18 @@
+{
+  "companySlug": "ramp-network",
+  "companyName": "Ramp Network",
+  "websiteUrl": "https://rampnetwork.com",
+  "careersPageUrl": "https://ramp.network/join-us",
+  "twitterUrl": "https://x.com/RampNetwork",
+  "linkedinUrl": "https://www.linkedin.com/company/rampnetwork/",
+  "description": "Fiat-crypto on/off-ramp and instant USDC payments infrastructure processing $1B+ across 150+ countries.",
+  "category": "other",
+  "tags": ["onramp", "payments", "fiat-to-crypto"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "rampnetwork"
+    }
+  ]
+}

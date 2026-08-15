@@ -1,0 +1,16 @@
+{
+  "companySlug": "gattaca-titan-builder",
+  "companyName": "Gattaca (Titan Builder)",
+  "websiteUrl": "https://titanbuilder.xyz/",
+  "careersPageUrl": "https://gattaca.com/careers",
+  "description": "Operates Titan Builder, a neutral Ethereum block builder run by a crypto-native team of former miners, validators, searchers, and traders.",
+  "category": "infrastructure",
+  "tags": ["mev", "block-building"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "gattaca"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "jupiter-exchange",
+  "companyName": "Jupiter Exchange",
+  "websiteUrl": "https://jup.ag/",
+  "twitterUrl": "https://x.com/JupiterExchange",
+  "description": "DeFi super-app and swap aggregator on Solana that powers the large majority of on-chain trading volume in the ecosystem.",
+  "category": "defi",
+  "tags": ["defi", "dex", "aggregator", "solana"],
+  "priority": "medium",
+  "sources": []
+}

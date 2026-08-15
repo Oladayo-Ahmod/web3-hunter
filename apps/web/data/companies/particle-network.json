@@ -1,0 +1,12 @@
+{
+  "companySlug": "particle-network",
+  "companyName": "Particle Network",
+  "websiteUrl": "https://particle.network",
+  "twitterUrl": "https://x.com/ParticleNtwrk",
+  "linkedinUrl": "https://www.linkedin.com/company/particlenetwork/",
+  "description": "Wallet-as-a-service and chain-abstraction infrastructure with social-login onboarding and account abstraction (Universal Accounts) for one-click multi-chain UX.",
+  "category": "wallet",
+  "tags": ["account-abstraction", "wallet-as-a-service", "chain-abstraction"],
+  "priority": "high",
+  "sources": []
+}

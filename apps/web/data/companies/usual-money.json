@@ -1,0 +1,12 @@
+{
+  "companySlug": "usual-money",
+  "companyName": "Usual Money",
+  "websiteUrl": "https://usual.money/",
+  "careersPageUrl": "https://usual.breezy.hr/",
+  "twitterUrl": "https://x.com/usualmoney",
+  "description": "Decentralized stablecoin infrastructure issuing USD0, a stablecoin backed by tokenized real-world assets (T-Bills), that redistributes protocol ownership to users via the USUAL token.",
+  "category": "defi",
+  "tags": ["defi", "stablecoin", "rwa"],
+  "priority": "medium",
+  "sources": []
+}

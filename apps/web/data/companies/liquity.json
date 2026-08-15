@@ -1,0 +1,11 @@
+{
+  "companySlug": "liquity",
+  "companyName": "Liquity",
+  "websiteUrl": "https://www.liquity.org/",
+  "twitterUrl": "https://x.com/LiquityProtocol",
+  "description": "Decentralized borrowing protocol on Ethereum that issues the LUSD/BOLD stablecoins against ETH collateral with interest-free (V1) or user-set-rate (V2) loans.",
+  "category": "defi",
+  "tags": ["defi", "lending", "stablecoin", "solidity"],
+  "priority": "medium",
+  "sources": []
+}

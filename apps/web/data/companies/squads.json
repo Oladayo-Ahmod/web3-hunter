@@ -1,0 +1,16 @@
+{
+  "companySlug": "squads",
+  "companyName": "Squads",
+  "websiteUrl": "https://squads.xyz",
+  "careersPageUrl": "https://jobs.ashbyhq.com/squads",
+  "description": "Fintech building stablecoin infrastructure and programmable smart accounts on Solana, including Squads Multisig, a business account (Altitude), and a stablecoin API (Grid).",
+  "category": "wallet",
+  "tags": ["multisig", "smart-accounts", "solana", "stablecoin"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "squads"
+    }
+  ]
+}

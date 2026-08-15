@@ -1,0 +1,16 @@
+{
+  "companySlug": "figure",
+  "companyName": "Figure",
+  "websiteUrl": "https://www.figure.com",
+  "careersPageUrl": "https://job-boards.greenhouse.io/figure",
+  "description": "NASDAQ-listed fintech (FIGR) that originated the Provenance blockchain and runs the largest non-bank home equity lending platform settled on-chain.",
+  "category": "other",
+  "tags": ["rwa", "blockchain-lending", "provenance"],
+  "priority": "low",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "figure"
+    }
+  ]
+}

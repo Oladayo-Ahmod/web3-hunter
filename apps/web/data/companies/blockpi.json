@@ -1,0 +1,10 @@
+{
+  "companySlug": "blockpi",
+  "companyName": "BlockPI Network",
+  "websiteUrl": "https://blockpi.io/",
+  "description": "Web3 RPC infrastructure provider running high-performance nodes and dedicated/validator RPC services across many EVM and non-EVM chains.",
+  "category": "infrastructure",
+  "tags": ["node-infrastructure", "rpc"],
+  "priority": "medium",
+  "sources": []
+}

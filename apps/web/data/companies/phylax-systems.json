@@ -1,0 +1,16 @@
+{
+  "companySlug": "phylax-systems",
+  "companyName": "Phylax Systems",
+  "websiteUrl": "https://phylax.systems/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/phylax",
+  "description": "Builds the Credible Layer, a policy-enforcement and assertions system that blocks exploit transactions in DeFi protocols before they settle, currently live in production on Linea.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "security", "smart-contracts"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "phylax"
+    }
+  ]
+}

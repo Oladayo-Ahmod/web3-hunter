@@ -1,0 +1,12 @@
+{
+  "companySlug": "squid-router",
+  "companyName": "Squid",
+  "websiteUrl": "https://www.squidrouter.com",
+  "twitterUrl": "https://x.com/squidrouter",
+  "linkedinUrl": "https://www.linkedin.com/company/squidrouter",
+  "description": "Cross-chain swap and routing layer (incubated in the Axelar ecosystem) that aggregates bridges, DEXs, and messaging protocols across 100+ chains.",
+  "category": "infrastructure",
+  "tags": ["bridge", "cross-chain", "swap-router"],
+  "priority": "high",
+  "sources": []
+}

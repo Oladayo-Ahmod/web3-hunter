@@ -1,0 +1,11 @@
+{
+  "companySlug": "cata-labs",
+  "companyName": "Cata Labs",
+  "websiteUrl": "https://catalabs.org",
+  "careersPageUrl": "https://apply.workable.com/catalabs/",
+  "description": "Core contributors to Catalyst, an open-source permissionless cross-chain liquidity protocol connecting new chains to hubs like Ethereum and Cosmos.",
+  "category": "infrastructure",
+  "tags": ["bridge", "cross-chain-liquidity", "amm"],
+  "priority": "high",
+  "sources": []
+}

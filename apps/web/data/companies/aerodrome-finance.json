@@ -1,0 +1,10 @@
+{
+  "companySlug": "aerodrome-finance",
+  "companyName": "Aerodrome Finance",
+  "websiteUrl": "https://aerodrome.finance/",
+  "description": "Central trading and liquidity marketplace AMM on Base, combining ve(3,3) tokenomics with concentrated liquidity for token emissions and fee distribution.",
+  "category": "defi",
+  "tags": ["defi", "amm", "dex", "base"],
+  "priority": "medium",
+  "sources": []
+}

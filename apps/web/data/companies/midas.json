@@ -1,0 +1,15 @@
+{
+  "companySlug": "midas",
+  "companyName": "Midas",
+  "websiteUrl": "https://midas.app",
+  "description": "Tokenization platform issuing institutional-grade, yield-bearing RWA tokens; founded by alumni of Goldman Sachs and Ondo Finance, having issued $1.7B+ in tokenized assets.",
+  "fundingStage": "Series A",
+  "category": "defi",
+  "tags": ["rwa", "tokenization", "yield"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "March 2026",
+  "fundingAmount": "$50M",
+  "fundingSource": "https://www.coindesk.com/business/2026/03/30/midas-raises-usd50-million-to-tackle-pain-point-for-tokenized-asset-investors",
+  "sources": []
+}

@@ -1,0 +1,16 @@
+{
+  "companySlug": "flashbots",
+  "companyName": "Flashbots",
+  "websiteUrl": "https://www.flashbots.net",
+  "careersPageUrl": "https://jobs.ashbyhq.com/flashbots.net",
+  "description": "Research and engineering organization building transparent, democratized MEV infrastructure for Ethereum, including MEV-Boost and SUAVE.",
+  "category": "infrastructure",
+  "tags": ["mev", "block-building", "ethereum"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "flashbots.net"
+    }
+  ]
+}

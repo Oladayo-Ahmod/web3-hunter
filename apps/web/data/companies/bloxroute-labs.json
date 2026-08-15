@@ -1,0 +1,16 @@
+{
+  "companySlug": "bloxroute-labs",
+  "companyName": "bloXroute Labs",
+  "websiteUrl": "https://bloxroute.com",
+  "careersPageUrl": "https://bloxroute.com/careers/",
+  "description": "Blockchain distribution network (BDN) providing ultra-fast transaction propagation and MEV infrastructure for validators, traders, and block builders on Ethereum, Solana, and BSC.",
+  "category": "infrastructure",
+  "tags": ["mev", "relay-network", "transaction-propagation"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "blox-route"
+    }
+  ]
+}

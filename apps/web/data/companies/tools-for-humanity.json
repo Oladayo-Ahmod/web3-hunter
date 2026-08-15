@@ -1,0 +1,17 @@
+{
+  "companySlug": "tools-for-humanity",
+  "companyName": "Tools for Humanity",
+  "websiteUrl": "https://toolsforhumanity.com",
+  "careersPageUrl": "https://world.org/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/toolsforhumanity",
+  "description": "Tools for Humanity builds World Chain, an Ethereum Layer 2 optimized for proof-of-human identity (World ID) applications, alongside the World App.",
+  "category": "l2",
+  "tags": ["l2", "op-stack", "identity"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "Tools for Humanity"
+    }
+  ]
+}

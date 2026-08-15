@@ -1,0 +1,12 @@
+{
+  "companySlug": "giza",
+  "companyName": "Giza",
+  "websiteUrl": "https://www.gizatech.xyz",
+  "twitterUrl": "https://x.com/gizatechxyz",
+  "linkedinUrl": "https://www.linkedin.com/company/gizatech/",
+  "description": "Uses Cairo and zk-STARKs to make machine learning verifiable (zkML), letting anyone cryptographically prove a model ran correctly without revealing model or data.",
+  "category": "infrastructure",
+  "tags": ["zkml", "zk", "cairo", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

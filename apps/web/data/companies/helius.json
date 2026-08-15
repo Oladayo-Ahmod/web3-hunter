@@ -1,0 +1,16 @@
+{
+  "companySlug": "helius",
+  "companyName": "Helius",
+  "websiteUrl": "https://www.helius.dev",
+  "careersPageUrl": "https://jobs.ashbyhq.com/helius",
+  "description": "Helius develops Solana's RPC and API infrastructure platform, providing node access, webhooks, gRPC streaming, and transaction-landing tooling for builders.",
+  "category": "infrastructure",
+  "tags": ["rpc", "solana", "node-infrastructure"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "helius"
+    }
+  ]
+}

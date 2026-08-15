@@ -1,0 +1,11 @@
+{
+  "companySlug": "beefy-finance",
+  "companyName": "Beefy Finance",
+  "websiteUrl": "https://beefy.com/",
+  "twitterUrl": "https://twitter.com/beefyfinance",
+  "description": "Multichain yield optimizer that automates compounding of staking/farming rewards for users across more than 40 blockchain networks.",
+  "category": "defi",
+  "tags": ["defi", "yield", "auto-compounding", "multichain"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "p2p-org",
+  "companyName": "P2P.org",
+  "websiteUrl": "https://p2p.org/",
+  "careersPageUrl": "https://p2p.org/career",
+  "description": "Builds and runs staking, restaking, and node infrastructure ('DeFi infrastructure') for institutions and stakers across dozens of proof-of-stake networks.",
+  "category": "infrastructure",
+  "tags": ["staking-infrastructure", "restaking", "node-infrastructure"],
+  "priority": "medium",
+  "sources": []
+}

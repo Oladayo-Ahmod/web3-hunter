@@ -1,0 +1,11 @@
+{
+  "companySlug": "chainbound",
+  "companyName": "Chainbound",
+  "websiteUrl": "https://www.chainbound.io/",
+  "careersPageUrl": "https://www.chainbound.io/careers",
+  "description": "Research and development lab building based-rollup infrastructure, including the Bolt preconfirmations protocol and Rollup-Boost.",
+  "category": "infrastructure",
+  "tags": ["mev", "preconfirmations", "rollup-infrastructure"],
+  "priority": "high",
+  "sources": []
+}

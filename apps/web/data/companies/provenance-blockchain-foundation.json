@@ -1,0 +1,13 @@
+{
+  "companySlug": "provenance-blockchain-foundation",
+  "companyName": "Provenance Blockchain Foundation",
+  "websiteUrl": "https://provenance.io",
+  "careersPageUrl": "https://provenance.io/foundation",
+  "twitterUrl": "https://twitter.com/provenancefdn",
+  "linkedinUrl": "https://www.linkedin.com/company/provenance-blockchain",
+  "description": "Foundation supporting the Provenance public blockchain, a ledger and exchange network purpose-built for financial services asset origination and tokenization.",
+  "category": "infrastructure",
+  "tags": ["rwa", "layer1", "financial-services"],
+  "priority": "medium",
+  "sources": []
+}

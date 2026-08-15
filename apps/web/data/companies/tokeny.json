@@ -1,0 +1,13 @@
+{
+  "companySlug": "tokeny",
+  "companyName": "Tokeny",
+  "websiteUrl": "https://tokeny.com",
+  "careersPageUrl": "https://tokeny.com/jobs/",
+  "twitterUrl": "https://twitter.com/TokenySolutions",
+  "linkedinUrl": "https://www.linkedin.com/company/tokeny",
+  "description": "Enterprise on-chain tokenization platform (creator of the T-REX protocol) for compliantly issuing, transferring, and managing security tokens, now part of Apex Group.",
+  "category": "infrastructure",
+  "tags": ["rwa", "tokenization", "compliance", "security-tokens"],
+  "priority": "medium",
+  "sources": []
+}

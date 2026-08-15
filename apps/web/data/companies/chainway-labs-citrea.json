@@ -1,0 +1,11 @@
+{
+  "companySlug": "chainway-labs-citrea",
+  "companyName": "Chainway Labs (Citrea)",
+  "websiteUrl": "https://citrea.xyz",
+  "careersPageUrl": "https://chainwaylabs.bamboohr.com/careers",
+  "description": "Builds Citrea, Bitcoin's first zero-knowledge rollup, turning Bitcoin into a programmable settlement layer for DeFi while inheriting Bitcoin's security.",
+  "category": "l2",
+  "tags": ["zk", "bitcoin", "rollup", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

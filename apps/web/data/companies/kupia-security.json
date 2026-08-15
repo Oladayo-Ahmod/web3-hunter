@@ -1,0 +1,10 @@
+{
+  "companySlug": "kupia-security",
+  "companyName": "KupiaSec",
+  "websiteUrl": "https://sec.kupia.io",
+  "description": "Smart contract security auditing brand of Kupia Lab, based in Kuala Lumpur, ranked Sherlock all-time top-30 with 60+ protocols secured and zero post-audit incidents.",
+  "category": "security",
+  "tags": ["audit", "sherlock"],
+  "priority": "high",
+  "sources": []
+}

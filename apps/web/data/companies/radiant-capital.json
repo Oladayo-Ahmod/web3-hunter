@@ -1,0 +1,11 @@
+{
+  "companySlug": "radiant-capital",
+  "companyName": "Radiant Capital",
+  "websiteUrl": "https://radiant.capital/",
+  "twitterUrl": "https://twitter.com/RDNTCapital",
+  "description": "Omnichain money market protocol letting users deposit and borrow across multiple chains through LayerZero-powered cross-chain lending.",
+  "category": "defi",
+  "tags": ["defi", "lending", "cross-chain", "money-market"],
+  "priority": "medium",
+  "sources": []
+}

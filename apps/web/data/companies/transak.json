@@ -1,0 +1,13 @@
+{
+  "companySlug": "transak",
+  "companyName": "Transak",
+  "websiteUrl": "https://transak.com",
+  "careersPageUrl": "https://careers.transak.com",
+  "twitterUrl": "https://twitter.com/transak",
+  "linkedinUrl": "https://www.linkedin.com/company/transak/",
+  "description": "Fiat on/off-ramp payment infrastructure (white-label API and widget) used by 600+ wallets and exchanges including MetaMask, Trust Wallet, and Ledger.",
+  "category": "other",
+  "tags": ["onramp", "offramp", "payments"],
+  "priority": "medium",
+  "sources": []
+}

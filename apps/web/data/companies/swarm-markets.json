@@ -1,0 +1,11 @@
+{
+  "companySlug": "swarm-markets",
+  "companyName": "Swarm Markets",
+  "websiteUrl": "https://swarm.com",
+  "careersPageUrl": "https://docs.swarm.com/about/careers",
+  "description": "World's first BaFin-regulated DeFi platform enabling tokenized real-world assets and securities trading for institutions and retail traders.",
+  "category": "defi",
+  "tags": ["rwa", "defi", "regulated", "tokenized-securities"],
+  "priority": "medium",
+  "sources": []
+}

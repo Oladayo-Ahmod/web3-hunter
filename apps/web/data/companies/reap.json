@@ -1,0 +1,13 @@
+{
+  "companySlug": "reap",
+  "companyName": "Reap",
+  "websiteUrl": "https://www.reap.global",
+  "careersPageUrl": "https://reap.global/resources/company/careers",
+  "twitterUrl": "https://x.com/reapglobal",
+  "linkedinUrl": "https://www.linkedin.com/company/reapglobal",
+  "description": "Stablecoin-powered financial infrastructure offering cross-border payments, stablecoin-collateralized Visa cards, and card-issuing APIs; part of the Payward (Kraken) family.",
+  "category": "other",
+  "tags": ["stablecoin", "cards", "payments", "cross-border"],
+  "priority": "medium",
+  "sources": []
+}

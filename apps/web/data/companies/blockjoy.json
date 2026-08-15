@@ -1,0 +1,11 @@
+{
+  "companySlug": "blockjoy",
+  "companyName": "BlockJoy",
+  "websiteUrl": "https://blockjoy.com/",
+  "twitterUrl": "https://x.com/BlockJoyWeb3",
+  "description": "Web3 infrastructure provider that lets teams deploy and manage blockchain nodes, including its open-source Blockvisor node-orchestration stack.",
+  "category": "infrastructure",
+  "tags": ["node-infrastructure", "developer-tooling"],
+  "priority": "high",
+  "sources": []
+}

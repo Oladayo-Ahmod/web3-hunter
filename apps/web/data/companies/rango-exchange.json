@@ -1,0 +1,11 @@
+{
+  "companySlug": "rango-exchange",
+  "companyName": "Rango Exchange",
+  "websiteUrl": "https://rango.exchange",
+  "twitterUrl": "https://x.com/RangoExchange",
+  "description": "Cross-chain DEX and bridge aggregator that routes swaps across 70+ blockchains and 100+ underlying bridges/DEXs without custody.",
+  "category": "infrastructure",
+  "tags": ["bridge", "dex-aggregator", "cross-chain"],
+  "priority": "medium",
+  "sources": []
+}

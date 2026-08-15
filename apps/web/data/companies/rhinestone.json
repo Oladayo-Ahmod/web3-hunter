@@ -1,0 +1,12 @@
+{
+  "companySlug": "rhinestone",
+  "companyName": "Rhinestone",
+  "websiteUrl": "https://www.rhinestone.dev",
+  "careersPageUrl": "https://rhinestone.notion.site/Rhinestone-Job-Board-faf25f85b9244f8c81fa63387c4f910a",
+  "twitterUrl": "https://twitter.com/rhinestonewtf",
+  "description": "Intent-powered, ERC-7579 smart-account wallet infrastructure abstracting chains, bridging, and gas behind a single SDK/API.",
+  "category": "infrastructure",
+  "tags": ["account-abstraction", "erc-7579", "smart-accounts"],
+  "priority": "high",
+  "sources": []
+}

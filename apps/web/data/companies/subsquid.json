@@ -1,0 +1,10 @@
+{
+  "companySlug": "subsquid",
+  "companyName": "Subsquid",
+  "websiteUrl": "https://subsquid.io",
+  "description": "Subsquid builds decentralized blockchain indexing infrastructure and a query network for developers to efficiently extract and process on-chain data.",
+  "category": "infrastructure",
+  "tags": ["indexing", "data", "decentralized-infra"],
+  "priority": "medium",
+  "sources": []
+}

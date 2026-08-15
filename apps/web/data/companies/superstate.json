@@ -1,0 +1,31 @@
+{
+  "companySlug": "superstate",
+  "companyName": "Superstate",
+  "websiteUrl": "https://www.superstate.com/",
+  "careersPageUrl": "https://jobs.lever.co/superstate",
+  "twitterUrl": "https://x.com/superstateinc",
+  "description": "Builds tokenization infrastructure connecting traditional securities and funds with crypto capital markets for global, 24/7 onchain access.",
+  "category": "defi",
+  "tags": ["defi", "rwa", "tokenization", "asset-management"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Robert Leshner",
+      "role": "founder",
+      "profileUrl": "https://twitter.com/rleshner",
+      "notes": "Founder & CEO of Superstate; previously co-founder of Compound Labs."
+    },
+    {
+      "name": "Jim Hiltner",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/jim-hiltner-cfa-87815482/",
+      "notes": "Co-founder & Head of Business Development."
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "superstate"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "companySlug": "trustsec",
+  "companyName": "TrustSec",
+  "websiteUrl": "https://trustsec.xyz",
+  "description": "Web3 security boutique offering smart contract audits (limited public information verified beyond company website).",
+  "category": "security",
+  "tags": ["audit"],
+  "priority": "low",
+  "sources": []
+}

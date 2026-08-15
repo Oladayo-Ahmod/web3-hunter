@@ -1,0 +1,12 @@
+{
+  "companySlug": "beosin",
+  "companyName": "Beosin",
+  "websiteUrl": "https://www.beosin.com",
+  "twitterUrl": "https://x.com/BeosinAlert",
+  "linkedinUrl": "https://www.linkedin.com/company/beosin",
+  "description": "Asia-Pacific blockchain security and compliance firm offering smart contract audits, on-chain AML investigation, and threat monitoring across 60+ chains since 2018.",
+  "category": "security",
+  "tags": ["audit", "compliance", "aml"],
+  "priority": "medium",
+  "sources": []
+}

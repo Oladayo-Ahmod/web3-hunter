@@ -1,0 +1,11 @@
+{
+  "companySlug": "reclaim-protocol",
+  "companyName": "Reclaim Protocol",
+  "websiteUrl": "https://reclaimprotocol.org",
+  "twitterUrl": "https://x.com/reclaimprotocol",
+  "description": "Builds zkTLS infrastructure that lets users generate zero-knowledge-backed verified credentials from existing web2 accounts without installing an app.",
+  "category": "infrastructure",
+  "tags": ["zktls", "zk", "identity", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,16 @@
+{
+  "companySlug": "validation-cloud",
+  "companyName": "Validation Cloud",
+  "websiteUrl": "https://www.validationcloud.io/",
+  "careersPageUrl": "https://job-boards.greenhouse.io/validationcloud",
+  "description": "Provides enterprise-grade Web3 node infrastructure, RPC, and staking APIs built on institutional-grade cloud infrastructure.",
+  "category": "infrastructure",
+  "tags": ["node-infrastructure", "staking-infrastructure", "rpc"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "validationcloud"
+    }
+  ]
+}

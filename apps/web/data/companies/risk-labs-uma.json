@@ -1,0 +1,18 @@
+{
+  "companySlug": "risk-labs-uma",
+  "companyName": "Risk Labs (UMA)",
+  "websiteUrl": "https://risklabs.foundation",
+  "careersPageUrl": "https://jobs.ashbyhq.com/risklabs",
+  "twitterUrl": "https://x.com/risklabsfdn",
+  "linkedinUrl": "https://www.linkedin.com/company/risk-labs-foundation/",
+  "description": "Foundation behind the UMA optimistic oracle used to bring verified real-world truth on-chain for prediction markets and cross-chain protocols.",
+  "category": "infrastructure",
+  "tags": ["oracle", "optimistic-oracle", "prediction-markets"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "risklabs"
+    }
+  ]
+}

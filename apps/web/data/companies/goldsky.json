@@ -1,0 +1,17 @@
+{
+  "companySlug": "goldsky",
+  "companyName": "Goldsky",
+  "websiteUrl": "https://goldsky.com",
+  "careersPageUrl": "https://jobs.ashbyhq.com/goldsky",
+  "twitterUrl": "https://twitter.com/goldskyio",
+  "description": "Goldsky provides real-time blockchain data infrastructure, including subgraph indexing, data streaming pipelines, and low-latency mirror/replication tools.",
+  "category": "infrastructure",
+  "tags": ["indexing", "data", "subgraphs", "early-stage"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "goldsky"
+    }
+  ]
+}

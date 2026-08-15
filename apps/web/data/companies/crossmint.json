@@ -1,0 +1,13 @@
+{
+  "companySlug": "crossmint",
+  "companyName": "Crossmint",
+  "websiteUrl": "https://www.crossmint.com",
+  "careersPageUrl": "https://crossmint.notion.site/Jobs-at-Crossmint-72c5ada11b2347b5bfe475bf97ed29c9",
+  "twitterUrl": "https://twitter.com/crossmint",
+  "linkedinUrl": "https://www.linkedin.com/company/crossmint-io",
+  "description": "Stablecoin infrastructure and payments platform offering embedded/treasury wallets, onramps/offramps, and tokenization APIs for enterprises and AI agents.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "embedded-wallets", "payments", "tokenization"],
+  "priority": "high",
+  "sources": []
+}

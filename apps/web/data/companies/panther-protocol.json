@@ -1,0 +1,11 @@
+{
+  "companySlug": "panther-protocol",
+  "companyName": "Panther Protocol",
+  "websiteUrl": "https://www.pantherprotocol.io",
+  "careersPageUrl": "https://www.pantherprotocol.io/careers",
+  "description": "Builds an end-to-end privacy protocol for digital assets (zAssets) that is interoperable with DeFi via zero-knowledge proofs, aiming to combine financial privacy with optional compliance.",
+  "category": "infrastructure",
+  "tags": ["zk", "privacy", "defi"],
+  "priority": "medium",
+  "sources": []
+}

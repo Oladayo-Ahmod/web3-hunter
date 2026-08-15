@@ -1,0 +1,12 @@
+{
+  "companySlug": "mellow-protocol",
+  "companyName": "Mellow Protocol",
+  "websiteUrl": "https://mellow.finance/",
+  "careersPageUrl": "https://mellow.finance/careers",
+  "twitterUrl": "https://x.com/Mellowprotocol",
+  "description": "Permissionless protocol for building and operating onchain asset-management vaults and restaking curation strategies.",
+  "category": "defi",
+  "tags": ["defi", "restaking", "asset-management", "vaults"],
+  "priority": "medium",
+  "sources": []
+}

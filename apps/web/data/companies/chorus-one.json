@@ -1,0 +1,11 @@
+{
+  "companySlug": "chorus-one",
+  "companyName": "Chorus One",
+  "websiteUrl": "https://chorus.one",
+  "careersPageUrl": "https://chorus.one/careers",
+  "description": "Chorus One operates institutional-grade staking infrastructure and validator nodes across dozens of proof-of-stake blockchain networks.",
+  "category": "infrastructure",
+  "tags": ["staking", "node-infrastructure", "proof-of-stake"],
+  "priority": "medium",
+  "sources": []
+}

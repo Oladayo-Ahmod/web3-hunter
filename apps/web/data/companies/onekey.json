@@ -1,0 +1,12 @@
+{
+  "companySlug": "onekey",
+  "companyName": "OneKey",
+  "websiteUrl": "https://onekey.so",
+  "careersPageUrl": "https://onekeyhq.atlassian.net/wiki/spaces/OC/overview",
+  "twitterUrl": "https://x.com/OneKeyHQ",
+  "description": "Open-source hardware and software crypto wallet (OneKey Pro, Classic, App) backed by YZi Labs, Coinbase Ventures, and Dragonfly.",
+  "category": "wallet",
+  "tags": ["hardware-wallet", "wallet", "open-source"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "manifold-trading",
+  "companyName": "Manifold Trading",
+  "websiteUrl": "https://www.manifoldtrading.com",
+  "careersPageUrl": "https://www.manifoldtrading.com/careers",
+  "description": "Systematic quantitative trading firm running an MEV engineering team that works across the on-chain protocol stack, from node internals to smart contracts.",
+  "category": "infrastructure",
+  "tags": ["mev", "quant-trading"],
+  "priority": "high",
+  "sources": []
+}

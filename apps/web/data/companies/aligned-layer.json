@@ -1,0 +1,10 @@
+{
+  "companySlug": "aligned-layer",
+  "companyName": "Aligned Layer",
+  "websiteUrl": "https://alignedlayer.com",
+  "description": "Decentralized zero-knowledge proof verification and aggregation layer for Ethereum, built as an Actively Validated Service on EigenLayer.",
+  "category": "infrastructure",
+  "tags": ["zk", "proof-verification", "eigenlayer", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,12 @@
+{
+  "companySlug": "plume-network",
+  "companyName": "Plume Network",
+  "websiteUrl": "https://plume.org",
+  "careersPageUrl": "https://ats.rippling.com/en-US/plume-network/jobs",
+  "twitterUrl": "https://x.com/plumenetwork",
+  "description": "Plume Network builds an EVM-compatible Layer 1/2 blockchain purpose-built for tokenizing and deploying real-world assets (RWAs) on-chain.",
+  "category": "l2",
+  "tags": ["l2", "rwa", "tokenization", "evm"],
+  "priority": "high",
+  "sources": []
+}

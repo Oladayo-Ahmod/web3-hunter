@@ -1,0 +1,10 @@
+{
+  "companySlug": "pokt-network",
+  "companyName": "POKT Network",
+  "websiteUrl": "https://www.pokt.network",
+  "description": "POKT Network operates a decentralized RPC infrastructure protocol that routes and incentivizes blockchain node access across many chains.",
+  "category": "infrastructure",
+  "tags": ["rpc", "node-infrastructure", "decentralized-infra"],
+  "priority": "medium",
+  "sources": []
+}

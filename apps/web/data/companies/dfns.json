@@ -1,0 +1,13 @@
+{
+  "companySlug": "dfns",
+  "companyName": "Dfns",
+  "websiteUrl": "https://www.dfns.co",
+  "careersPageUrl": "https://jobs.deel.com/dfns",
+  "twitterUrl": "https://x.com/dfnsHQ",
+  "linkedinUrl": "https://www.linkedin.com/company/dfnshq/",
+  "description": "Keyless MPC wallet infrastructure ('core banking platform for digital assets') letting institutions and Web3 apps create, embed, and manage programmable wallets.",
+  "category": "infrastructure",
+  "tags": ["mpc", "wallet-infrastructure", "custody", "api"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,16 @@
+{
+  "companySlug": "mesh-connect",
+  "companyName": "Mesh",
+  "websiteUrl": "https://meshconnect.com",
+  "careersPageUrl": "https://job-boards.greenhouse.io/mesh",
+  "description": "Web3 payments and connectivity infrastructure, including crypto card products, hiring across Web3 engineering, cloud infrastructure, and card product roles.",
+  "category": "infrastructure",
+  "tags": ["payments", "web3", "cards", "connectivity"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "mesh"
+    }
+  ]
+}

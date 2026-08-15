@@ -1,0 +1,10 @@
+{
+  "companySlug": "space-and-time",
+  "companyName": "Space and Time",
+  "websiteUrl": "https://www.spaceandtime.io",
+  "description": "Space and Time builds a decentralized data warehouse with tamperproof SQL queries over blockchain data, secured by zero-knowledge proofs.",
+  "category": "infrastructure",
+  "tags": ["indexing", "data", "zk-proofs", "sql"],
+  "priority": "medium",
+  "sources": []
+}

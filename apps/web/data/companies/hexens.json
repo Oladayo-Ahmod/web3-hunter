@@ -1,0 +1,27 @@
+{
+  "companySlug": "hexens",
+  "companyName": "Hexens",
+  "websiteUrl": "https://hexens.io",
+  "careersPageUrl": "https://hexens.io/careers",
+  "twitterUrl": "https://x.com/hexens",
+  "linkedinUrl": "https://www.linkedin.com/company/hexens",
+  "description": "Blockchain security firm delivering smart contract and infrastructure audits, with 300+ engagements and zero client exploits to date.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Sipan Vardanyan",
+      "role": "founder",
+      "profileUrl": "https://x.com/Hexen1337",
+      "notes": "Co-founder and CEO"
+    },
+    {
+      "name": "Vahe Karapetyan",
+      "role": "cto",
+      "profileUrl": "https://x.com/kemmio",
+      "notes": "Co-founder and CTO"
+    }
+  ],
+  "sources": []
+}

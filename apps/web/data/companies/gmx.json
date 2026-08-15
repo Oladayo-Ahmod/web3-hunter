@@ -1,0 +1,11 @@
+{
+  "companySlug": "gmx",
+  "companyName": "GMX",
+  "websiteUrl": "https://gmx.io/",
+  "twitterUrl": "https://twitter.com/GMX_IO",
+  "description": "Decentralized spot and perpetual futures exchange running on Arbitrum and Avalanche with low swap fees and zero price impact trades.",
+  "category": "defi",
+  "tags": ["defi", "perpetuals", "dex", "derivatives"],
+  "priority": "medium",
+  "sources": []
+}

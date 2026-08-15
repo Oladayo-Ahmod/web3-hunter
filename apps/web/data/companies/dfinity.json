@@ -1,0 +1,18 @@
+{
+  "companySlug": "dfinity",
+  "companyName": "DFINITY Foundation",
+  "websiteUrl": "https://dfinity.org",
+  "careersPageUrl": "https://dfinity.org/careers",
+  "twitterUrl": "https://x.com/dfinity",
+  "linkedinUrl": "https://www.linkedin.com/company/dfinity",
+  "description": "DFINITY Foundation develops the Internet Computer, a Layer 1 blockchain designed to host fully on-chain web applications and services at scale.",
+  "category": "l1",
+  "tags": ["l1", "internet-computer", "on-chain-hosting"],
+  "priority": "low",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "dfinity"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "kamino-finance",
+  "companyName": "Kamino Finance",
+  "websiteUrl": "https://kamino.com/",
+  "twitterUrl": "https://twitter.com/Kamino",
+  "description": "Unified on-chain lending, borrowing and liquidity platform on Solana, and the largest non-staking DeFi protocol on the chain by AUM.",
+  "category": "defi",
+  "tags": ["defi", "lending", "liquidity", "solana"],
+  "priority": "medium",
+  "sources": []
+}

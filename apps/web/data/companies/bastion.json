@@ -1,0 +1,16 @@
+{
+  "companySlug": "bastion",
+  "companyName": "Bastion",
+  "websiteUrl": "https://www.bastion.com",
+  "careersPageUrl": "https://www.bastion.com/careers",
+  "description": "Full-stack stablecoin infrastructure platform to custody, move, convert, and issue stablecoins, operated via a New York State-chartered limited-purpose trust company.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "custody", "payments", "issuance"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "bastion"
+    }
+  ]
+}

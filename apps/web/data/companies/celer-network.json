@@ -1,0 +1,12 @@
+{
+  "companySlug": "celer-network",
+  "companyName": "Celer Network",
+  "websiteUrl": "https://celer.network",
+  "careersPageUrl": "https://celer.network/career/",
+  "twitterUrl": "https://twitter.com/CelerNetwork",
+  "description": "Blockchain interoperability protocol (cBridge) enabling cross-chain token transfers and generalized messaging across 40+ chains.",
+  "category": "infrastructure",
+  "tags": ["bridge", "cross-chain", "interoperability"],
+  "priority": "medium",
+  "sources": []
+}

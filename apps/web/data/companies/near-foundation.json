@@ -1,0 +1,18 @@
+{
+  "companySlug": "near-foundation",
+  "companyName": "Near Foundation",
+  "websiteUrl": "https://near.org",
+  "careersPageUrl": "https://job-boards.eu.greenhouse.io/nearfoundation",
+  "twitterUrl": "https://x.com/nearprotocol",
+  "linkedinUrl": "https://www.linkedin.com/company/near-foundation",
+  "description": "Near Foundation stewards Near Protocol, a sharded, developer-friendly Layer 1 blockchain now positioning itself as infrastructure for user-owned AI.",
+  "category": "l1",
+  "tags": ["l1", "sharding", "developer-tools"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "nearfoundation"
+    }
+  ]
+}

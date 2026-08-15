@@ -1,0 +1,18 @@
+{
+  "companySlug": "nexus-xyz",
+  "companyName": "Nexus",
+  "websiteUrl": "https://nexus.xyz",
+  "description": "Building the Nexus zkVM, a general-purpose zero-knowledge virtual machine for large-scale verifiable computing, founded out of Stanford in 2022.",
+  "category": "infrastructure",
+  "tags": ["zk", "zkvm", "cryptography"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Daniel Marin",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/danielmarinq/",
+      "notes": "Founder and CEO of Nexus"
+    }
+  ],
+  "sources": []
+}

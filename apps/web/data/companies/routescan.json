@@ -1,0 +1,11 @@
+{
+  "companySlug": "routescan",
+  "companyName": "Routescan",
+  "websiteUrl": "https://routescan.io/",
+  "careersPageUrl": "https://docs.routescan.io/routescan-jobs",
+  "description": "Multichain blockchain explorer and API infrastructure provider displaying and indexing real-time transaction data across 33+ EVM chains.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "explorer", "data-infrastructure"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,26 @@
+{
+  "companySlug": "lifi",
+  "companyName": "LI.FI",
+  "websiteUrl": "https://li.fi",
+  "careersPageUrl": "https://jobs.ashbyhq.com/li.fi",
+  "twitterUrl": "https://x.com/lifiprotocol",
+  "linkedinUrl": "https://www.linkedin.com/company/lifiprotocol/",
+  "description": "Berlin-based liquidity aggregation and orchestration layer that powers cross-chain swaps and bridging for wallets and dApps across 60+ chains via a single API.",
+  "category": "infrastructure",
+  "tags": ["bridge", "dex-aggregator", "cross-chain"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Philipp Zentner",
+      "role": "founder",
+      "profileUrl": "https://x.com/PhilippZentner",
+      "notes": "Founder/CEO of LI.FI"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "li.fi"
+    }
+  ]
+}

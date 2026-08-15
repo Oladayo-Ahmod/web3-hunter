@@ -1,0 +1,12 @@
+{
+  "companySlug": "drift-protocol",
+  "companyName": "Drift Protocol",
+  "websiteUrl": "https://www.drift.trade/",
+  "careersPageUrl": "https://driftprotocol.notion.site/Drift-Career-Opportunities-45de6a825f264388b13cd866b707d157",
+  "twitterUrl": "https://twitter.com/DriftProtocol",
+  "description": "Leading derivatives exchange on Solana offering perpetual futures, spot trading and lending with a trader-centric on-chain orderbook.",
+  "category": "defi",
+  "tags": ["defi", "perpetuals", "dex", "solana"],
+  "priority": "medium",
+  "sources": []
+}

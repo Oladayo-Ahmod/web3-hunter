@@ -1,0 +1,10 @@
+{
+  "companySlug": "rated-labs",
+  "companyName": "Rated Labs",
+  "websiteUrl": "https://rated.network/",
+  "description": "Staking and validator analytics platform providing performance data and APIs across Ethereum, Solana, Avalanche, EigenLayer, and other networks.",
+  "category": "infrastructure",
+  "tags": ["staking-infrastructure", "restaking", "analytics"],
+  "priority": "high",
+  "sources": []
+}

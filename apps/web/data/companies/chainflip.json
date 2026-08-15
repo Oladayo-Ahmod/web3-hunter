@@ -1,0 +1,13 @@
+{
+  "companySlug": "chainflip",
+  "companyName": "Chainflip",
+  "websiteUrl": "https://chainflip.io",
+  "careersPageUrl": "https://chainflip.io/blog/join-us/",
+  "twitterUrl": "https://x.com/Chainflip",
+  "linkedinUrl": "https://www.linkedin.com/company/chainflip",
+  "description": "Decentralized cross-chain exchange using MPC/threshold signatures to enable native swaps (e.g. BTC for ETH) without wrapped tokens or centralized exchanges.",
+  "category": "infrastructure",
+  "tags": ["bridge", "mpc", "native-swaps"],
+  "priority": "high",
+  "sources": []
+}

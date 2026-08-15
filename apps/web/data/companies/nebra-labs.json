@@ -1,0 +1,10 @@
+{
+  "companySlug": "nebra-labs",
+  "companyName": "NEBRA",
+  "websiteUrl": "https://nebra.one",
+  "description": "R&D organization building UPA, a universal zero-knowledge proof aggregation protocol that scales on-chain ZKP verification on Ethereum and L2s.",
+  "category": "infrastructure",
+  "tags": ["zk", "proof-aggregation", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

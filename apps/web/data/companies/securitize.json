@@ -1,0 +1,16 @@
+{
+  "companySlug": "securitize",
+  "companyName": "Securitize",
+  "websiteUrl": "https://securitize.io",
+  "careersPageUrl": "https://job-boards.greenhouse.io/securitize",
+  "description": "SEC-registered broker-dealer, transfer agent, and tokenization platform powering on-chain funds for BlackRock, Apollo, KKR, and Hamilton Lane.",
+  "category": "infrastructure",
+  "tags": ["rwa", "tokenization", "broker-dealer", "compliance"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "securitize"
+    }
+  ]
+}

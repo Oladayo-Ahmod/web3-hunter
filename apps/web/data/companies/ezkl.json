@@ -1,0 +1,12 @@
+{
+  "companySlug": "ezkl",
+  "companyName": "EZKL (Zkonduit)",
+  "websiteUrl": "https://ezkl.xyz",
+  "careersPageUrl": "https://wellfound.com/company/ezklxyz/jobs",
+  "twitterUrl": "https://x.com/ezklxyz",
+  "description": "Developer-friendly zero-knowledge machine learning (ZKML) engine that generates zk-SNARK proofs of correct inference for deep-learning models and computational graphs.",
+  "category": "infrastructure",
+  "tags": ["zkml", "zk", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

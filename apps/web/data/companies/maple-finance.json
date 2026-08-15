@@ -1,0 +1,20 @@
+{
+  "companySlug": "maple-finance",
+  "companyName": "Maple Finance",
+  "websiteUrl": "https://maple.finance/",
+  "twitterUrl": "https://x.com/maplefinance",
+  "linkedinUrl": "https://www.linkedin.com/company/maplefinance/",
+  "description": "Onchain lending and asset-management platform bringing institutional-grade credit and yield products to DeFi, having originated over $24B in loans.",
+  "category": "defi",
+  "tags": ["defi", "lending", "credit", "rwa"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Sidney Powell",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/company/maplefinance/",
+      "notes": "Named as a Maple Finance co-founder on the company site; individual profile URL not independently verified."
+    }
+  ],
+  "sources": []
+}

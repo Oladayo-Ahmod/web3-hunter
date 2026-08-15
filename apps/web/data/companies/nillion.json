@@ -1,0 +1,11 @@
+{
+  "companySlug": "nillion",
+  "companyName": "Nillion",
+  "websiteUrl": "https://nillion.com",
+  "careersPageUrl": "https://nillion.com/careers",
+  "description": "Builds a decentralized network for privacy-preserving computation over blind (encrypted) data using multi-party computation (MPC).",
+  "category": "infrastructure",
+  "tags": ["mpc", "privacy", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,10 @@
+{
+  "companySlug": "soneium",
+  "companyName": "Soneium",
+  "websiteUrl": "https://soneium.org",
+  "description": "Soneium is a Sony-backed Ethereum Layer 2, co-developed by Sony Block Solutions Labs and Startale Group, built for entertainment, gaming, and creator applications.",
+  "category": "l2",
+  "tags": ["l2", "op-stack", "gaming", "entertainment"],
+  "priority": "medium",
+  "sources": []
+}

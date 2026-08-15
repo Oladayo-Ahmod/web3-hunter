@@ -1,0 +1,12 @@
+{
+  "companySlug": "band-protocol",
+  "companyName": "Band Protocol",
+  "websiteUrl": "https://www.bandprotocol.com",
+  "careersPageUrl": "https://bandprotocol.jobsoid.com/",
+  "twitterUrl": "https://x.com/BandProtocol",
+  "description": "Cross-chain data oracle platform that aggregates and connects real-world data and APIs to smart contracts across 40+ blockchain networks.",
+  "category": "infrastructure",
+  "tags": ["oracle", "cross-chain", "data-feeds"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,26 @@
+{
+  "companySlug": "injective-labs",
+  "companyName": "Injective Labs",
+  "websiteUrl": "https://injectivelabs.org",
+  "careersPageUrl": "https://injectivelabs.org/careers/",
+  "twitterUrl": "https://x.com/Injective",
+  "linkedinUrl": "https://www.linkedin.com/company/injective-labs",
+  "description": "Injective Labs builds Injective, a Layer 1 blockchain purpose-built for on-chain finance, trading, and derivatives applications.",
+  "category": "l1",
+  "tags": ["l1", "defi", "interoperability", "cosmos-sdk"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Eric Chen",
+      "role": "cofounder",
+      "profileUrl": "https://theorg.com/org/injective-protocol/org-chart/eric-chen",
+      "notes": "Co-founder and CEO"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "injective-labs"
+    }
+  ]
+}

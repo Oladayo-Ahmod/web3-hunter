@@ -1,0 +1,10 @@
+{
+  "companySlug": "solidified",
+  "companyName": "Solidified",
+  "websiteUrl": "https://www.solidified.io",
+  "description": "Smart contract security audit and virtual CISO firm, spun off from Oak Security, with a decade of work for the Ethereum Foundation and Arbitrum.",
+  "category": "security",
+  "tags": ["audit", "vciso"],
+  "priority": "medium",
+  "sources": []
+}

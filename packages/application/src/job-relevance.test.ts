@@ -422,6 +422,150 @@ describe("Milestone 14 Phase 1 — recall fix for real production false negative
   });
 });
 
+describe("Milestone 18 — expanded title coverage", () => {
+  it('recognizes "Software Engineer, Blockchain" (qualifier trailing the role)', () => {
+    const result = computeJobRelevance(
+      job({ title: "Software Engineer, Blockchain" }),
+      [],
+      profile({ targetRoleSlugs: ["blockchain-engineer"] }),
+      skillNames,
+    );
+    expect(result.breakdown).toContainEqual(
+      expect.objectContaining({ label: "Target role: Blockchain Engineer" }),
+    );
+  });
+
+  it('recognizes "Software Engineer - Blockchain"', () => {
+    const result = computeJobRelevance(
+      job({ title: "Software Engineer - Blockchain" }),
+      [],
+      profile({ targetRoleSlugs: ["blockchain-engineer"] }),
+      skillNames,
+    );
+    expect(result.breakdown).toContainEqual(
+      expect.objectContaining({ label: "Target role: Blockchain Engineer" }),
+    );
+  });
+
+  it('recognizes "Blockchain Developer" and "Protocol Developer"', () => {
+    const blockchainDev = computeJobRelevance(
+      job({ title: "Blockchain Developer" }),
+      [],
+      profile({ targetRoleSlugs: ["blockchain-engineer"] }),
+      skillNames,
+    );
+    expect(blockchainDev.breakdown).toContainEqual(
+      expect.objectContaining({ label: "Target role: Blockchain Engineer" }),
+    );
+
+    const protocolDev = computeJobRelevance(
+      job({ title: "Protocol Developer" }),
+      [],
+      profile({ targetRoleSlugs: ["protocol-engineer"] }),
+      skillNames,
+    );
+    expect(protocolDev.breakdown).toContainEqual(
+      expect.objectContaining({ label: "Target role: Protocol Engineer" }),
+    );
+  });
+
+  it.each([
+    ["DeFi Engineer", "defi-engineer", "DeFi Engineer"],
+    ["Web3 Engineer", "web3-engineer", "Web3 Engineer"],
+    [
+      "Blockchain Infrastructure Engineer",
+      "blockchain-infrastructure-engineer",
+      "Blockchain Infrastructure Engineer",
+    ],
+    ["Developer Experience Engineer", "developer-tooling-engineer", "Developer Tooling Engineer"],
+    ["ZK Engineer", "zk-engineer", "ZK Engineer"],
+    ["Privacy Engineer", "privacy-fhe-engineer", "Privacy / FHE Engineer"],
+    ["Wallet Engineer", "wallet-engineer", "Wallet Engineer"],
+    [
+      "Account Abstraction Engineer",
+      "account-abstraction-engineer",
+      "Account Abstraction Engineer",
+    ],
+    ["Cross-Chain Engineer", "bridge-interoperability-engineer", "Bridge / Cross-Chain Engineer"],
+    ["Oracle Engineer", "oracle-engineer", "Oracle Engineer"],
+    [
+      "MEV Engineer",
+      "mev-trading-infrastructure-engineer",
+      "MEV / Trading Infrastructure Engineer",
+    ],
+    [
+      "Protocol Infrastructure Engineer",
+      "protocol-infrastructure-engineer",
+      "Node / Protocol Infrastructure Engineer",
+    ],
+  ])('recognizes "%s" as the %s target role', (title, roleSlug, expectedName) => {
+    const result = computeJobRelevance(
+      job({ title }),
+      [],
+      profile({ targetRoleSlugs: [roleSlug] }),
+      skillNames,
+    );
+    expect(result.breakdown).toContainEqual(
+      expect.objectContaining({ label: `Target role: ${expectedName}` }),
+    );
+  });
+
+  it('no longer penalizes "Developer Relations Engineer" as an incompatible role family', () => {
+    const result = computeJobRelevance(
+      job({ title: "Developer Relations Engineer" }),
+      [],
+      profile({ targetRoleSlugs: ALL_TARGET_ROLE_SLUGS }),
+      skillNames,
+    );
+    expect(result.breakdown.some((entry) => entry.label.includes("Role mismatch"))).toBe(false);
+  });
+
+  it('gives a generic "Software Engineer" title credit when its description names concrete Web3 protocol work', () => {
+    const withDescription = computeJobRelevance(
+      job({
+        title: "Software Engineer",
+        description: "You'll write Solidity smart contracts and work on our EVM rollup.",
+      }),
+      [],
+      profile({ targetRoleSlugs: ALL_TARGET_ROLE_SLUGS }),
+      skillNames,
+    );
+    expect(withDescription.breakdown).toContainEqual(
+      expect.objectContaining({
+        label: expect.stringContaining("Description mentions Web3 protocol work"),
+      }),
+    );
+
+    const withoutDescription = computeJobRelevance(
+      job({ title: "Software Engineer" }),
+      [],
+      profile({ targetRoleSlugs: ALL_TARGET_ROLE_SLUGS }),
+      skillNames,
+    );
+    expect(withoutDescription.breakdown).toEqual([]);
+  });
+
+  it("does not let an unrelated description rescue a title that already reads as a known-incompatible role", () => {
+    // The description fallback only applies to genuinely *unknown*
+    // titles — it must never override an active role-mismatch penalty.
+    const result = computeJobRelevance(
+      job({
+        title: "Frontend Engineer",
+        description: "You'll write Solidity smart contracts.",
+      }),
+      [],
+      profile({ targetRoleSlugs: ALL_TARGET_ROLE_SLUGS }),
+      skillNames,
+    );
+    expect(result.breakdown).toContainEqual(
+      expect.objectContaining({ label: expect.stringContaining("Role mismatch") }),
+    );
+    expect(result.breakdown.some((entry) => entry.label.includes("Description mentions"))).toBe(
+      false,
+    );
+  });
+});
+
 describe("regression: the real production false positive that triggered Milestone 13 Phase A", () => {
   it('does not let "Senior Software Engineer, Frontend" reach a high match for a security/protocol-targeting profile just because Frontend Engineering is in the Skill list', () => {
     // The exact real scenario: job_skill classified this posting with

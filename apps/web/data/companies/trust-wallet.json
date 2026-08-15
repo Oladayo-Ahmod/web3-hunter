@@ -1,0 +1,18 @@
+{
+  "companySlug": "trust-wallet",
+  "companyName": "Trust Wallet",
+  "websiteUrl": "https://trustwallet.com",
+  "careersPageUrl": "https://trustwallet.com/careers",
+  "twitterUrl": "https://twitter.com/trustwallet",
+  "linkedinUrl": "https://www.linkedin.com/company/trustwallet",
+  "description": "Self-custody crypto wallet supporting 100+ blockchains for buying, sending, swapping, staking, and storing crypto and NFTs; used by 200M+ people worldwide.",
+  "category": "wallet",
+  "tags": ["wallet", "self-custody", "mobile-wallet"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "trust-wallet"
+    }
+  ]
+}

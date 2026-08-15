@@ -79,6 +79,12 @@ export interface JobRelevanceJobInput {
   departmentNames: readonly string[];
   workplaceType: "remote" | "hybrid" | "onsite" | null;
   locationName: string | null;
+  /**
+   * Optional — only used for the generic-title fallback described at
+   * `WEB3_DESCRIPTION_KEYWORDS`. Every other component here scores the
+   * title alone; this is the one deliberate exception.
+   */
+  description?: string | null;
 }
 
 /**
@@ -121,7 +127,7 @@ export const TARGET_ROLES: Readonly<
   },
   "protocol-engineer": {
     name: "Protocol Engineer",
-    titleKeywords: ["protocol engineer"],
+    titleKeywords: ["protocol engineer", "protocol developer"],
   },
   "security-researcher": {
     name: "Security Researcher",
@@ -138,11 +144,99 @@ export const TARGET_ROLES: Readonly<
   },
   "blockchain-engineer": {
     name: "Blockchain Engineer",
-    titleKeywords: ["blockchain engineer"],
+    // Milestone 18: "Software Engineer, Blockchain"/"Software Engineer -
+    // Blockchain" are real postings where the qualifier trails the role
+    // rather than leading it ("Blockchain Engineer") — a plain phrase
+    // match can't see both orders at once, so the comma/dash-led variants
+    // are listed explicitly rather than attempting a token-order-
+    // independent matcher here.
+    titleKeywords: [
+      "blockchain engineer",
+      "blockchain developer",
+      "engineer, blockchain",
+      "engineer - blockchain",
+      "developer, blockchain",
+      "developer - blockchain",
+    ],
   },
   "web3-backend-engineer": {
     name: "Web3 Backend Engineer",
     titleKeywords: ["backend engineer", "backend developer"],
+  },
+  "defi-engineer": {
+    name: "DeFi Engineer",
+    titleKeywords: ["defi engineer", "defi developer"],
+  },
+  "web3-engineer": {
+    name: "Web3 Engineer",
+    titleKeywords: [
+      "web3 engineer",
+      "web3 software engineer",
+      "software engineer, web3",
+      "software engineer - web3",
+    ],
+  },
+  "blockchain-infrastructure-engineer": {
+    name: "Blockchain Infrastructure Engineer",
+    titleKeywords: ["blockchain infrastructure", "infrastructure engineer"],
+  },
+  "developer-tooling-engineer": {
+    name: "Developer Tooling Engineer",
+    // Folds in SDK/DX titles (Milestone 18 §3: "Developer Experience
+    // Engineer"/"SDK Engineer" "when strongly Web3-native") — this whole
+    // vocabulary only ever scores Jobs already scoped to this app's
+    // curated Web3 company pool, so a title-level match here isn't also
+    // claiming the company itself is Web3-native; that's established
+    // upstream, by which Companies are in the directory at all.
+    titleKeywords: [
+      "developer tooling",
+      "devtools engineer",
+      "developer experience engineer",
+      "developer experience",
+      "sdk engineer",
+    ],
+  },
+  "zk-engineer": {
+    name: "ZK Engineer",
+    titleKeywords: [
+      "zk engineer",
+      "zero-knowledge engineer",
+      "zero knowledge engineer",
+      "zk cryptography engineer",
+    ],
+  },
+  "privacy-fhe-engineer": {
+    name: "Privacy / FHE Engineer",
+    titleKeywords: ["privacy engineer", "fhe engineer", "cryptography engineer"],
+  },
+  "wallet-engineer": {
+    name: "Wallet Engineer",
+    titleKeywords: ["wallet engineer"],
+  },
+  "account-abstraction-engineer": {
+    name: "Account Abstraction Engineer",
+    titleKeywords: ["account abstraction engineer", "account abstraction"],
+  },
+  "bridge-interoperability-engineer": {
+    name: "Bridge / Cross-Chain Engineer",
+    titleKeywords: [
+      "bridge engineer",
+      "cross-chain engineer",
+      "cross chain engineer",
+      "interoperability engineer",
+    ],
+  },
+  "oracle-engineer": {
+    name: "Oracle Engineer",
+    titleKeywords: ["oracle engineer"],
+  },
+  "mev-trading-infrastructure-engineer": {
+    name: "MEV / Trading Infrastructure Engineer",
+    titleKeywords: ["mev engineer", "mev researcher", "trading infrastructure engineer"],
+  },
+  "protocol-infrastructure-engineer": {
+    name: "Node / Protocol Infrastructure Engineer",
+    titleKeywords: ["node engineer", "client engineer", "protocol infrastructure engineer"],
   },
 };
 
@@ -164,10 +258,13 @@ export const INCOMPATIBLE_ROLE_FAMILIES: Readonly<
     name: "Frontend Engineering",
     titleKeywords: ["frontend", "front-end", "front end", "ui engineer", "react developer"],
   },
-  devrel: {
-    name: "Developer Relations",
-    titleKeywords: ["developer relations", "devrel", "developer advocate"],
-  },
+  // Milestone 18 §3: "Developer Relations Engineer"/"Developer Advocate"
+  // used to be flatly penalized here. A title-only matcher can't tell a
+  // strongly technical, Web3-native DevRel role from a marketing-flavored
+  // one, so this family is dropped rather than guessed at — an
+  // unmatched DevRel title now falls into the ordinary "genuinely
+  // unknown" bucket (no bonus, no penalty) instead of being actively
+  // demoted.
   product: {
     name: "Product",
     titleKeywords: ["product manager", "product designer", "product owner"],
@@ -202,6 +299,34 @@ export const INCOMPATIBLE_ROLE_FAMILIES: Readonly<
  * entries (e.g. "marketing," "compliance") — that's two independent
  * signals agreeing, not a bug; a title can trip both.
  */
+/**
+ * Milestone 18 §3: "'Software Engineer' when the description clearly
+ * indicates blockchain/protocol/Web3 work." A generic title like plain
+ * "Software Engineer" matches nothing in `TARGET_ROLES` and nothing in
+ * `INCOMPATIBLE_ROLE_FAMILIES` — genuinely unknown, per this module's
+ * "absence is not a mismatch" rule. This is the one place that unknown
+ * status gets a second look: if the posting's own description names
+ * concrete Web3/protocol engineering work, that's real evidence the
+ * title alone didn't carry. Deliberately a fixed keyword list, not a
+ * classifier — the same discipline every other list in this module uses.
+ */
+const WEB3_DESCRIPTION_KEYWORDS = [
+  "solidity",
+  "smart contract",
+  "evm",
+  "on-chain",
+  "onchain",
+  "blockchain protocol",
+  "web3 protocol",
+  "defi protocol",
+  "layer 2",
+  "layer2",
+  "rollup",
+  "zero-knowledge",
+  "zero knowledge",
+  "zk-rollup",
+];
+
 const NEGATIVE_TITLE_KEYWORDS = [
   "aml",
   "compliance",
@@ -251,6 +376,10 @@ const SENIORITY_MATRIX: Readonly<Record<string, Readonly<Record<JobSeniorityLeve
 const SKILL_FIT_MAX_POINTS = 30; // was 70 — see the module doc comment's "why the weights changed"
 const ROLE_MATCH_POINTS = 45; // was 20 — now the dominant positive signal
 const ROLE_MISMATCH_PENALTY = 35; // new — the dominant negative signal
+// Half of ROLE_MATCH_POINTS — real evidence (the description says this is
+// Web3 protocol work), but weaker than an explicit title match, since the
+// title itself didn't confirm it (see `WEB3_DESCRIPTION_KEYWORDS`).
+const DESCRIPTION_WEB3_MATCH_POINTS = 22;
 const REMOTE_FIT_POINTS = 10;
 const LOCATION_FIT_POINTS = 10;
 const NEGATIVE_KEYWORD_PENALTY = 35;
@@ -476,9 +605,21 @@ export function computeJobRelevance(
         });
       }
       // Neither a target-role match nor a known-incompatible family:
-      // genuinely unknown (e.g. a generic "Software Engineer") — no
-      // signal, no breakdown line, consistent with every other
-      // optional component's "absence is not a mismatch" rule.
+      // genuinely unknown (e.g. a generic "Software Engineer"). Give the
+      // description one chance to supply what the title didn't (see
+      // `WEB3_DESCRIPTION_KEYWORDS`) before leaving this component silent.
+      else if (job.description) {
+        const matchedKeyword = WEB3_DESCRIPTION_KEYWORDS.find((keyword) =>
+          matchesKeyword(job.description ?? "", keyword),
+        );
+        if (matchedKeyword) {
+          score += DESCRIPTION_WEB3_MATCH_POINTS;
+          breakdown.push({
+            label: `Description mentions Web3 protocol work ("${matchedKeyword}")`,
+            weight: DESCRIPTION_WEB3_MATCH_POINTS,
+          });
+        }
+      }
     }
   }
 

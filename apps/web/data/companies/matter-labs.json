@@ -1,0 +1,20 @@
+{
+  "companySlug": "matter-labs",
+  "companyName": "Matter Labs",
+  "websiteUrl": "https://matterlabs.com",
+  "careersPageUrl": "https://matterlabs.notion.site/Shape-the-future-of-Ethereum-at-Matter-Labs-dfb3b5a037044bb3a8006af2eb0575e0",
+  "twitterUrl": "https://x.com/the_matter_labs",
+  "description": "Matter Labs builds ZKsync, a zero-knowledge Layer 2 network for scaling Ethereum, and Prividium, an Ethereum-secured platform for banks and financial institutions.",
+  "category": "l2",
+  "tags": ["l2", "zk-rollup", "zksync", "cryptography"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Alex Gluchowski",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/gluchowski/",
+      "notes": "Co-founder and CEO"
+    }
+  ],
+  "sources": []
+}

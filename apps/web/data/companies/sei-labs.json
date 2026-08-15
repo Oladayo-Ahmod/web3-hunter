@@ -1,0 +1,29 @@
+{
+  "companySlug": "sei-labs",
+  "companyName": "Sei Labs",
+  "websiteUrl": "https://www.sei.io",
+  "careersPageUrl": "https://jobs.ashbyhq.com/sei-labs",
+  "twitterUrl": "https://x.com/SeiNetwork",
+  "description": "Sei Labs builds Sei, a high-performance, parallelized EVM Layer 1 blockchain optimized for trading and DeFi applications.",
+  "category": "l1",
+  "tags": ["l1", "evm", "defi", "parallel-execution"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Jayendra Jog",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/jayendrajog/"
+    },
+    {
+      "name": "Jeff Feng",
+      "role": "cofounder",
+      "profileUrl": "https://x.com/jeffdfeng"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "sei-labs"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "synthetix",
+  "companyName": "Synthetix",
+  "websiteUrl": "https://synthetix.io/",
+  "twitterUrl": "https://x.com/synthetix",
+  "description": "Open-source derivatives liquidity protocol on Ethereum, Optimism and Base backing synthetic assets, perpetual futures markets and its Synthetix Exchange (formerly Kwenta) front-end.",
+  "category": "defi",
+  "tags": ["defi", "derivatives", "perpetuals", "synthetics"],
+  "priority": "medium",
+  "sources": []
+}

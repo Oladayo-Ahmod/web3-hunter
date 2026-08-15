@@ -1,0 +1,18 @@
+{
+  "companySlug": "ava-labs",
+  "companyName": "Ava Labs",
+  "websiteUrl": "https://www.avalabs.org",
+  "careersPageUrl": "https://www.avalabs.org/careers",
+  "twitterUrl": "https://x.com/avalabsofficial",
+  "linkedinUrl": "https://www.linkedin.com/company/avalabsofficial",
+  "description": "Ava Labs builds Avalanche, a high-throughput, subnet-based smart contracts platform with fast finality for DeFi and institutional use cases.",
+  "category": "l1",
+  "tags": ["l1", "subnets", "evm", "defi"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "ava-labs"
+    }
+  ]
+}

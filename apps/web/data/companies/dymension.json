@@ -1,0 +1,11 @@
+{
+  "companySlug": "dymension",
+  "companyName": "Dymension",
+  "websiteUrl": "https://dymension.xyz",
+  "twitterUrl": "https://x.com/dymension",
+  "description": "Dymension builds a modular Layer 2 settlement hub that lets developers launch sovereign, application-specific rollups called RollApps.",
+  "category": "l2",
+  "tags": ["l2", "rollapps", "modular", "cosmos-sdk"],
+  "priority": "high",
+  "sources": []
+}

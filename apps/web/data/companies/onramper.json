@@ -1,0 +1,13 @@
+{
+  "companySlug": "onramper",
+  "companyName": "Onramper",
+  "websiteUrl": "https://onramper.com",
+  "careersPageUrl": "https://jobs.onramper.com/",
+  "twitterUrl": "https://twitter.com/getonramper",
+  "linkedinUrl": "https://www.linkedin.com/company/onramper/",
+  "description": "Fiat-to-crypto onramp/offramp aggregator combining 30+ providers and 175+ payment methods behind a single API with AI-based routing.",
+  "category": "other",
+  "tags": ["onramp", "aggregator", "payments"],
+  "priority": "medium",
+  "sources": []
+}

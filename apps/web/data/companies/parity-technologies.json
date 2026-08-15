@@ -1,0 +1,18 @@
+{
+  "companySlug": "parity-technologies",
+  "companyName": "Parity Technologies",
+  "websiteUrl": "https://www.parity.io",
+  "careersPageUrl": "https://www.parity.io/careers",
+  "twitterUrl": "https://x.com/ParityTech",
+  "linkedinUrl": "https://www.linkedin.com/company/paritytech",
+  "description": "Parity Technologies builds core client and infrastructure software for Polkadot and the Substrate blockchain framework.",
+  "category": "l1",
+  "tags": ["l1", "polkadot", "substrate", "rust", "interoperability"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "parity"
+    }
+  ]
+}

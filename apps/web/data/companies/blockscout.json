@@ -1,0 +1,10 @@
+{
+  "companySlug": "blockscout",
+  "companyName": "Blockscout",
+  "websiteUrl": "https://www.blockscout.com/",
+  "description": "Open-source blockchain explorer and analytics platform for inspecting EVM-based chains, operated by Blockscout Limited.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "explorer", "data-infrastructure"],
+  "priority": "medium",
+  "sources": []
+}

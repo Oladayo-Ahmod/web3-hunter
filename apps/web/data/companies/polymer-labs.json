@@ -1,0 +1,10 @@
+{
+  "companySlug": "polymer-labs",
+  "companyName": "Polymer Labs",
+  "websiteUrl": "https://www.polymerlabs.org",
+  "description": "Builds a universal IBC (Inter-Blockchain Communication) router, bringing Cosmos-grade interoperability to Ethereum rollups and beyond.",
+  "category": "infrastructure",
+  "tags": ["ibc", "interoperability", "rollups"],
+  "priority": "high",
+  "sources": []
+}

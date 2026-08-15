@@ -1,0 +1,12 @@
+{
+  "companySlug": "penumbra-labs",
+  "companyName": "Penumbra Labs",
+  "websiteUrl": "https://penumbra.exchange",
+  "careersPageUrl": "https://www.penumbrainc.com/about-us/careers/",
+  "twitterUrl": "https://twitter.com/penumbrazone",
+  "description": "Builds Penumbra, a fully shielded proof-of-stake network and DEX for the Cosmos ecosystem using zk-SNARKs for private cross-chain trading.",
+  "category": "infrastructure",
+  "tags": ["zk", "privacy", "cosmos", "shielded-pool"],
+  "priority": "high",
+  "sources": []
+}

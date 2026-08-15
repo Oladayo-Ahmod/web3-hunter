@@ -1,0 +1,10 @@
+{
+  "companySlug": "drpc",
+  "companyName": "dRPC",
+  "websiteUrl": "https://drpc.org/",
+  "description": "Decentralized RPC infrastructure provider routing requests across a distributed network of node providers for dApps and chains.",
+  "category": "infrastructure",
+  "tags": ["node-infrastructure", "rpc"],
+  "priority": "medium",
+  "sources": []
+}

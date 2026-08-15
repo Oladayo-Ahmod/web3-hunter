@@ -1,0 +1,13 @@
+{
+  "companySlug": "zero-hash-infra",
+  "companyName": "Zero Hash",
+  "websiteUrl": "https://zerohash.com",
+  "careersPageUrl": "https://zero-hash.breezy.hr/",
+  "twitterUrl": "https://x.com/ZeroHashX",
+  "linkedinUrl": "https://www.linkedin.com/company/zerohash/",
+  "description": "Regulated digital-asset infrastructure platform ($65B+ settled) enabling banks, brokerages, and fintechs to embed crypto trading, stablecoin payments, and tokenization.",
+  "category": "infrastructure",
+  "tags": ["custody", "stablecoin", "tokenization", "b2b-infra"],
+  "priority": "medium",
+  "sources": []
+}

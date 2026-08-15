@@ -1,0 +1,13 @@
+{
+  "companySlug": "utila",
+  "companyName": "Utila",
+  "websiteUrl": "https://utila.io",
+  "careersPageUrl": "https://www.utila.io/careers",
+  "twitterUrl": "https://x.com/utila_io/",
+  "linkedinUrl": "https://www.linkedin.com/company/utila-io/",
+  "description": "Enterprise-grade MPC wallet infrastructure for fintechs, banks, and payment firms to custody, govern, and move stablecoins and digital assets.",
+  "category": "infrastructure",
+  "tags": ["mpc", "wallet-infrastructure", "institutional", "stablecoin"],
+  "priority": "high",
+  "sources": []
+}

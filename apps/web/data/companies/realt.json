@@ -1,0 +1,11 @@
+{
+  "companySlug": "realt",
+  "companyName": "RealT",
+  "websiteUrl": "https://realt.co",
+  "linkedinUrl": "https://www.linkedin.com/company/realtplatform",
+  "description": "Tokenizes fractional ownership of US residential real estate, enabling on-chain investors to earn passive rental income; has tokenized $200M+ in properties.",
+  "category": "other",
+  "tags": ["rwa", "real-estate", "tokenization"],
+  "priority": "low",
+  "sources": []
+}

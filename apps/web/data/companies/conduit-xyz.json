@@ -1,0 +1,18 @@
+{
+  "companySlug": "conduit-xyz",
+  "companyName": "Conduit",
+  "websiteUrl": "https://conduit.xyz",
+  "careersPageUrl": "https://conduit.xyz/careers",
+  "twitterUrl": "https://x.com/conduitxyz",
+  "linkedinUrl": "https://www.linkedin.com/company/conduitxyz",
+  "description": "Blockchain infrastructure company operating production-grade rollups and L1s (Chain Platform, G3 Sequencer, RPC nodes) powering 55% of chains on Ethereum, including payments-focused deployments.",
+  "category": "infrastructure",
+  "tags": ["rollup-infrastructure", "l2", "blockchain-infra", "rpc"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "conduit"
+    }
+  ]
+}

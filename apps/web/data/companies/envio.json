@@ -1,0 +1,10 @@
+{
+  "companySlug": "envio",
+  "companyName": "Envio",
+  "websiteUrl": "https://envio.dev/",
+  "description": "Builds HyperIndex and HyperSync, high-performance multichain indexing and data-access tooling for EVM (and Fuel) developers.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "indexing", "data-infrastructure"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,12 @@
+{
+  "companySlug": "zokyo",
+  "companyName": "Zokyo",
+  "websiteUrl": "https://zokyo.io",
+  "twitterUrl": "https://x.com/zokyo_io",
+  "linkedinUrl": "https://linkedin.com/company/zokyo",
+  "description": "Web3 security audit firm offering smart contract audits and penetration testing, with $50B+ in assets secured across 200+ audits and 15+ chains.",
+  "category": "security",
+  "tags": ["audit", "penetration-testing"],
+  "priority": "medium",
+  "sources": []
+}

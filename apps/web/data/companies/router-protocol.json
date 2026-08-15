@@ -1,0 +1,12 @@
+{
+  "companySlug": "router-protocol",
+  "companyName": "Router Protocol",
+  "websiteUrl": "https://www.routerprotocol.com",
+  "twitterUrl": "https://x.com/routerprotocol",
+  "linkedinUrl": "https://www.linkedin.com/company/router-protocol",
+  "description": "Cross-chain execution network connecting solvers, DEXs, and bridges to enable low-slippage swaps and messaging across chains.",
+  "category": "infrastructure",
+  "tags": ["bridge", "cross-chain", "messaging"],
+  "priority": "high",
+  "sources": []
+}

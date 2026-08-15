@@ -1,0 +1,13 @@
+{
+  "companySlug": "perena",
+  "companyName": "Perena",
+  "websiteUrl": "https://perena.org",
+  "careersPageUrl": "https://jobs.solana.com/companies/perena",
+  "twitterUrl": "https://x.com/perena",
+  "linkedinUrl": "https://linkedin.com/company/perenafi",
+  "description": "Building the Stablebank Network on Solana, connecting stablecoin issuance, liquidity rails, yield strategies, and payments into one protocol.",
+  "category": "defi",
+  "tags": ["stablecoin", "solana", "liquidity"],
+  "priority": "high",
+  "sources": []
+}

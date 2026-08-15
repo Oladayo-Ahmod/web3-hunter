@@ -1,0 +1,13 @@
+{
+  "companySlug": "backed-finance",
+  "companyName": "Backed Finance",
+  "websiteUrl": "https://backed.fi",
+  "careersPageUrl": "https://backed.fi/careers",
+  "twitterUrl": "https://twitter.com/BackedFi",
+  "linkedinUrl": "https://www.linkedin.com/company/backed-finance",
+  "description": "Issues fully-collateralized on-chain tokenized versions of traditional securities and ETFs (e.g. bCSPX), backed by Gnosis and Semantic Ventures.",
+  "category": "defi",
+  "tags": ["rwa", "tokenized-securities"],
+  "priority": "high",
+  "sources": []
+}

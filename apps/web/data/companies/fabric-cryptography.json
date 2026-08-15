@@ -1,0 +1,12 @@
+{
+  "companySlug": "fabric-cryptography",
+  "companyName": "Fabric Cryptography",
+  "websiteUrl": "https://www.fabriccryptography.com",
+  "careersPageUrl": "https://jobs.lever.co/f16y",
+  "linkedinUrl": "https://www.linkedin.com/company/fabriccryptography",
+  "description": "Designs custom silicon (a Verifiable Processing Unit) and hardware-software co-design for accelerating ZK proving and FHE workloads.",
+  "category": "infrastructure",
+  "tags": ["zk", "fhe", "hardware", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

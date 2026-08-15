@@ -1,0 +1,12 @@
+{
+  "companySlug": "dia-data",
+  "companyName": "DIA",
+  "websiteUrl": "https://www.diadata.org",
+  "twitterUrl": "https://x.com/DIAdata_org",
+  "linkedinUrl": "https://www.linkedin.com/company/diadata-org",
+  "description": "Trustless, modular oracle network providing verifiable, auditable price feeds and other on-chain data across 65+ blockchains.",
+  "category": "infrastructure",
+  "tags": ["oracle", "price-feeds", "modular"],
+  "priority": "medium",
+  "sources": []
+}

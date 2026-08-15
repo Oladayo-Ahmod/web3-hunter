@@ -1,0 +1,11 @@
+{
+  "companySlug": "panoptic",
+  "companyName": "Panoptic",
+  "websiteUrl": "https://panoptic.xyz/",
+  "twitterUrl": "https://twitter.com/panoptic_xyz",
+  "description": "Decentralized options protocol built on top of Uniswap v3/v4 liquidity that lets users mint, trade and market-make perpetual put and call options onchain.",
+  "category": "defi",
+  "tags": ["defi", "options", "derivatives", "uniswap"],
+  "priority": "high",
+  "sources": []
+}

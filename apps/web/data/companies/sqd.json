@@ -1,0 +1,10 @@
+{
+  "companySlug": "sqd",
+  "companyName": "SQD (formerly Subsquid)",
+  "websiteUrl": "https://sqd.dev/",
+  "description": "Provides a decentralized blockchain indexing and query network for high-performance onchain data access, formerly known as Subsquid.",
+  "category": "infrastructure",
+  "tags": ["indexing", "data-infrastructure", "developer-tooling"],
+  "priority": "medium",
+  "sources": []
+}

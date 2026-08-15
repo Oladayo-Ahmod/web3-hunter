@@ -1,0 +1,10 @@
+{
+  "companySlug": "primus-labs",
+  "companyName": "Primus Labs",
+  "websiteUrl": "https://primuslabs.xyz",
+  "description": "Formerly PADO Labs; builds zkTLS and zkFHE cryptographic infrastructure for permissionless, privacy-preserving data verification between Web2 and Web3.",
+  "category": "infrastructure",
+  "tags": ["zktls", "fhe", "zk", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

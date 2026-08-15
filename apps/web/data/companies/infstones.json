@@ -1,0 +1,16 @@
+{
+  "companySlug": "infstones",
+  "companyName": "InfStones",
+  "websiteUrl": "https://infstones.com/",
+  "careersPageUrl": "https://jobs.lever.co/infstones",
+  "description": "Enterprise blockchain infrastructure provider offering node hosting, staking, and API services across more than 100 protocols.",
+  "category": "infrastructure",
+  "tags": ["node-infrastructure", "staking-infrastructure"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "infstones"
+    }
+  ]
+}

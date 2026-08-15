@@ -1,0 +1,11 @@
+{
+  "companySlug": "obol-labs",
+  "companyName": "Obol (DV Labs)",
+  "websiteUrl": "https://obol.org/",
+  "careersPageUrl": "https://dvlabs.tech/Job-Opportunities",
+  "description": "Develops the Obol distributed validator technology (DVT) middleware used by node operators and stakers to run Ethereum validators across multiple machines for restaking and staking resilience.",
+  "category": "infrastructure",
+  "tags": ["restaking", "dvt", "staking-infrastructure"],
+  "priority": "high",
+  "sources": []
+}
