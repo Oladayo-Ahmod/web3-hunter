@@ -1,0 +1,11 @@
+{
+  "companySlug": "o1labs",
+  "companyName": "o1Labs",
+  "websiteUrl": "https://www.o1labs.org",
+  "careersPageUrl": "https://ats.rippling.com/o1-labs-operating-corporation/jobs",
+  "description": "Remote-first company that incubated Mina Protocol, the succinct zk-SNARK blockchain, and builds zkApp tooling and Mina's protocol infrastructure.",
+  "category": "infrastructure",
+  "tags": ["zk", "zk-snark", "mina", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

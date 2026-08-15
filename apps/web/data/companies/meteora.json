@@ -1,0 +1,17 @@
+{
+  "companySlug": "meteora",
+  "companyName": "Meteora",
+  "websiteUrl": "https://www.meteora.ag/",
+  "description": "Liquidity aggregation and dynamic AMM protocol on Solana, run by the team behind Jupiter, focused on sustainable on-chain liquidity.",
+  "category": "defi",
+  "tags": ["defi", "amm", "liquidity", "solana"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Ben Chow",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/hellochow/"
+    }
+  ],
+  "sources": []
+}

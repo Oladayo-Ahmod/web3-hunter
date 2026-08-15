@@ -1,0 +1,13 @@
+{
+  "companySlug": "propy",
+  "companyName": "Propy",
+  "websiteUrl": "https://propy.com",
+  "careersPageUrl": "https://propy.com/browse/careers/",
+  "twitterUrl": "https://x.com/PropyInc",
+  "linkedinUrl": "https://www.linkedin.com/company/propy-title",
+  "description": "Blockchain-based real estate transaction and title platform enabling on-chain property sales, digital signatures, and NFT deeds via smart contracts.",
+  "category": "other",
+  "tags": ["rwa", "real-estate", "smart-contracts"],
+  "priority": "medium",
+  "sources": []
+}

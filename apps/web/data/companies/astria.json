@@ -1,0 +1,11 @@
+{
+  "companySlug": "astria",
+  "companyName": "Astria",
+  "websiteUrl": "https://www.astria.org",
+  "careersPageUrl": "https://job-boards.greenhouse.io/astria",
+  "description": "Shared sequencer network that decentralizes rollup transaction sequencing, giving rollups fast confirmations and out-of-the-box censorship resistance.",
+  "category": "infrastructure",
+  "tags": ["sequencer", "rollups", "shared-sequencing"],
+  "priority": "high",
+  "sources": []
+}

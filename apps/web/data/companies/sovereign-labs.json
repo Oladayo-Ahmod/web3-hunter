@@ -1,0 +1,10 @@
+{
+  "companySlug": "sovereign-labs",
+  "companyName": "Sovereign Labs",
+  "websiteUrl": "https://www.sovereign.xyz",
+  "description": "Builds a software development kit for creating secure, interoperable zero-knowledge rollups deployable on any layer-1 blockchain.",
+  "category": "infrastructure",
+  "tags": ["zk", "rollup-sdk", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

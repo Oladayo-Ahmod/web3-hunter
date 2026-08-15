@@ -1,0 +1,17 @@
+{
+  "companySlug": "m0-labs",
+  "companyName": "M0 (M^0)",
+  "websiteUrl": "https://www.m0.org/",
+  "careersPageUrl": "https://www.m0.org/careers",
+  "twitterUrl": "https://x.com/m0",
+  "description": "Builds modular stablecoin infrastructure that lets institutions design, distribute and issue their own stablecoins on a shared, interoperable base layer.",
+  "category": "defi",
+  "tags": ["defi", "stablecoin", "infrastructure", "rwa"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "m0dbathenextthingltd"
+    }
+  ]
+}

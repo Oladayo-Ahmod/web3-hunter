@@ -1,0 +1,16 @@
+{
+  "companySlug": "bitgo",
+  "companyName": "BitGo",
+  "websiteUrl": "https://www.bitgo.com",
+  "careersPageUrl": "https://www.bitgo.com/careers",
+  "description": "Institutional digital-asset custody and wallet infrastructure provider offering multi-sig/MPC custody, staking, and prime brokerage services.",
+  "category": "infrastructure",
+  "tags": ["custody", "institutional", "wallet-infrastructure"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "bitgo"
+    }
+  ]
+}

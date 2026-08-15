@@ -1,0 +1,18 @@
+{
+  "companySlug": "brale",
+  "companyName": "Brale",
+  "websiteUrl": "https://brale.xyz",
+  "careersPageUrl": "https://brale.xyz/careers",
+  "twitterUrl": "https://x.com/brale_xyz",
+  "linkedinUrl": "https://www.linkedin.com/company/brale",
+  "description": "Stablecoin infrastructure platform letting companies issue, manage, and move compliant stablecoins across chains and payment rails.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "payments", "infrastructure"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "brale"
+    }
+  ]
+}

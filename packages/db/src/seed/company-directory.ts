@@ -57,6 +57,11 @@ export interface CompanyDirectoryEntry {
   description?: string | null;
   headquarters?: string | null;
   fundingStage?: string | null;
+  /** Milestone 18 §6 — see `company.recentlyFunded`'s schema doc comment. Defaults to `false` when omitted, same as the column itself. */
+  recentlyFunded?: boolean;
+  fundingDate?: string | null;
+  fundingAmount?: string | null;
+  fundingSource?: string | null;
   category?: (typeof companyCategory.enumValues)[number] | null;
   tags?: readonly string[] | null;
   priority?: (typeof companyPriority.enumValues)[number] | null;
@@ -116,6 +121,10 @@ export async function upsertCompanyDirectory(
       description: entry.description ?? null,
       headquarters: entry.headquarters ?? null,
       fundingStage: entry.fundingStage ?? null,
+      recentlyFunded: entry.recentlyFunded ?? false,
+      fundingDate: entry.fundingDate ?? null,
+      fundingAmount: entry.fundingAmount ?? null,
+      fundingSource: entry.fundingSource ?? null,
       category: entry.category ?? null,
       tags: entry.tags ? [...entry.tags] : null,
       priority: entry.priority ?? null,

@@ -1,0 +1,10 @@
+{
+  "companySlug": "sentio",
+  "companyName": "Sentio",
+  "websiteUrl": "https://www.sentio.xyz/",
+  "description": "Developer-first, AI-powered Web3 observability platform for gaining insights, securing assets, and troubleshooting transactions in decentralized applications.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "monitoring", "data-infrastructure"],
+  "priority": "high",
+  "sources": []
+}

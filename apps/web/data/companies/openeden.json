@@ -1,0 +1,11 @@
+{
+  "companySlug": "openeden",
+  "companyName": "OpenEden",
+  "websiteUrl": "https://openeden.com",
+  "careersPageUrl": "https://openeden.com/careers",
+  "description": "Tokenizes US Treasury Bills on-chain via its Moody's A-bf rated TBILL fund (custodied by BNY), actively hiring a Web3-experienced IT Security Lead.",
+  "category": "defi",
+  "tags": ["rwa", "treasury-bills", "stablecoin"],
+  "priority": "high",
+  "sources": []
+}

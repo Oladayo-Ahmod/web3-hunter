@@ -1,0 +1,11 @@
+{
+  "companySlug": "kelp-dao",
+  "companyName": "Kelp DAO (KernelDAO)",
+  "websiteUrl": "https://kerneldao.com/kelp/",
+  "twitterUrl": "https://x.com/KelpDAO",
+  "description": "Liquid restaking protocol issuing rsETH so users can restake ETH (and other assets) on EigenLayer-style systems while keeping liquidity, now part of KernelDAO.",
+  "category": "defi",
+  "tags": ["defi", "restaking", "liquid-staking", "ethereum"],
+  "priority": "medium",
+  "sources": []
+}

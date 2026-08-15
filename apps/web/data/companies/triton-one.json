@@ -1,0 +1,10 @@
+{
+  "companySlug": "triton-one",
+  "companyName": "Triton One",
+  "websiteUrl": "https://triton.one",
+  "description": "Triton One builds high-performance RPC node infrastructure for Solana, including the widely used Jito-Solana and RPC node software.",
+  "category": "infrastructure",
+  "tags": ["rpc", "solana", "node-infrastructure"],
+  "priority": "high",
+  "sources": []
+}

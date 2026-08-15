@@ -1,0 +1,13 @@
+{
+  "companySlug": "hex-trust",
+  "companyName": "Hex Trust",
+  "websiteUrl": "https://hextrust.com",
+  "careersPageUrl": "https://www.hextrust.com/company/careers",
+  "twitterUrl": "https://x.com/Hex_Trust",
+  "linkedinUrl": "https://www.linkedin.com/company/hextrust/",
+  "description": "Institutional digital-asset custody, staking, and wealth-management infrastructure licensed in Hong Kong, Singapore, and Dubai, managing $5B+ AUC.",
+  "category": "infrastructure",
+  "tags": ["custody", "institutional", "staking"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "modulus-labs",
+  "companyName": "Modulus Labs",
+  "websiteUrl": "https://www.modulus.xyz",
+  "careersPageUrl": "https://www.modulus.xyz/careers/",
+  "description": "Builds zero-knowledge machine learning (zkML) infrastructure, including one of the fastest ZK-AI provers, to verify AI model outputs on-chain without revealing weights or data.",
+  "category": "infrastructure",
+  "tags": ["zkml", "zk", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,20 @@
+{
+  "companySlug": "puffer-finance",
+  "companyName": "Puffer Finance",
+  "websiteUrl": "https://www.puffer.fi",
+  "careersPageUrl": "https://apply.workable.com/puffer-finance/",
+  "twitterUrl": "https://twitter.com/Puffer_Finance",
+  "description": "Native liquid restaking protocol (nLRP) on EigenLayer offering anti-slashing validator infrastructure and pufETH.",
+  "category": "defi",
+  "tags": ["restaking", "eigenlayer", "liquid-staking"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Amir Forouzani",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/amir-forouzani-995a86a2/",
+      "notes": "Co-founder of Puffer Finance"
+    }
+  ],
+  "sources": []
+}

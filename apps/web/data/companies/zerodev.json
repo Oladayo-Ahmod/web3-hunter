@@ -1,0 +1,10 @@
+{
+  "companySlug": "zerodev",
+  "companyName": "ZeroDev",
+  "websiteUrl": "https://zerodev.app/",
+  "description": "Smart-account infrastructure for account abstraction, powering 300+ apps with over 10 million smart accounts, backed by Offchain.",
+  "category": "infrastructure",
+  "tags": ["account-abstraction", "developer-tooling"],
+  "priority": "high",
+  "sources": []
+}

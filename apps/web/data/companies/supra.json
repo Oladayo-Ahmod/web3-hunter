@@ -1,0 +1,13 @@
+{
+  "companySlug": "supra",
+  "companyName": "Supra",
+  "websiteUrl": "https://supra.com",
+  "careersPageUrl": "https://supra.com/careers/",
+  "twitterUrl": "https://twitter.com/SUPRA_Labs",
+  "linkedinUrl": "https://www.linkedin.com/company/supraofficial/",
+  "description": "Multi-VM Layer-1 combining oracle services, automation, and cross-chain communication (dVRF, distributed oracle feeds) into a single network.",
+  "category": "infrastructure",
+  "tags": ["oracle", "layer-1", "cross-chain", "vrf"],
+  "priority": "medium",
+  "sources": []
+}

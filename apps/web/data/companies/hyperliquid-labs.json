@@ -1,0 +1,16 @@
+{
+  "companySlug": "hyperliquid-labs",
+  "companyName": "Hyperliquid Labs",
+  "websiteUrl": "https://hyperliquid.xyz/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/Hyperliquid%20Labs",
+  "description": "Builds Hyperliquid L1, a high-performance blockchain and order-book perpetuals DEX that is the leading perps exchange by volume and open interest.",
+  "category": "defi",
+  "tags": ["defi", "perpetuals", "dex", "l1", "rust"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "Hyperliquid Labs"
+    }
+  ]
+}

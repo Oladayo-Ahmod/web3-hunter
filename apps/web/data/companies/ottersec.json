@@ -1,0 +1,12 @@
+{
+  "companySlug": "ottersec",
+  "companyName": "OtterSec",
+  "websiteUrl": "https://osec.io",
+  "careersPageUrl": "https://osec.io/careers",
+  "twitterUrl": "https://twitter.com/osec_io",
+  "description": "Multi-chain smart contract security audit firm (Solana, Sui, EVM) trusted by Solana Foundation, Sui Foundation, Circle, MetaMask, and Phantom.",
+  "category": "security",
+  "tags": ["audit", "solana", "sui"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,12 @@
+{
+  "companySlug": "decurity",
+  "companyName": "Decurity",
+  "websiteUrl": "https://decurity.io",
+  "twitterUrl": "https://x.com/DecurityHQ",
+  "linkedinUrl": "https://www.linkedin.com/company/decurity",
+  "description": "Dubai-based smart contract security firm (EVM, Solana, TON, Stellar, Sui) and approved auditor for Arbitrum, Optimism, and Scroll, operating since 2017.",
+  "category": "security",
+  "tags": ["audit", "multi-chain"],
+  "priority": "high",
+  "sources": []
+}

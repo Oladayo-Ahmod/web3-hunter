@@ -1,0 +1,10 @@
+{
+  "companySlug": "flipside-crypto",
+  "companyName": "Flipside Crypto",
+  "websiteUrl": "https://flipsidecrypto.xyz",
+  "description": "Flipside Crypto builds an on-chain analytics platform and structured SQL data models used by protocols and analysts to query blockchain activity.",
+  "category": "infrastructure",
+  "tags": ["analytics", "data", "sql"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "snarkify",
+  "companyName": "Snarkify",
+  "websiteUrl": "https://snarkify.io",
+  "twitterUrl": "https://x.com/snarkify_zkp",
+  "description": "San Francisco-based zero-knowledge proof infrastructure company specializing in GPU/FPGA-accelerated ZK proving, a multi-time ZPrize winner, and a proving partner for Scroll.",
+  "category": "infrastructure",
+  "tags": ["zk", "hardware", "proving-infrastructure"],
+  "priority": "medium",
+  "sources": []
+}

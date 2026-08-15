@@ -1,0 +1,11 @@
+{
+  "companySlug": "chainlink-labs",
+  "companyName": "Chainlink Labs",
+  "websiteUrl": "https://chainlinklabs.com",
+  "careersPageUrl": "https://chainlinklabs.com/careers",
+  "description": "Builds Chainlink, the decentralized oracle network that connects smart contracts to real-world data, cross-chain messaging (CCIP), and off-chain compute.",
+  "category": "infrastructure",
+  "tags": ["oracle", "cross-chain", "ccip", "data-feeds"],
+  "priority": "medium",
+  "sources": []
+}

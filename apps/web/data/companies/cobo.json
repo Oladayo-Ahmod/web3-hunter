@@ -1,0 +1,10 @@
+{
+  "companySlug": "cobo",
+  "companyName": "Cobo",
+  "websiteUrl": "https://www.cobo.com",
+  "description": "Digital-asset custody and Wallet-as-a-Service platform combining custodial, MPC, and exchange wallets across 80+ blockchains, operating since 2017.",
+  "category": "infrastructure",
+  "tags": ["custody", "mpc", "wallet-as-a-service"],
+  "priority": "medium",
+  "sources": []
+}

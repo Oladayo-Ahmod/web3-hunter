@@ -1,0 +1,18 @@
+{
+  "companySlug": "stellar-development-foundation",
+  "companyName": "Stellar Development Foundation",
+  "websiteUrl": "https://www.stellar.org",
+  "careersPageUrl": "https://www.stellar.org/careers",
+  "twitterUrl": "https://x.com/StellarOrg",
+  "linkedinUrl": "https://www.linkedin.com/company/stellar-development-foundation",
+  "description": "Stellar Development Foundation supports the Stellar network, a Layer 1 blockchain built for fast, low-cost cross-border payments and asset issuance.",
+  "category": "l1",
+  "tags": ["l1", "payments", "smart-contracts-soroban"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "stellar"
+    }
+  ]
+}

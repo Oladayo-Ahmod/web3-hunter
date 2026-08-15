@@ -1,0 +1,11 @@
+{
+  "companySlug": "covalent",
+  "companyName": "Covalent",
+  "websiteUrl": "https://www.covalenthq.com",
+  "careersPageUrl": "https://www.covalenthq.com/careers/",
+  "description": "Covalent provides a unified API for verified, granular blockchain data across 200+ chains, powering analytics, indexing, and AI applications.",
+  "category": "infrastructure",
+  "tags": ["indexing", "data", "api"],
+  "priority": "medium",
+  "sources": []
+}

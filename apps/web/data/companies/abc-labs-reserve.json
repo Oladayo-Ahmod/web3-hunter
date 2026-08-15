@@ -1,0 +1,25 @@
+{
+  "companySlug": "abc-labs-reserve",
+  "companyName": "ABC Labs (Reserve Protocol)",
+  "websiteUrl": "https://reserve.org/",
+  "careersPageUrl": "https://www.abclabs.co/about",
+  "twitterUrl": "https://x.com/reserveprotocol",
+  "description": "ABC Labs is the core contributor team building Reserve Protocol, permissionless tokenized asset portfolios (Decentralized Token Folios / DTFs) purchasable as single tokens.",
+  "category": "defi",
+  "tags": ["defi", "rwa", "asset-management", "tokenization"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Patrick McKelvy",
+      "role": "head_of_engineering",
+      "profileUrl": "https://www.linkedin.com/in/patrick-mckelvy-647b1825/",
+      "notes": "Director of Engineering at ABC Labs; Twitter: https://twitter.com/pmckelvy1"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "reserve"
+    }
+  ]
+}

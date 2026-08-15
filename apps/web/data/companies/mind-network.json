@@ -1,0 +1,12 @@
+{
+  "companySlug": "mind-network",
+  "companyName": "Mind Network",
+  "websiteUrl": "https://www.mindnetwork.xyz",
+  "twitterUrl": "https://x.com/mindnetwork_xyz",
+  "linkedinUrl": "https://sg.linkedin.com/company/mind-network-labs",
+  "description": "Builds fully homomorphic encryption (FHE) infrastructure for privacy-preserving computation, restaking, and confidential AI agents in Web3.",
+  "category": "infrastructure",
+  "tags": ["fhe", "privacy", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

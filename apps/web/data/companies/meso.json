@@ -1,0 +1,10 @@
+{
+  "companySlug": "meso",
+  "companyName": "Meso",
+  "websiteUrl": "https://www.meso.network",
+  "description": "Self-custodial fiat-to-stablecoin on/off-ramp API infrastructure bridging conventional finance and on-chain payments, founded by fintech veterans Ali Aghareza and Ben Mills.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "payments", "on-ramp"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,25 @@
+{
+  "companySlug": "zetachain",
+  "companyName": "ZetaChain",
+  "websiteUrl": "https://www.zetachain.com",
+  "careersPageUrl": "https://www.zetachain.com/careers",
+  "twitterUrl": "https://x.com/zetachain",
+  "description": "Omnichain Layer-1 blockchain that lets smart contracts natively read and write state across connected chains, including Bitcoin, without wrapped assets or bridges.",
+  "category": "infrastructure",
+  "tags": ["interoperability", "omnichain", "layer-1"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Brandon Truong",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/truong-brandon/",
+      "notes": "Co-founder of ZetaChain"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "zetachain"
+    }
+  ]
+}

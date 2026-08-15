@@ -1,0 +1,20 @@
+{
+  "companySlug": "starkware",
+  "companyName": "StarkWare",
+  "websiteUrl": "https://starkware.co",
+  "careersPageUrl": "https://starkware.co/careers/",
+  "twitterUrl": "https://twitter.com/StarkWareLtd/",
+  "description": "StarkWare develops STARK-based zero-knowledge proof technology and Starknet, a permissionless validity-rollup (ZK-rollup) for scaling Ethereum.",
+  "category": "l2",
+  "tags": ["l2", "zk-rollup", "starknet", "cryptography"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Eli Ben-Sasson",
+      "role": "founder",
+      "profileUrl": "https://x.com/EliBenSasson",
+      "notes": "Co-founder and CEO"
+    }
+  ],
+  "sources": []
+}

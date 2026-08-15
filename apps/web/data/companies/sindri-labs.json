@@ -1,0 +1,12 @@
+{
+  "companySlug": "sindri-labs",
+  "companyName": "Sindri Labs",
+  "websiteUrl": "https://sindri.app",
+  "careersPageUrl": "https://sindri.app/careers/",
+  "linkedinUrl": "https://www.linkedin.com/company/sindrilabs",
+  "description": "Provides a zero-knowledge proof DevOps and proving cloud platform that hosts circuits and optimizes backend proving hardware for teams like Scroll.",
+  "category": "infrastructure",
+  "tags": ["zk", "proving-infrastructure", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

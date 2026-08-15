@@ -1,0 +1,13 @@
+{
+  "companySlug": "quillaudits",
+  "companyName": "QuillAudits",
+  "websiteUrl": "https://www.quillaudits.com",
+  "careersPageUrl": "https://www.quillaudits.com/careers",
+  "twitterUrl": "https://x.com/QuillAudits_AI",
+  "linkedinUrl": "https://www.linkedin.com/company/quillaudits",
+  "description": "ISO 27001-certified Web3 security firm offering smart contract audits, dApp penetration testing, and incident response with offices across six countries.",
+  "category": "security",
+  "tags": ["audit", "incident-response"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,12 @@
+{
+  "companySlug": "bitlayer",
+  "companyName": "Bitlayer",
+  "websiteUrl": "https://www.bitlayer.org",
+  "twitterUrl": "https://twitter.com/BitLayerLabs",
+  "linkedinUrl": "https://sg.linkedin.com/company/bitlayerlabs",
+  "description": "Builds a Bitcoin Layer 2 based on BitVM, aiming to bring Bitcoin-equivalent security and Turing-complete computation to Bitcoin-native applications.",
+  "category": "l2",
+  "tags": ["bitvm", "bitcoin", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,12 @@
+{
+  "companySlug": "camp-network",
+  "companyName": "Camp Network",
+  "websiteUrl": "https://www.campnetwork.xyz",
+  "twitterUrl": "https://x.com/campnetworkxyz",
+  "linkedinUrl": "https://www.linkedin.com/company/camp-network",
+  "description": "Camp Network builds an autonomous Layer 1 blockchain for verifiable IP provenance and licensing, aimed at powering AI agents built on original creative content.",
+  "category": "l1",
+  "tags": ["l1", "ip", "ai", "early-stage"],
+  "priority": "high",
+  "sources": []
+}

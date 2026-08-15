@@ -1,0 +1,12 @@
+{
+  "companySlug": "union-build",
+  "companyName": "Union",
+  "websiteUrl": "https://union.build",
+  "twitterUrl": "https://x.com/union_build",
+  "linkedinUrl": "https://www.linkedin.com/company/union-labs/",
+  "description": "Zero-knowledge interoperability protocol connecting appchains, L1s, and L2s via trustless consensus verification (no oracles, multisigs, or MPC).",
+  "category": "infrastructure",
+  "tags": ["bridge", "zero-knowledge", "interoperability"],
+  "priority": "high",
+  "sources": []
+}

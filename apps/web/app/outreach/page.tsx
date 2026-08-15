@@ -3,6 +3,7 @@ import {
   type OpportunityTypeDTO,
   type OutreachTargetDTO,
 } from "@web3-hunter/application";
+import Link from "next/link";
 import { OutreachTargetCard } from "@/features/outreach/components/outreach-target-card";
 
 // Outreach data reflects live seeded/collected Company data; it must
@@ -25,25 +26,25 @@ const SECTIONS: { type: OpportunityTypeDTO; emoji: string; title: string; blurb:
   {
     type: "OPEN_ROLE",
     emoji: "💼",
-    title: "Open Roles",
+    title: "Open Role — Apply",
     blurb: "Apply directly — these companies have a live posting right now.",
   },
   {
     type: "HIGH_PRIORITY_STARTUP",
     emoji: "🔥",
-    title: "High Priority Outreach",
+    title: "High Priority — Contact Now",
     blurb: "No open role yet, but worth a direct message to the founder or CTO today.",
   },
   {
     type: "RECENTLY_FUNDED",
     emoji: "🚀",
-    title: "Recently Funded",
-    blurb: "A funding signal worth a timely, congratulatory outreach.",
+    title: "Recently Funded — Contact",
+    blurb: "A verified, timely funding event — good odds hiring follows soon.",
   },
   {
     type: "SPECULATIVE_OUTREACH",
     emoji: "📨",
-    title: "Speculative Outreach",
+    title: "Active Web3 Startup — Proactive Outreach",
     blurb: "Verified Web3-native companies worth introducing yourself to.",
   },
 ];
@@ -63,19 +64,102 @@ function groupByOpportunityType(
   return grouped;
 }
 
-export default async function OutreachPage() {
-  const targets = await listOutreachTargets();
+const CATEGORY_LABEL: Record<string, string> = {
+  security: "Security / Audit",
+  defi: "Protocol / DeFi",
+  infrastructure: "Infra / Tooling",
+  l1: "L1",
+  l2: "L2",
+  wallet: "Wallet / AA",
+  ai: "AI",
+  gaming: "Gaming",
+  other: "Other",
+};
+
+/**
+ * A plain per-category count strip, not a filter UI of its own logic —
+ * Milestone 18 §2's "fix the category distribution" is a *data* fix
+ * (the curated directory itself), but making the resulting mix visible
+ * at a glance is what lets the user actually confirm it worked, and
+ * doubles as a same-page filter (`?category=`) with zero new state
+ * management (a plain link, server-rendered).
+ */
+function CategoryBar({
+  targets,
+  activeCategory,
+}: {
+  targets: readonly OutreachTargetDTO[];
+  activeCategory: string | undefined;
+}) {
+  const counts = new Map<string, number>();
+  for (const target of targets) {
+    const key = target.category ?? "other";
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const categories = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+
+  return (
+    <div className="flex flex-wrap gap-2 text-sm">
+      <Link
+        href="/outreach"
+        className={
+          activeCategory
+            ? "rounded-full border px-3 py-1 text-muted-foreground hover:text-foreground"
+            : "rounded-full border border-primary bg-primary px-3 py-1 text-primary-foreground"
+        }
+      >
+        All ({targets.length})
+      </Link>
+      {categories.map(([category, count]) => (
+        <Link
+          key={category}
+          href={`/outreach?category=${category}`}
+          className={
+            activeCategory === category
+              ? "rounded-full border border-primary bg-primary px-3 py-1 text-primary-foreground"
+              : "rounded-full border px-3 py-1 text-muted-foreground hover:text-foreground"
+          }
+        >
+          {CATEGORY_LABEL[category] ?? category} ({count})
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+interface OutreachPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function OutreachPage({ searchParams }: OutreachPageProps) {
+  const rawParams = await searchParams;
+  const categoryParam =
+    typeof rawParams.category === "string" && rawParams.category.length > 0
+      ? rawParams.category
+      : undefined;
+
+  const allTargets = await listOutreachTargets();
+  const targets = categoryParam
+    ? allTargets.filter((target) => (target.category ?? "other") === categoryParam)
+    : allTargets;
   const grouped = groupByOpportunityType(targets);
 
   return (
     <main className="mx-auto max-w-6xl space-y-10 px-6 py-10">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Who to Contact Today</h1>
-        <p className="text-muted-foreground">
-          {targets.length} verified Web3-native companies — open roles to apply to, and founders/
-          CTOs/security leads worth a direct message.
-        </p>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">Who to Contact Today</h1>
+          <p className="text-muted-foreground">
+            {allTargets.length} verified Web3-native companies — open roles to apply to, and
+            founders/CTOs/security leads worth a direct message.
+          </p>
+        </div>
+        <CategoryBar targets={allTargets} activeCategory={categoryParam} />
       </div>
+
+      {targets.length === 0 && (
+        <p className="text-muted-foreground">No companies match this category yet.</p>
+      )}
 
       {SECTIONS.map((section) => {
         const items = grouped[section.type];

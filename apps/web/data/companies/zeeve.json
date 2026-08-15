@@ -1,0 +1,11 @@
+{
+  "companySlug": "zeeve",
+  "companyName": "Zeeve",
+  "websiteUrl": "https://www.zeeve.io/",
+  "careersPageUrl": "https://www.zeeve.io/career-at-zeeve/",
+  "description": "Managed enterprise blockchain infrastructure platform offering node deployment, RPC, and monitoring across multiple blockchain protocols.",
+  "category": "infrastructure",
+  "tags": ["node-infrastructure", "rpc", "developer-tooling"],
+  "priority": "medium",
+  "sources": []
+}

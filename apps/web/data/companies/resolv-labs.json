@@ -1,0 +1,12 @@
+{
+  "companySlug": "resolv-labs",
+  "companyName": "Resolv Labs",
+  "websiteUrl": "https://resolv.xyz/",
+  "careersPageUrl": "https://resolv.xyz/career",
+  "twitterUrl": "https://x.com/ResolvLabs",
+  "description": "Builds Resolv, a crypto-native dollar instrument (USR) that delivers stable, market-neutral returns backed by diversified delta-hedged yield sources.",
+  "category": "defi",
+  "tags": ["defi", "stablecoin", "yield", "delta-neutral"],
+  "priority": "medium",
+  "sources": []
+}

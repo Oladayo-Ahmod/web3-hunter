@@ -1,0 +1,26 @@
+{
+  "companySlug": "ether-fi",
+  "companyName": "ether.fi",
+  "websiteUrl": "https://www.ether.fi",
+  "careersPageUrl": "https://www.ether.fi/careers",
+  "twitterUrl": "https://x.com/ether_fi",
+  "linkedinUrl": "https://www.linkedin.com/company/etherfi",
+  "description": "Non-custodial liquid restaking protocol (eETH) that has expanded into a broader crypto-native financial platform with staking, restaking vaults, and card products.",
+  "category": "defi",
+  "tags": ["restaking", "liquid-staking", "eigenlayer"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Mike Silagadze",
+      "role": "founder",
+      "profileUrl": "https://x.com/MikeSilagadze",
+      "notes": "Founder/CEO of ether.fi"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "ether.fi"
+    }
+  ]
+}

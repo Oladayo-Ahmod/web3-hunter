@@ -1,0 +1,11 @@
+{
+  "companySlug": "kiln",
+  "companyName": "Kiln",
+  "websiteUrl": "https://www.kiln.fi",
+  "careersPageUrl": "https://www.kiln.fi/careers",
+  "description": "Kiln provides institutional staking and rewards infrastructure, offering APIs and dashboards for exchanges, custodians, and wallets to offer staking.",
+  "category": "infrastructure",
+  "tags": ["staking", "node-infrastructure", "apis"],
+  "priority": "medium",
+  "sources": []
+}

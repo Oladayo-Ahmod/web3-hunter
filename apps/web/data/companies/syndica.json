@@ -1,0 +1,16 @@
+{
+  "companySlug": "syndica",
+  "companyName": "Syndica",
+  "websiteUrl": "https://syndica.io",
+  "careersPageUrl": "https://jobs.ashbyhq.com/syndica",
+  "description": "Syndica builds high-performance RPC infrastructure and a Zig-based Solana validator client for developers running Solana applications at scale.",
+  "category": "infrastructure",
+  "tags": ["rpc", "solana", "node-infrastructure", "validator-client"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "syndica"
+    }
+  ]
+}

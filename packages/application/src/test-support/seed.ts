@@ -15,6 +15,10 @@ export async function seedCompany(overrides: {
   discoveryStatus?: "curated" | "discovered" | "verified" | "rejected";
   priority?: "high" | "medium" | "low" | null;
   fundingStage?: string | null;
+  recentlyFunded?: boolean;
+  fundingDate?: string | null;
+  fundingAmount?: string | null;
+  fundingSource?: string | null;
 }) {
   const db = getDb();
   const [company] = await db
@@ -25,6 +29,10 @@ export async function seedCompany(overrides: {
       discoveryStatus: overrides.discoveryStatus ?? "curated",
       priority: overrides.priority ?? null,
       fundingStage: overrides.fundingStage ?? null,
+      recentlyFunded: overrides.recentlyFunded ?? false,
+      fundingDate: overrides.fundingDate ?? null,
+      fundingAmount: overrides.fundingAmount ?? null,
+      fundingSource: overrides.fundingSource ?? null,
     })
     .returning();
   return company!;

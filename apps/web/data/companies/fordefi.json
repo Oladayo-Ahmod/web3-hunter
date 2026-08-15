@@ -1,0 +1,13 @@
+{
+  "companySlug": "fordefi",
+  "companyName": "Fordefi",
+  "websiteUrl": "https://www.fordefi.com",
+  "careersPageUrl": "https://www.fordefi.com/careers",
+  "twitterUrl": "https://twitter.com/FordefiHQ",
+  "linkedinUrl": "https://www.linkedin.com/company/fordefi/",
+  "description": "Institutional MPC wallet platform for self-custodial key management, DeFi connectivity, and policy-enforced transaction operations across blockchains.",
+  "category": "wallet",
+  "tags": ["wallet", "mpc", "custody", "institutional"],
+  "priority": "high",
+  "sources": []
+}

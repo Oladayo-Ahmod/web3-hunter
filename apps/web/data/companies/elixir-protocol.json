@@ -1,0 +1,11 @@
+{
+  "companySlug": "elixir-protocol",
+  "companyName": "Elixir Network",
+  "websiteUrl": "https://www.elixir.xyz/",
+  "twitterUrl": "https://x.com/elixir",
+  "description": "Institutional-scale DeFi network powering deUSD, a yield-bearing, fully collateralized decentralized dollar that brings institutional liquidity onchain to RWAs.",
+  "category": "defi",
+  "tags": ["defi", "stablecoin", "rwa", "liquidity"],
+  "priority": "medium",
+  "sources": []
+}

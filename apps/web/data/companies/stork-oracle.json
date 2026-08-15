@@ -1,0 +1,18 @@
+{
+  "companySlug": "stork-oracle",
+  "companyName": "Stork",
+  "websiteUrl": "https://www.stork.network",
+  "careersPageUrl": "https://jobs.ashbyhq.com/stork",
+  "twitterUrl": "https://x.com/StorkOracle",
+  "linkedinUrl": "https://www.linkedin.com/company/stork-labs",
+  "description": "Oracle network delivering low-latency, high-frequency reference price feeds and market data for on-chain perpetual and prediction markets.",
+  "category": "infrastructure",
+  "tags": ["oracle", "price-feeds", "market-data", "perpetuals"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "stork"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "companySlug": "velodrome-finance",
+  "companyName": "Velodrome Finance",
+  "websiteUrl": "https://velodrome.finance/",
+  "description": "Central trading and liquidity marketplace AMM on Optimism, using a dual-token ve(3,3) model (VELO/veVELO) for efficient liquidity provisioning.",
+  "category": "defi",
+  "tags": ["defi", "amm", "dex", "optimism"],
+  "priority": "medium",
+  "sources": []
+}

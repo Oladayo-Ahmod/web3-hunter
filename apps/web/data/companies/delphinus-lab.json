@@ -1,0 +1,11 @@
+{
+  "companySlug": "delphinus-lab",
+  "companyName": "Delphinus Lab",
+  "websiteUrl": "https://delphinuslab.com",
+  "twitterUrl": "https://twitter.com/delphinuslab",
+  "description": "Sydney-based team that built the first open-source zero-knowledge WebAssembly virtual machine (zkWASM), letting unmodified WASM programs generate correctness proofs.",
+  "category": "infrastructure",
+  "tags": ["zk", "zkwasm", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

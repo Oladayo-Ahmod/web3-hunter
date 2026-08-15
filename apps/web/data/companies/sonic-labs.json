@@ -1,0 +1,11 @@
+{
+  "companySlug": "sonic-labs",
+  "companyName": "Sonic Labs",
+  "websiteUrl": "https://www.soniclabs.com",
+  "twitterUrl": "https://x.com/SonicLabs",
+  "description": "Sonic Labs develops Sonic (formerly Fantom), an EVM-compatible Layer 1 blockchain focused on high-speed, low-fee smart contract execution.",
+  "category": "l1",
+  "tags": ["l1", "evm"],
+  "priority": "low",
+  "sources": []
+}

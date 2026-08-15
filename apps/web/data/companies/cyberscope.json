@@ -1,0 +1,13 @@
+{
+  "companySlug": "cyberscope",
+  "companyName": "Cyberscope",
+  "websiteUrl": "https://cyberscope.io",
+  "careersPageUrl": "https://careers.smartrecruiters.com/Coinscope",
+  "twitterUrl": "https://twitter.com/Cyberscope_io",
+  "linkedinUrl": "https://www.linkedin.com/company/cyberscopeio",
+  "description": "Web3 security company offering smart contract audits and KYC verification, with 3,400+ audits and 4,100+ published audit reports.",
+  "category": "security",
+  "tags": ["audit", "kyc"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,16 @@
+{
+  "companySlug": "moonpay",
+  "companyName": "MoonPay",
+  "websiteUrl": "https://www.moonpay.com",
+  "careersPageUrl": "https://jobs.lever.co/moonpay",
+  "description": "Crypto payments infrastructure providing fiat on/off-ramp, NFT checkout, and swap services used by wallets and exchanges worldwide.",
+  "category": "other",
+  "tags": ["onramp", "payments", "fiat-to-crypto"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "moonpay"
+    }
+  ]
+}

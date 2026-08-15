@@ -1,0 +1,16 @@
+{
+  "companySlug": "ssv-labs",
+  "companyName": "SSV Network (SSV Labs)",
+  "websiteUrl": "https://ssv.network/",
+  "careersPageUrl": "https://job-boards.eu.greenhouse.io/bloxstaking",
+  "description": "Builds decentralized validator technology (DVT) that lets Ethereum validator keys be split and run across non-trusting node operators for staking and restaking.",
+  "category": "infrastructure",
+  "tags": ["restaking", "dvt", "staking-infrastructure"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "bloxstaking"
+    }
+  ]
+}

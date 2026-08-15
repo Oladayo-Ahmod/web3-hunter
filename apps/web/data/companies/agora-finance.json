@@ -1,0 +1,13 @@
+{
+  "companySlug": "agora-finance",
+  "companyName": "Agora",
+  "websiteUrl": "https://www.agora.finance",
+  "careersPageUrl": "https://www.agora.finance/",
+  "twitterUrl": "https://x.com/withAUSD",
+  "linkedinUrl": "https://www.linkedin.com/company/agorafinance",
+  "description": "Issuer of AUSD, an institutional-grade, partner-focused, fully-collateralized USD stablecoin backed by Paradigm and Dragonfly.",
+  "category": "defi",
+  "tags": ["stablecoin", "payments"],
+  "priority": "high",
+  "sources": []
+}

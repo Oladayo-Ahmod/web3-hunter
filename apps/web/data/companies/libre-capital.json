@@ -1,0 +1,10 @@
+{
+  "companySlug": "libre-capital",
+  "companyName": "Libre Capital",
+  "websiteUrl": "https://libre.capital",
+  "description": "Fund tokenization protocol (a joint venture of Nomura's Laser Digital and Webn) giving on-chain access to private market funds from Brevan Howard and Hamilton Lane.",
+  "category": "defi",
+  "tags": ["rwa", "private-credit", "tokenization"],
+  "priority": "medium",
+  "sources": []
+}

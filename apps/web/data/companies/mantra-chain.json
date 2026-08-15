@@ -1,0 +1,11 @@
+{
+  "companySlug": "mantra-chain",
+  "companyName": "MANTRA Chain",
+  "websiteUrl": "https://www.mantrachain.io",
+  "careersPageUrl": "https://mantrachain.io/company/careers",
+  "description": "EVM-compatible Layer 1 blockchain built for regulatory-compliant tokenization and adoption of real-world assets.",
+  "category": "infrastructure",
+  "tags": ["rwa", "layer1", "compliance"],
+  "priority": "medium",
+  "sources": []
+}

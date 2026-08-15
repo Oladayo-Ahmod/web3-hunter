@@ -1,0 +1,29 @@
+{
+  "companySlug": "everclear",
+  "companyName": "Everclear",
+  "websiteUrl": "https://www.everclear.org",
+  "careersPageUrl": "https://jobs.lever.co/connext-network",
+  "description": "Clearing layer (formerly Connext) that nets and coordinates cross-chain liquidity settlement to remove fragmentation between rollups and L1s.",
+  "fundingStage": "Seed",
+  "category": "infrastructure",
+  "tags": ["bridge", "cross-chain", "clearing", "liquidity"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "July 2025",
+  "fundingAmount": "undisclosed",
+  "fundingSource": "https://tracxn.com/d/companies/everclear/__If7SqlmQAQVbilA6Ez40cW0gxdWcf9yAzUQawdIf3MA/funding-and-investors",
+  "contacts": [
+    {
+      "name": "Arjun Bhuptani",
+      "role": "founder",
+      "profileUrl": "https://www.crunchbase.com/person/arjun-bhuptani",
+      "notes": "Founder/CEO, co-founded predecessor Connext in 2017"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "connext-network"
+    }
+  ]
+}

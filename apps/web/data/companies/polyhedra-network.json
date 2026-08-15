@@ -1,0 +1,12 @@
+{
+  "companySlug": "polyhedra-network",
+  "companyName": "Polyhedra Network",
+  "websiteUrl": "https://polyhedra.network",
+  "twitterUrl": "https://x.com/PolyhedraZK",
+  "linkedinUrl": "https://www.linkedin.com/company/polyhedra-network",
+  "description": "Builds zkBridge, a zero-knowledge proof-based cross-chain interoperability protocol enabling trustless communication between blockchains and verifiable AI.",
+  "category": "infrastructure",
+  "tags": ["zk", "zkbridge", "interoperability", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

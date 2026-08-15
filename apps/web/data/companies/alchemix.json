@@ -1,0 +1,11 @@
+{
+  "companySlug": "alchemix",
+  "companyName": "Alchemix",
+  "websiteUrl": "https://alchemix.fi/",
+  "twitterUrl": "https://twitter.com/alchemixfi",
+  "description": "DeFi protocol offering self-repaying loans where yield generated from deposited collateral automatically pays down the loan balance over time.",
+  "category": "defi",
+  "tags": ["defi", "lending", "yield", "self-repaying-loans"],
+  "priority": "medium",
+  "sources": []
+}

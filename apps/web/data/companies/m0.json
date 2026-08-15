@@ -1,0 +1,18 @@
+{
+  "companySlug": "m0",
+  "companyName": "M0",
+  "websiteUrl": "https://www.m0.org",
+  "careersPageUrl": "https://www.m0.org/careers",
+  "twitterUrl": "https://x.com/m0",
+  "linkedinUrl": "https://www.linkedin.com/company/m0-infrastructure",
+  "description": "Decentralized, multi-issuer stablecoin infrastructure protocol backed by U.S. Treasuries, providing minting, settlement, and compliance primitives for institutions.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "infrastructure", "security"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "m0dbathenextthingltd"
+    }
+  ]
+}

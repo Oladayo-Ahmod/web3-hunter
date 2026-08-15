@@ -1,0 +1,13 @@
+{
+  "companySlug": "onebalance",
+  "companyName": "OneBalance",
+  "websiteUrl": "https://www.onebalance.io",
+  "careersPageUrl": "https://jobs.onebalance.io/",
+  "twitterUrl": "https://x.com/OneBalance_io",
+  "linkedinUrl": "https://www.linkedin.com/company/onebalance-io",
+  "description": "Chain-abstraction infrastructure offering instant cross-chain trading, payments, and yield via a single API using 'Resource Locks' for T+0 settlement across 50+ chains.",
+  "category": "infrastructure",
+  "tags": ["chain-abstraction", "account-abstraction", "cross-chain"],
+  "priority": "high",
+  "sources": []
+}

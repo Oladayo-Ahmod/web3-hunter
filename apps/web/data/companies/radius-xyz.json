@@ -1,0 +1,10 @@
+{
+  "companySlug": "radius-xyz",
+  "companyName": "Radius",
+  "websiteUrl": "https://www.theradius.xyz",
+  "description": "Blockchain infrastructure company, originally built around a decentralized encrypted-mempool shared sequencer, now focused on capital-efficient, transparent infrastructure for institutional on-chain markets.",
+  "category": "infrastructure",
+  "tags": ["sequencer", "encrypted-mempool", "institutional"],
+  "priority": "medium",
+  "sources": []
+}

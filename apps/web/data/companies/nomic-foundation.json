@@ -1,0 +1,18 @@
+{
+  "companySlug": "nomic-foundation",
+  "companyName": "Nomic Foundation",
+  "websiteUrl": "https://nomic.foundation/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/nomic.foundation",
+  "twitterUrl": "https://x.com/nomicfoundation",
+  "linkedinUrl": "https://www.linkedin.com/company/nomic-foundation",
+  "description": "Non-profit building core Ethereum developer tooling, including the Hardhat development environment, Hardhat Ignition deployment system, and the Slang parsing toolkit.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "smart-contracts", "hardhat"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "nomic.foundation"
+    }
+  ]
+}

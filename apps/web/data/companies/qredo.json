@@ -1,0 +1,10 @@
+{
+  "companySlug": "qredo",
+  "companyName": "Qredo",
+  "websiteUrl": "https://www.qredo.com",
+  "description": "Distributed MPC custodial wallet network for institutions offering cross-platform liquidity access and decentralized custody.",
+  "category": "wallet",
+  "tags": ["mpc", "custody", "wallet"],
+  "priority": "medium",
+  "sources": []
+}

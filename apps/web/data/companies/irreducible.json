@@ -1,0 +1,10 @@
+{
+  "companySlug": "irreducible",
+  "companyName": "Irreducible",
+  "websiteUrl": "https://www.irreducible.com",
+  "description": "Formerly Ulvetanna; invented Binius, a binary-field zero-knowledge proof system, and builds FPGA-accelerated proving-as-a-service infrastructure.",
+  "category": "infrastructure",
+  "tags": ["zk", "binius", "hardware", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

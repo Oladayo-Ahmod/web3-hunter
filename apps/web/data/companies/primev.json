@@ -1,0 +1,10 @@
+{
+  "companySlug": "primev",
+  "companyName": "Primev",
+  "websiteUrl": "https://primev.xyz/",
+  "description": "Builds mev-commit, a preconfirmation and MEV infrastructure protocol for Ethereum, integrating with EigenLayer, Symbiotic, SSV, and Obol.",
+  "category": "infrastructure",
+  "tags": ["mev", "preconfirmations", "restaking"],
+  "priority": "high",
+  "sources": []
+}

@@ -31,9 +31,9 @@ const CONTACT_ROLE_LABEL: Record<CompanyContactRoleDTO, string> = {
 };
 
 /**
- * One Outreach Target — Milestone 17's actionable card. Every link here
- * is either the Company's own site/social presence or a Contact's own
- * public profile: nothing on this card is fabricated (`data-quality`
+ * One Outreach Target — Milestone 17/18's actionable card. Every link
+ * here is either the Company's own site/social presence or a Contact's
+ * own public profile: nothing on this card is fabricated (`data-quality`
  * rules, docs/MILESTONE_16...). Deliberately not a `<Link>`-wrapped whole
  * card like `JobCard` — this card *is* a set of destinations (site,
  * careers page, each contact's profile), not a single detail page to
@@ -53,6 +53,8 @@ export function OutreachTargetCard({ target }: { target: OutreachTargetDTO }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-3 text-sm text-muted-foreground">
+        <p className="text-foreground italic">{target.reasonToContact}</p>
+
         {target.description && <p>{target.description}</p>}
 
         {target.tags.length > 0 && (
@@ -66,14 +68,27 @@ export function OutreachTargetCard({ target }: { target: OutreachTargetDTO }) {
         )}
 
         {target.openJobCount > 0 && (
-          <p className="font-medium text-foreground">
-            {target.openJobCount} open role{target.openJobCount === 1 ? "" : "s"}
-          </p>
+          <div>
+            <p className="font-medium text-foreground">
+              {target.openJobCount} open role{target.openJobCount === 1 ? "" : "s"}
+            </p>
+            {target.openJobTitles.length > 0 && (
+              <p className="text-xs">{target.openJobTitles.join(" · ")}</p>
+            )}
+          </div>
         )}
 
-        {target.fundingStage && <p>Funding: {target.fundingStage}</p>}
+        {target.recentlyFunded && (
+          <p>
+            💰 Recently funded
+            {target.fundingAmount ? ` — ${target.fundingAmount}` : ""}
+            {target.fundingStage ? ` (${target.fundingStage})` : ""}
+            {target.fundingDate ? `, ${target.fundingDate}` : ""}
+          </p>
+        )}
+        {!target.recentlyFunded && target.fundingStage && <p>Funding: {target.fundingStage}</p>}
 
-        {target.contacts.length > 0 && (
+        {target.contacts.length > 0 ? (
           <div className="space-y-1 border-t pt-2">
             {target.contacts.map((contact) => (
               <div key={contact.profileUrl} className="flex items-center justify-between gap-2">
@@ -94,6 +109,10 @@ export function OutreachTargetCard({ target }: { target: OutreachTargetDTO }) {
               </div>
             ))}
           </div>
+        ) : (
+          <p className="border-t pt-2 text-xs text-muted-foreground">
+            No verified contact yet — reach out via the company&apos;s site or careers page.
+          </p>
         )}
 
         <div className="mt-auto flex flex-wrap gap-2 pt-2">

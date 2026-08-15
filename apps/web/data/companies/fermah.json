@@ -1,0 +1,11 @@
+{
+  "companySlug": "fermah",
+  "companyName": "Fermah",
+  "websiteUrl": "https://www.fermah.xyz",
+  "careersPageUrl": "https://www.fermah.xyz/careers",
+  "description": "Builds a universal proof-generation marketplace matching GPU/FPGA supply with demand for zero-knowledge proof generation across use cases.",
+  "category": "infrastructure",
+  "tags": ["zk", "proving-infrastructure", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

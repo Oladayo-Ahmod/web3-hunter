@@ -1,0 +1,12 @@
+{
+  "companySlug": "frame-labs",
+  "companyName": "Frame",
+  "websiteUrl": "https://frame.sh",
+  "careersPageUrl": "https://framelabs.notion.site/Join-Frame-Labs-bf796117a50040159b61c092ad89870d",
+  "twitterUrl": "https://twitter.com/0xFrame",
+  "description": "Desktop web3 wallet application ('web3 for desktop') that lets users access dApps system-wide instead of via browser extensions.",
+  "category": "wallet",
+  "tags": ["desktop-wallet", "wallet"],
+  "priority": "low",
+  "sources": []
+}

@@ -1,0 +1,12 @@
+{
+  "companySlug": "portal-hq",
+  "companyName": "Portal",
+  "websiteUrl": "https://www.portalhq.io",
+  "twitterUrl": "https://twitter.com/portal_hq",
+  "linkedinUrl": "https://www.linkedin.com/company/portal-labs-inc/",
+  "description": "Non-custodial wallet infrastructure using threshold MPC (TSS) for developers to build embedded wallets and move stablecoins across 100+ chains.",
+  "category": "wallet",
+  "tags": ["mpc", "embedded-wallets", "wallet-infrastructure", "stablecoin"],
+  "priority": "high",
+  "sources": []
+}

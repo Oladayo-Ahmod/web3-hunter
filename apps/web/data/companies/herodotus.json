@@ -1,0 +1,12 @@
+{
+  "companySlug": "herodotus",
+  "companyName": "Herodotus",
+  "websiteUrl": "https://www.herodotus.dev",
+  "twitterUrl": "https://twitter.com/HerodotusDev",
+  "linkedinUrl": "https://www.linkedin.com/company/herodotus",
+  "description": "Provides storage-proof and ZK coprocessor APIs that give smart contracts trustless, verifiable access to historical on-chain data across Ethereum and Starknet.",
+  "category": "infrastructure",
+  "tags": ["zk", "storage-proofs", "coprocessor", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

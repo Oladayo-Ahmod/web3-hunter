@@ -376,7 +376,16 @@ export interface OutreachTargetDTO {
   tags: string[];
   priority: CompanyPriorityDTO | null;
   fundingStage: string | null;
+  /** Milestone 18 §6 — a verified attribute, not a score; see `company.recentlyFunded`'s doc comment. */
+  recentlyFunded: boolean;
+  fundingDate: string | null;
+  fundingAmount: string | null;
+  fundingSource: string | null;
   opportunityType: OpportunityTypeDTO;
   openJobCount: number;
+  /** Up to 3 currently-open job titles at this Company — Milestone 18 §9's "role if available," so an Outreach card doesn't require a click-through just to see what's open. */
+  openJobTitles: string[];
+  /** A short, deterministic (never AI-generated) sentence explaining why this Company is on the list today — derived from `opportunityType`/`priority`/funding, not a new scoring input. */
+  reasonToContact: string;
   contacts: CompanyContactDTO[];
 }

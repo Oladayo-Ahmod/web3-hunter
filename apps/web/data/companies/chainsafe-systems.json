@@ -1,0 +1,11 @@
+{
+  "companySlug": "chainsafe-systems",
+  "companyName": "ChainSafe Systems",
+  "websiteUrl": "https://www.chainsafe.io/",
+  "careersPageUrl": "https://www.chainsafe.io/careers",
+  "description": "Blockchain infrastructure and client-development studio building Lodestar (Ethereum consensus client), Forest (Filecoin), and Gossamer (Polkadot).",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "node-infrastructure", "client-development"],
+  "priority": "medium",
+  "sources": []
+}

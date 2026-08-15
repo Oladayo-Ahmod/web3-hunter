@@ -1,0 +1,16 @@
+{
+  "companySlug": "alpen-labs",
+  "companyName": "Alpen Labs",
+  "websiteUrl": "https://www.alpen.org",
+  "careersPageUrl": "https://jobs.ashbyhq.com/alpenlabs",
+  "description": "New York-based startup founded by four MIT alumni building Strata, a zero-knowledge Bitcoin rollup with an optimistic bridge for scalable, private, programmable Bitcoin finance.",
+  "category": "l2",
+  "tags": ["zk", "bitcoin", "rollup", "cryptography"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "alpenlabs"
+    }
+  ]
+}

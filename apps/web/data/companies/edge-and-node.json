@@ -1,0 +1,10 @@
+{
+  "companySlug": "edge-and-node",
+  "companyName": "Edge & Node",
+  "websiteUrl": "https://edgeandnode.com",
+  "description": "Edge & Node is the core engineering company behind The Graph, the decentralized protocol for indexing and querying blockchain data via subgraphs.",
+  "category": "infrastructure",
+  "tags": ["indexing", "data", "subgraphs", "the-graph"],
+  "priority": "medium",
+  "sources": []
+}

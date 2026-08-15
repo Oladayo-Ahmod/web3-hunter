@@ -1,0 +1,12 @@
+{
+  "companySlug": "heliax-namada",
+  "companyName": "Heliax (Namada)",
+  "websiteUrl": "https://heliax.dev",
+  "careersPageUrl": "https://heliax.dev/jobs",
+  "twitterUrl": "https://twitter.com/heliaxdev",
+  "description": "Software company founded by Adrian Brink, Awa Sun Yin, and Christopher Goes that develops Namada, a proof-of-stake L1 for shielded, asset-agnostic interchain privacy, and the Anoma intent-centric protocol.",
+  "category": "infrastructure",
+  "tags": ["privacy", "shielded-pool", "cryptography", "l1"],
+  "priority": "medium",
+  "sources": []
+}

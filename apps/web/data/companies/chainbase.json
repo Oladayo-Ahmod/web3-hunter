@@ -1,0 +1,10 @@
+{
+  "companySlug": "chainbase",
+  "companyName": "Chainbase",
+  "websiteUrl": "https://chainbase.com",
+  "description": "Chainbase builds a hyperdata network that indexes and structures on-chain data across multiple blockchains for AI and analytics applications.",
+  "category": "infrastructure",
+  "tags": ["indexing", "data", "ai"],
+  "priority": "medium",
+  "sources": []
+}

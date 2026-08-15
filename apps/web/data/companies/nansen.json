@@ -1,0 +1,17 @@
+{
+  "companySlug": "nansen",
+  "companyName": "Nansen",
+  "websiteUrl": "https://www.nansen.ai",
+  "careersPageUrl": "https://job-boards.greenhouse.io/nansen",
+  "twitterUrl": "https://x.com/nansen_ai",
+  "description": "Nansen builds an on-chain analytics platform that combines blockchain data with wallet labeling to surface insights on crypto markets and smart-money flows.",
+  "category": "infrastructure",
+  "tags": ["analytics", "data", "wallet-labeling"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "nansen"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "privasea",
+  "companyName": "Privasea",
+  "websiteUrl": "https://www.privasea.ai",
+  "careersPageUrl": "https://www.privasea.ai/careers",
+  "description": "Builds fully homomorphic encryption (FHE) infrastructure and FHE-ML applications for confidential AI computation on encrypted data.",
+  "category": "infrastructure",
+  "tags": ["fhe", "privacy", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

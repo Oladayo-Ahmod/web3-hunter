@@ -1,0 +1,10 @@
+{
+  "companySlug": "kerneldao",
+  "companyName": "KernelDAO",
+  "websiteUrl": "https://kerneldao.com",
+  "description": "Restaking protocol suite (Kelp rsETH, Gain, Kernel) offering liquid restaking and reward products across Ethereum, Bitcoin, and BNB; rebrand of Kelp DAO.",
+  "category": "defi",
+  "tags": ["restaking", "liquid-staking", "eigenlayer"],
+  "priority": "medium",
+  "sources": []
+}

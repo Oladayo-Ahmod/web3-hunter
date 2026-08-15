@@ -1,0 +1,16 @@
+{
+  "companySlug": "figment",
+  "companyName": "Figment",
+  "websiteUrl": "https://figment.io",
+  "careersPageUrl": "https://job-boards.greenhouse.io/figment",
+  "description": "Figment provides blockchain staking infrastructure and node services, helping institutions stake assets and participate in proof-of-stake network consensus.",
+  "category": "infrastructure",
+  "tags": ["staking", "node-infrastructure", "proof-of-stake"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "figment"
+    }
+  ]
+}

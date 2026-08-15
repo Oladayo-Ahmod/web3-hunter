@@ -1,0 +1,25 @@
+{
+  "companySlug": "somnia",
+  "companyName": "Somnia",
+  "websiteUrl": "https://somnia.network",
+  "careersPageUrl": "https://jobs.ashbyhq.com/somnia",
+  "twitterUrl": "https://x.com/Somnia_Network",
+  "description": "Somnia builds a high-throughput, EVM-compatible Layer 1 blockchain designed for real-time, fully on-chain gaming and consumer applications.",
+  "category": "l1",
+  "tags": ["l1", "evm", "gaming", "high-throughput"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Paul Thomas",
+      "role": "founder",
+      "profileUrl": "https://x.com/0xPaulThomas",
+      "notes": "Founder and CEO, ex-Improbable"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "somnia"
+    }
+  ]
+}

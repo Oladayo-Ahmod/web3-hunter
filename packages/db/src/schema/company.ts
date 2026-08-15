@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { id, timestamps } from "../columns";
 
 /**
@@ -103,6 +103,26 @@ export const company = pgTable("company", {
   // Free-text, e.g. "Seed", "Series A", "Public" — the least automatable
   // and least reliably available field on this table.
   fundingStage: text("funding_stage"),
+  // Milestone 18 §6 — a plain verified attribute, not a scoring input:
+  // "funding -> runway -> hiring probability" is a fact worth surfacing
+  // on the Outreach view, not a number to weight anything by. All four
+  // fields are independently nullable and travel together (a curator
+  // either has a verified funding event to record or doesn't); `false`/
+  // absent is the default for the ~90% of Companies this pass never
+  // touches, not "confirmed not funded."
+  recentlyFunded: boolean("recently_funded").notNull().default(false),
+  // Free text on purpose (e.g. "August 2026", "Q3 2025") — a real
+  // announcement date is rarely more precise than "a month," and forcing
+  // a `date` column would invite guessing a day that was never published.
+  fundingDate: text("funding_date"),
+  // Free text (e.g. "$4.2M") rather than a numeric column with a currency
+  // — amounts are reported inconsistently (ranges, "undisclosed," mixed
+  // currencies) and this is a display fact, never arithmetic.
+  fundingAmount: text("funding_amount"),
+  // The article/announcement this was verified against — required
+  // provenance for a claim this specific, the same discipline
+  // `discoverySource` already applies to how a Company itself was found.
+  fundingSource: text("funding_source"),
   category: companyCategory("category"),
   tags: text("tags").array(),
   // Milestone 13 Phase C — discovery provenance. Defaults to "discovered"

@@ -1,0 +1,11 @@
+{
+  "companySlug": "marginfi",
+  "companyName": "MarginFi",
+  "websiteUrl": "https://www.marginfi.com/",
+  "linkedinUrl": "https://www.linkedin.com/company/mrgn-labs",
+  "description": "Decentralized lending and margin trading protocol native to the Solana ecosystem, run by mrgn labs.",
+  "category": "defi",
+  "tags": ["defi", "lending", "margin-trading", "solana"],
+  "priority": "high",
+  "sources": []
+}

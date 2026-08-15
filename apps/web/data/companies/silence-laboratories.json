@@ -1,0 +1,12 @@
+{
+  "companySlug": "silence-laboratories",
+  "companyName": "Silence Laboratories",
+  "websiteUrl": "https://silencelaboratories.com",
+  "careersPageUrl": "https://silencelaboratories.com/careers",
+  "linkedinUrl": "https://sg.linkedin.com/company/silencelaboratories",
+  "description": "Cryptographic security company building MPC-based threshold signatures and decentralized multi-factor authentication for private computation and account recovery.",
+  "category": "infrastructure",
+  "tags": ["mpc", "privacy", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

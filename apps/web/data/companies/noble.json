@@ -1,0 +1,10 @@
+{
+  "companySlug": "noble",
+  "companyName": "Noble",
+  "websiteUrl": "https://noble.xyz",
+  "description": "Purpose-built asset-issuance blockchain (migrating from a Cosmos SDK appchain to a standalone EVM Layer 1) focused on stablecoins and RWAs, partnered with Circle, Ondo, and Hashnote.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "rwa", "layer1"],
+  "priority": "medium",
+  "sources": []
+}

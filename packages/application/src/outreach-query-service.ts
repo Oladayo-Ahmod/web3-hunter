@@ -41,15 +41,21 @@ export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
     tags: string[] | null;
     priority: CompanyPriorityDTO | null;
     funding_stage: string | null;
+    recently_funded: boolean;
+    funding_date: string | null;
+    funding_amount: string | null;
+    funding_source: string | null;
     open_job_count: number;
+    open_job_titles: string[] | null;
     contacts: CompanyContactDTO[];
   }>(sql`
-    WITH open_job_counts AS (
-      SELECT related_entity_id AS company_id, COUNT(*)::int AS open_job_count
+    WITH open_jobs AS (
+      SELECT related_entity_id AS company_id, metadata->>'externalId' AS external_id, metadata->>'title' AS title
       FROM (
         SELECT DISTINCT ON (related_entity_id, metadata->>'externalId')
           related_entity_id,
           metadata->>'externalId' AS external_id,
+          metadata,
           occurred_at AS state_at
         FROM event
         WHERE type IN ('JobPosted', 'JobUpdated') AND related_entity_type = 'company'
@@ -63,7 +69,25 @@ export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
           AND closed.metadata->>'externalId' = latest_state.external_id
           AND closed.occurred_at >= latest_state.state_at
       )
-      GROUP BY related_entity_id
+    ),
+    open_job_counts AS (
+      SELECT company_id, COUNT(*)::int AS open_job_count
+      FROM open_jobs
+      GROUP BY company_id
+    ),
+    -- Up to 3 open titles per Company (Milestone 18 outreach card's
+    -- "role if available") — a lightweight json_agg over a row-limited
+    -- subquery, not a join to the full Job Feed read model; this view
+    -- only ever needs a handful of representative titles, not every
+    -- field a /jobs card carries.
+    open_job_titles_agg AS (
+      SELECT company_id, json_agg(title) AS titles
+      FROM (
+        SELECT company_id, title, ROW_NUMBER() OVER (PARTITION BY company_id ORDER BY title) AS rn
+        FROM open_jobs
+      ) ranked
+      WHERE rn <= 3
+      GROUP BY company_id
     ),
     contacts_agg AS (
       SELECT
@@ -87,56 +111,109 @@ export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
     SELECT
       c.id, c.slug, c.name, c.website_url, c.careers_page_url, c.twitter_url, c.linkedin_url,
       c.description, c.category, c.tags, c.priority, c.funding_stage,
+      c.recently_funded, c.funding_date, c.funding_amount, c.funding_source,
       COALESCE(ojc.open_job_count, 0) AS open_job_count,
+      COALESCE(ojt.titles, '[]'::json) AS open_job_titles,
       COALESCE(ca.contacts, '[]'::json) AS contacts
     FROM company c
     LEFT JOIN open_job_counts ojc ON ojc.company_id = c.id
+    LEFT JOIN open_job_titles_agg ojt ON ojt.company_id = c.id
     LEFT JOIN contacts_agg ca ON ca.company_id = c.id
     WHERE c.discovery_status IN ('curated', 'verified')
     ORDER BY c.name ASC
   `);
 
-  return rows.map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    name: row.name,
-    websiteUrl: row.website_url,
-    careersPageUrl: row.careers_page_url,
-    twitterUrl: row.twitter_url,
-    linkedinUrl: row.linkedin_url,
-    description: row.description,
-    category: row.category,
-    tags: row.tags ?? [],
-    priority: row.priority,
-    fundingStage: row.funding_stage,
-    opportunityType: classifyOpportunityType(row.open_job_count, row.priority, row.funding_stage),
-    openJobCount: row.open_job_count,
-    contacts: row.contacts,
-  }));
+  return rows.map((row) => {
+    const opportunityType = classifyOpportunityType(
+      row.open_job_count,
+      row.priority,
+      row.recently_funded,
+    );
+    return {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      websiteUrl: row.website_url,
+      careersPageUrl: row.careers_page_url,
+      twitterUrl: row.twitter_url,
+      linkedinUrl: row.linkedin_url,
+      description: row.description,
+      category: row.category,
+      tags: row.tags ?? [],
+      priority: row.priority,
+      fundingStage: row.funding_stage,
+      recentlyFunded: row.recently_funded,
+      fundingDate: row.funding_date,
+      fundingAmount: row.funding_amount,
+      fundingSource: row.funding_source,
+      opportunityType,
+      openJobCount: row.open_job_count,
+      openJobTitles: row.open_job_titles ?? [],
+      reasonToContact: buildReasonToContact(row.name, opportunityType, {
+        openJobCount: row.open_job_count,
+        fundingStage: row.funding_stage,
+        fundingAmount: row.funding_amount,
+      }),
+      contacts: row.contacts,
+    };
+  });
 }
 
 /**
  * The fixed precedence behind `OutreachTargetDTO.opportunityType` — an
  * open role beats every other reason to reach out (it's the most direct,
- * fastest path: apply now), then a stated recent funding round, then a
+ * fastest path: apply now), then a verified recent-funding event, then a
  * curator's "high priority" judgment call, and anything curated that
- * clears none of those is still worth a speculative outreach. Explicit
+ * clears none of those is still worth a proactive outreach. Explicit
  * `if`/`else if` chain, not a scoring formula — Milestone 16 §9's "do not
  * pretend these are scientifically precise" applies here too.
+ *
+ * Milestone 18: keys off the explicit `recentlyFunded` boolean, not mere
+ * presence of `fundingStage` text — `fundingStage` (e.g. "Series A") is
+ * often known for a Company funded years ago, which is not the timely,
+ * outreach-worthy signal this bucket exists for.
  */
 export function classifyOpportunityType(
   openJobCount: number,
   priority: CompanyPriorityDTO | null,
-  fundingStage: string | null,
+  recentlyFunded: boolean,
 ): OpportunityTypeDTO {
   if (openJobCount > 0) {
     return "OPEN_ROLE";
   }
-  if (fundingStage) {
+  if (recentlyFunded) {
     return "RECENTLY_FUNDED";
   }
   if (priority === "high") {
     return "HIGH_PRIORITY_STARTUP";
   }
   return "SPECULATIVE_OUTREACH";
+}
+
+/**
+ * A short, deterministic sentence explaining why a Company is on the
+ * list today (Milestone 18 §9's "reason to contact") — plain string
+ * interpolation over already-known facts, never AI-generated and never a
+ * new scoring input; purely a rendering of `classifyOpportunityType`'s
+ * own decision back into words.
+ */
+function buildReasonToContact(
+  companyName: string,
+  opportunityType: OpportunityTypeDTO,
+  facts: { openJobCount: number; fundingStage: string | null; fundingAmount: string | null },
+): string {
+  switch (opportunityType) {
+    case "OPEN_ROLE":
+      return facts.openJobCount === 1
+        ? `${companyName} has 1 open role matching your profile — apply directly.`
+        : `${companyName} has ${facts.openJobCount} open roles matching your profile — apply directly.`;
+    case "RECENTLY_FUNDED":
+      return facts.fundingAmount
+        ? `${companyName} recently raised ${facts.fundingAmount}${facts.fundingStage ? ` (${facts.fundingStage})` : ""} — good timing to reach out before roles are posted.`
+        : `${companyName} recently raised funding${facts.fundingStage ? ` (${facts.fundingStage})` : ""} — good timing to reach out before roles are posted.`;
+    case "HIGH_PRIORITY_STARTUP":
+      return `${companyName} is a high-priority early-stage Web3 startup — worth a direct message to the founder or CTO even without a posted role.`;
+    case "SPECULATIVE_OUTREACH":
+      return `${companyName} is a verified Web3-native company — worth introducing yourself even without a posted role.`;
+  }
 }

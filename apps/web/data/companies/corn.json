@@ -1,0 +1,10 @@
+{
+  "companySlug": "corn",
+  "companyName": "Corn",
+  "websiteUrl": "https://www.usecorn.com",
+  "description": "Corn builds an Ethereum Layer 2 (on Arbitrum Orbit) that uses tokenized Bitcoin as its native gas token, combining Bitcoin's value with Ethereum's programmability.",
+  "category": "l2",
+  "tags": ["l2", "bitcoin", "arbitrum-orbit", "early-stage"],
+  "priority": "high",
+  "sources": []
+}

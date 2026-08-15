@@ -1,0 +1,10 @@
+{
+  "companySlug": "backpack",
+  "companyName": "Backpack",
+  "websiteUrl": "https://backpack.exchange",
+  "description": "Crypto exchange and self-custody wallet platform combining brokerage, trading, and wallet infrastructure.",
+  "category": "wallet",
+  "tags": ["wallet", "exchange"],
+  "priority": "medium",
+  "sources": []
+}

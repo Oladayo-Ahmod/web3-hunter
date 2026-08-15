@@ -1,0 +1,11 @@
+{
+  "companySlug": "yield-yak",
+  "companyName": "Yield Yak",
+  "websiteUrl": "https://yieldyak.com/",
+  "twitterUrl": "https://twitter.com/yieldyak_",
+  "description": "Auto-compounding yield optimizer and DeFi toolkit originally built for Avalanche, offering vaults, a DEX aggregator and staking products.",
+  "category": "defi",
+  "tags": ["defi", "yield", "auto-compounding", "avalanche"],
+  "priority": "high",
+  "sources": []
+}

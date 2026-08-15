@@ -1,0 +1,12 @@
+{
+  "companySlug": "cysic",
+  "companyName": "Cysic",
+  "websiteUrl": "https://cysic.xyz",
+  "careersPageUrl": "https://cysic.xyz/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/cysic",
+  "description": "Builds real-time hardware acceleration (GPU/FPGA/ASIC) for zero-knowledge proof generation and operates a decentralized ZK prover network.",
+  "category": "infrastructure",
+  "tags": ["zk", "hardware", "proving-infrastructure"],
+  "priority": "medium",
+  "sources": []
+}

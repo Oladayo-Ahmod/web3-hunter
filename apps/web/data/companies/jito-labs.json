@@ -1,0 +1,20 @@
+{
+  "companySlug": "jito-labs",
+  "companyName": "Jito Labs",
+  "websiteUrl": "https://www.jito.network",
+  "careersPageUrl": "https://jobs.solana.com/companies/jito-labs",
+  "twitterUrl": "https://x.com/jito_sol",
+  "description": "MEV infrastructure company behind Jito-Solana (MEV-aware validator client), the Jito Block Engine, and JitoSOL liquid staking on Solana.",
+  "category": "infrastructure",
+  "tags": ["mev", "solana", "liquid-staking", "block-building"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Lucas Bruder",
+      "role": "founder",
+      "profileUrl": "https://x.com/buffalu__",
+      "notes": "Co-founder/CEO of Jito Labs"
+    }
+  ],
+  "sources": []
+}

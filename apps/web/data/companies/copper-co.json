@@ -1,0 +1,13 @@
+{
+  "companySlug": "copper-co",
+  "companyName": "Copper",
+  "websiteUrl": "https://copper.co",
+  "careersPageUrl": "https://copper.co/en-us/company/careers",
+  "twitterUrl": "https://twitter.com/CopperHQ",
+  "linkedinUrl": "https://www.linkedin.com/company/copperco/",
+  "description": "Institutional digital-asset infrastructure for custody, trading, settlement, and collateral management, moving $105B+ in protected collateral monthly.",
+  "category": "infrastructure",
+  "tags": ["custody", "institutional", "trading", "collateral"],
+  "priority": "medium",
+  "sources": []
+}

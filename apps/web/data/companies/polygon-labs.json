@@ -1,0 +1,18 @@
+{
+  "companySlug": "polygon-labs",
+  "companyName": "Polygon Labs",
+  "websiteUrl": "https://polygon.technology",
+  "careersPageUrl": "https://polygon.technology/careers",
+  "twitterUrl": "https://x.com/0xPolygonLabs",
+  "linkedinUrl": "https://www.linkedin.com/company/polygon-labs",
+  "description": "Polygon Labs builds Ethereum scaling technology, including the Polygon PoS chain, zkEVM rollups, and the AggLayer cross-chain interoperability protocol.",
+  "category": "l2",
+  "tags": ["l2", "zkevm", "rollup", "interoperability"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "polygon-labs"
+    }
+  ]
+}

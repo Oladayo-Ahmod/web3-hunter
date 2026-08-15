@@ -1,0 +1,12 @@
+{
+  "companySlug": "vlayer",
+  "companyName": "vlayer",
+  "websiteUrl": "https://www.vlayer.xyz",
+  "twitterUrl": "https://x.com/vlayer_xyz",
+  "linkedinUrl": "https://uk.linkedin.com/company/vlayer-labs",
+  "description": "Builds verifiable data infrastructure including Web Proofs (zkTLS), Teleport, and Time Travel to bring Web2 and cross-chain data into smart contracts trustlessly.",
+  "category": "infrastructure",
+  "tags": ["zktls", "zk", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

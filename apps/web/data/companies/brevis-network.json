@@ -1,0 +1,10 @@
+{
+  "companySlug": "brevis-network",
+  "companyName": "Brevis Network",
+  "websiteUrl": "https://brevis.network",
+  "description": "Builds a zero-knowledge coprocessor (and the Pico zkVM) that lets smart contracts trustlessly read, compute over, and verify historical on-chain data.",
+  "category": "infrastructure",
+  "tags": ["zk", "zkvm", "coprocessor", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

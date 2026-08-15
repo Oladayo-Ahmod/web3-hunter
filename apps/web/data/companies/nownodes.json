@@ -1,0 +1,10 @@
+{
+  "companySlug": "nownodes",
+  "companyName": "NOWNodes",
+  "websiteUrl": "https://nownodes.io/",
+  "description": "Blockchain-as-a-service provider offering full and light node access and RPC endpoints across 120+ blockchain networks.",
+  "category": "infrastructure",
+  "tags": ["node-infrastructure", "rpc"],
+  "priority": "medium",
+  "sources": []
+}

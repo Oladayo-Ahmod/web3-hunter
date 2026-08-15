@@ -1,0 +1,11 @@
+{
+  "companySlug": "gains-network",
+  "companyName": "Gains Network",
+  "websiteUrl": "https://gains.trade/",
+  "twitterUrl": "https://x.com/gains_trade",
+  "description": "Builds gTrade, a decentralized, non-custodial leveraged trading platform offering perpetual futures on crypto, forex and commodities across multiple chains.",
+  "category": "defi",
+  "tags": ["defi", "perpetuals", "derivatives", "leveraged-trading"],
+  "priority": "medium",
+  "sources": []
+}

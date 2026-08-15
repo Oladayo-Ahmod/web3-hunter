@@ -1,0 +1,12 @@
+{
+  "companySlug": "coincover",
+  "companyName": "Coincover",
+  "websiteUrl": "https://www.coincover.com",
+  "twitterUrl": "https://x.com/Coincoverglobal",
+  "linkedinUrl": "https://www.linkedin.com/company/coincoverglobal/",
+  "description": "Crypto disaster-recovery and wallet-protection infrastructure for exchanges, custodians, wallet providers, and stablecoin issuers, protecting 22M+ wallets.",
+  "category": "infrastructure",
+  "tags": ["custody", "key-recovery", "security", "wallet-infrastructure"],
+  "priority": "medium",
+  "sources": []
+}

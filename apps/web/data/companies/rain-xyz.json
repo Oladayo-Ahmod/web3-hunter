@@ -1,0 +1,17 @@
+{
+  "companySlug": "rain-xyz",
+  "companyName": "Rain",
+  "websiteUrl": "https://www.rain.xyz",
+  "careersPageUrl": "https://jobs.ashbyhq.com/rain",
+  "linkedinUrl": "https://www.linkedin.com/company/rainxyz",
+  "description": "Stablecoin card-issuing infrastructure letting enterprises launch card products, digital-dollar accounts, and cross-border money movement via a unified API.",
+  "category": "other",
+  "tags": ["stablecoin", "cards", "payments", "card-issuing"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "rain"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "companySlug": "megaeth",
+  "companyName": "MegaETH",
+  "websiteUrl": "https://www.megaeth.com",
+  "twitterUrl": "https://x.com/megaeth_labs",
+  "description": "MegaETH builds a real-time, Ethereum-compatible blockchain targeting millisecond latency and very high throughput for on-chain applications.",
+  "category": "l1",
+  "tags": ["l1", "evm", "high-performance", "early-stage"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Shuyao Kong",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/shuyao-kong/"
+    }
+  ],
+  "sources": []
+}
