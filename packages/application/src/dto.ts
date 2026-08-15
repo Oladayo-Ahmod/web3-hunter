@@ -389,3 +389,37 @@ export interface OutreachTargetDTO {
   reasonToContact: string;
   contacts: CompanyContactDTO[];
 }
+
+/**
+ * One row of the "Apply" section of the Today Digest (Milestone 19 §6) —
+ * a real, clickable job at a `priority`-tagged (startup-biased) Company.
+ * Deliberately smaller than `JobFeedItemDTO`: this view only needs enough
+ * to decide "should I click apply," not the full Job Detail page's
+ * skill/relevance breakdown.
+ */
+export interface TodayApplyJobDTO {
+  id: string;
+  title: string;
+  companySlug: string;
+  companyName: string;
+  companyPriority: CompanyPriorityDTO | null;
+  absoluteUrl: string;
+  locationName: string | null;
+  workplaceType: "remote" | "hybrid" | "onsite" | null;
+  postedAt: string;
+  freshness: JobFreshnessDTO;
+  /** `null` when there's no viewer Profile to score against — never a fabricated "0". */
+  relevanceScore: number | null;
+}
+
+/**
+ * "What should I do today" (Milestone 19 §6) — the whole point of this
+ * product per its last three governing directives. Three fixed-size,
+ * already-ranked lists built entirely from `listJobFeed`/
+ * `listOutreachTargets`'s own data; no new scoring subsystem, no AI.
+ */
+export interface TodayDigestDTO {
+  applyJobs: TodayApplyJobDTO[];
+  dmTargets: OutreachTargetDTO[];
+  researchTargets: OutreachTargetDTO[];
+}

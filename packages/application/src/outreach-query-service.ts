@@ -120,7 +120,20 @@ export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
     LEFT JOIN open_job_titles_agg ojt ON ojt.company_id = c.id
     LEFT JOIN contacts_agg ca ON ca.company_id = c.id
     WHERE c.discovery_status IN ('curated', 'verified')
-    ORDER BY c.name ASC
+    ORDER BY
+      -- Milestone 19 §2's "startup bias": a hand-curated 'high' priority
+      -- Company sorts before 'medium', before 'low', before an
+      -- unclassified one (most of the original, pre-Milestone-17
+      -- directory — large, well-known incumbents like Coinbase/Kraken
+      -- among them) — free, since priority already exists as exactly
+      -- this signal; no new column, no scoring formula.
+      CASE c.priority
+        WHEN 'high' THEN 0
+        WHEN 'medium' THEN 1
+        WHEN 'low' THEN 2
+        ELSE 3
+      END,
+      c.name ASC
   `);
 
   return rows.map((row) => {

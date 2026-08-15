@@ -33,8 +33,11 @@ export type {
   SkillDTO,
   SignalSummaryDTO,
   TargetRoleDTO,
+  TodayApplyJobDTO,
+  TodayDigestDTO,
   UserProfileSummaryDTO,
 } from "./dto";
+export { getTodayDigest } from "./daily-digest-service";
 export { classifyOpportunityType, listOutreachTargets } from "./outreach-query-service";
 export {
   getOpportunityDetail,
