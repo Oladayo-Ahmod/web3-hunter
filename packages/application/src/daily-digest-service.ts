@@ -1,13 +1,23 @@
 import { getDb } from "@web3-hunter/db";
 import { sql } from "drizzle-orm";
+import { checkApplyEligibility } from "./apply-eligibility";
 import type { TodayApplyJobDTO, TodayDigestDTO } from "./dto";
 import { computeJobFreshness, type JobFreshness } from "./job-freshness";
 import { computeJobRelevance, type JobRelevanceProfile } from "./job-relevance";
 import { getViewerRelevanceProfile } from "./job-query-service";
 import { listOutreachTargets } from "./outreach-query-service";
 
-/** Bounded candidate pool scored/sorted in memory before slicing to `APPLY_LIMIT` — mirrors `job-query-service.ts`'s own `RELEVANCE_SORT_MAX_ROWS` reasoning, at a much smaller scale since this is already filtered to `priority`-tagged Companies. */
-const APPLY_CANDIDATE_POOL = 150;
+/**
+ * Bounded candidate pool scored/sorted in memory before slicing to
+ * `APPLY_LIMIT` — mirrors `job-query-service.ts`'s own
+ * `RELEVANCE_SORT_MAX_ROWS` reasoning, at a much smaller scale since
+ * this is already filtered to `priority`-tagged Companies. Milestone 20:
+ * widened from 150 to 400 now that `checkApplyEligibility` removes a
+ * real fraction of this pool before ranking — the pool needs enough
+ * headroom that filtering doesn't starve the list below `APPLY_LIMIT`
+ * candidates on a normal day.
+ */
+const APPLY_CANDIDATE_POOL = 400;
 const APPLY_LIMIT = 20;
 const DM_LIMIT = 20;
 const RESEARCH_LIMIT = 10;
@@ -110,9 +120,20 @@ const FRESHNESS_RANK: Record<JobFreshness, number> = { fresh: 0, recent: 1, agin
  * dominates the sort — "strongest," per Milestone 19 §6, not just
  * "newest." Without one, freshness is the only signal available, so it
  * sorts by that instead of pretending to rank by fit.
+ *
+ * Milestone 20: `checkApplyEligibility` runs first and unconditionally
+ * — independent of whether there's a viewer Profile at all, unlike
+ * relevance scoring. A pre-Milestone-20 anonymous `/today` visit got
+ * *zero* role filtering (no Profile means no score, and no score meant
+ * every candidate sorted by freshness alone); this gate closes that
+ * gap too, not just the "generic keyword scored too high" one.
+ * Eligible candidates that don't clear the bar are dropped entirely,
+ * not ranked low — see that module's own doc comment for why.
  */
 async function rankApplyJobs(viewerId: string | undefined): Promise<TodayApplyJobDTO[]> {
-  const rows = await fetchApplyCandidates();
+  const rows = (await fetchApplyCandidates()).filter(
+    (row) => checkApplyEligibility(row.title, row.description).eligible,
+  );
   const now = new Date();
   const viewerProfile: JobRelevanceProfile | null = viewerId
     ? await getViewerRelevanceProfile(viewerId)
