@@ -38,6 +38,7 @@ export type {
   UserProfileSummaryDTO,
 } from "./dto";
 export { getTodayDigest } from "./daily-digest-service";
+export { checkApplyEligibility, type ApplyEligibilityResult } from "./apply-eligibility";
 export { classifyOpportunityType, listOutreachTargets } from "./outreach-query-service";
 export {
   getOpportunityDetail,
