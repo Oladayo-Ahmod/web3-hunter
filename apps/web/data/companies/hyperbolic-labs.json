@@ -1,0 +1,18 @@
+{
+  "companySlug": "hyperbolic-labs",
+  "companyName": "Hyperbolic",
+  "websiteUrl": "https://www.hyperbolic.ai/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/hyperbolic",
+  "twitterUrl": "https://x.com/hyperbolic_labs",
+  "linkedinUrl": "https://www.linkedin.com/company/hyperbolic-labs/",
+  "description": "Hyperbolic is an open-access decentralized AI cloud offering an on-demand GPU marketplace and OpenAI-compatible inference APIs built on a globally distributed, crypto-incentivized compute network.",
+  "category": "infrastructure",
+  "tags": ["crypto-ai", "decentralized-compute", "gpu-marketplace", "inference"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "hyperbolic"
+    }
+  ]
+}

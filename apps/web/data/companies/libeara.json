@@ -1,0 +1,11 @@
+{
+  "companySlug": "libeara",
+  "companyName": "Libeara",
+  "websiteUrl": "https://libeara.com",
+  "careersPageUrl": "https://libeara.com/careers/",
+  "description": "Standard Chartered-incubated tokenization platform for issuing regulated on-chain funds and bonds.",
+  "category": "defi",
+  "tags": ["rwa", "tokenization", "funds", "bonds"],
+  "priority": "medium",
+  "sources": []
+}

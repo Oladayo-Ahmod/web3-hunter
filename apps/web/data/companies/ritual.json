@@ -1,0 +1,17 @@
+{
+  "companySlug": "ritual",
+  "companyName": "Ritual",
+  "websiteUrl": "https://ritual.net/",
+  "careersPageUrl": "https://ritual.net/careers",
+  "twitterUrl": "https://twitter.com/ritualnet",
+  "description": "Ritual is building a sovereign execution layer and infrastructure (Infernet) that lets AI models and autonomous agents be accessed on-chain via smart contracts and off-chain, verifiably.",
+  "category": "ai",
+  "tags": ["crypto-ai", "ai-agents", "on-chain-inference", "decentralized-compute"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "ritual"
+    }
+  ]
+}

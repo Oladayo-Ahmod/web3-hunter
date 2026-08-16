@@ -1,0 +1,15 @@
+{
+  "companySlug": "eternis-ai",
+  "companyName": "Eternis AI (Freysa)",
+  "websiteUrl": "https://www.eternis.ai/",
+  "linkedinUrl": "https://linkedin.com/company/eternisai",
+  "description": "Eternis AI builds Freysa, a self-directed 'sovereign' AI agent on Base with its own cryptographic keys, memory, and treasury, as part of a broader Sovereign Agent Stack for autonomous, self-custodying AI agents.",
+  "category": "ai",
+  "tags": ["crypto-ai", "ai-agents", "sovereign-agents"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "May 2025",
+  "fundingAmount": "$30 million+",
+  "fundingSource": "https://www.theblock.co/post/356058/freysa-ai-team-eternis-funding-investors-coinbase-ventures-others",
+  "sources": []
+}

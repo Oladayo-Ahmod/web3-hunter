@@ -1,0 +1,11 @@
+{
+  "companySlug": "arf-financial",
+  "companyName": "Arf",
+  "websiteUrl": "https://www.arf.one",
+  "careersPageUrl": "https://www.arf.one/careers",
+  "description": "Stablecoin-based cross-border liquidity network for payment and remittance companies, built on the Stellar network.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "payments", "liquidity"],
+  "priority": "high",
+  "sources": []
+}

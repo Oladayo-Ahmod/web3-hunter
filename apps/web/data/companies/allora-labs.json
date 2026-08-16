@@ -1,0 +1,11 @@
+{
+  "companySlug": "allora-labs",
+  "companyName": "Allora Network",
+  "websiteUrl": "https://www.allora.network/",
+  "twitterUrl": "https://x.com/AlloraNetwork",
+  "description": "Allora (built by Allora Labs, formerly Upshot) is a self-improving decentralized AI network in which community-built machine learning models compete and are merged on-chain to produce more accurate, context-aware predictions.",
+  "category": "ai",
+  "tags": ["crypto-ai", "decentralized-ai", "prediction-markets"],
+  "priority": "high",
+  "sources": []
+}

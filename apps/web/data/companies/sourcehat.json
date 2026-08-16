@@ -1,0 +1,10 @@
+{
+  "companySlug": "sourcehat",
+  "companyName": "SourceHat",
+  "websiteUrl": "https://sourcehat.com/",
+  "description": "Smart contract audit firm, rebranded from Solidity Finance, providing Solidity security reviews for DeFi protocols.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "low",
+  "sources": []
+}

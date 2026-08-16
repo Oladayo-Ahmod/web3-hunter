@@ -1,0 +1,10 @@
+{
+  "companySlug": "akash-network",
+  "companyName": "Akash Network",
+  "websiteUrl": "https://akash.network/",
+  "description": "Akash Network, built by Overclock Labs, is a decentralized peer-to-peer marketplace for cloud compute that lets providers and tenants buy and sell GPU/CPU capacity for AI and general workloads at a fraction of centralized cloud cost.",
+  "category": "infrastructure",
+  "tags": ["crypto-ai", "decentralized-compute", "depin"],
+  "priority": "medium",
+  "sources": []
+}

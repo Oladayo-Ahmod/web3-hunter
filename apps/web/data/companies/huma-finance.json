@@ -1,0 +1,13 @@
+{
+  "companySlug": "huma-finance",
+  "companyName": "Huma Finance",
+  "websiteUrl": "https://huma.finance",
+  "careersPageUrl": "https://huma.finance/careers",
+  "twitterUrl": "https://x.com/HumaFinance",
+  "linkedinUrl": "https://www.linkedin.com/company/huma-finance",
+  "description": "PayFi network built on Solana that finances cross-border payments and trade settlement using onchain liquidity pools.",
+  "category": "defi",
+  "tags": ["rwa", "payments", "payfi", "stablecoin"],
+  "priority": "high",
+  "sources": []
+}

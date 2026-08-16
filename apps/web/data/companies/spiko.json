@@ -1,0 +1,17 @@
+{
+  "companySlug": "spiko",
+  "companyName": "Spiko",
+  "websiteUrl": "https://spiko.io",
+  "careersPageUrl": "https://spiko.io/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/spiko-tech/",
+  "description": "Paris-based issuer of fully-licensed tokenized money market funds accessible via any EVM-compatible Web3 wallet.",
+  "fundingStage": "Series A",
+  "category": "defi",
+  "tags": ["rwa", "tokenization", "money-market-fund"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "2025",
+  "fundingAmount": "$22M (€18.5M)",
+  "fundingSource": "https://www.indexventures.com/perspectives/spiko-raises-22m-to-democratize-access-to-treasury-yields/",
+  "sources": []
+}

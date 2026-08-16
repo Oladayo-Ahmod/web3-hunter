@@ -1,0 +1,12 @@
+{
+  "companySlug": "secure3",
+  "companyName": "Secure3",
+  "websiteUrl": "https://www.secure3.io/",
+  "twitterUrl": "https://twitter.com/secure3io",
+  "linkedinUrl": "https://www.linkedin.com/company/81904706/",
+  "description": "Web3 security firm running competitive smart contract audits, with 200+ projects audited for clients including Mantle and zkSync.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "sources": []
+}

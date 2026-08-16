@@ -1,0 +1,11 @@
+{
+  "companySlug": "opentensor-foundation",
+  "companyName": "Bittensor (Opentensor Foundation)",
+  "websiteUrl": "https://bittensor.com/",
+  "linkedinUrl": "https://www.linkedin.com/company/bittensor",
+  "description": "Bittensor, stewarded by the Opentensor Foundation, is a decentralized peer-to-peer network made of independent machine-learning subnets in which participants ('miners') are paid in TAO for contributing useful computation and model outputs.",
+  "category": "ai",
+  "tags": ["crypto-ai", "decentralized-machine-learning", "incentive-network"],
+  "priority": "medium",
+  "sources": []
+}

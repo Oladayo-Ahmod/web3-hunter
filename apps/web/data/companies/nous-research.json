@@ -1,0 +1,18 @@
+{
+  "companySlug": "nous-research",
+  "companyName": "Nous Research",
+  "websiteUrl": "https://nousresearch.com/",
+  "careersPageUrl": "https://nousresearch.com/careers",
+  "twitterUrl": "https://twitter.com/nousresearch",
+  "linkedinUrl": "https://www.linkedin.com/company/nousresearch/",
+  "description": "Nous Research trains open-source large language models (the Hermes series) and is building a decentralized, crypto-incentivized network and protocol layer to coordinate distributed, unbiased AI training.",
+  "category": "ai",
+  "tags": ["crypto-ai", "open-source-llm", "decentralized-training", "ai-agents"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "nous-research"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "companySlug": "gensyn",
+  "companyName": "Gensyn",
+  "websiteUrl": "https://www.gensyn.ai/",
+  "careersPageUrl": "https://www.gensyn.ai/careers",
+  "twitterUrl": "https://x.com/gensynai",
+  "linkedinUrl": "https://www.linkedin.com/company/gensynai",
+  "description": "Gensyn is building a decentralized protocol and compute network, secured by a novel proof-of-learning verification system, that unifies the world's GPU capacity into a single open market for machine learning training.",
+  "category": "infrastructure",
+  "tags": ["crypto-ai", "decentralized-compute", "decentralized-training", "verifiable-compute"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "gensyn"
+    }
+  ]
+}

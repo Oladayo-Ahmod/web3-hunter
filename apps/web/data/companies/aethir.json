@@ -1,0 +1,13 @@
+{
+  "companySlug": "aethir",
+  "companyName": "Aethir",
+  "websiteUrl": "https://www.aethir.com/",
+  "careersPageUrl": "https://apply.workable.com/aethir/",
+  "twitterUrl": "https://x.com/AethirCloud",
+  "linkedinUrl": "https://www.linkedin.com/company/aethir-limited",
+  "description": "Aethir is a decentralized, enterprise-grade GPU cloud (DePIN) that aggregates distributed compute to provide on-demand access to GPUs for AI training, inference, and cloud gaming.",
+  "category": "infrastructure",
+  "tags": ["crypto-ai", "decentralized-compute", "depin", "gpu-marketplace"],
+  "priority": "medium",
+  "sources": []
+}

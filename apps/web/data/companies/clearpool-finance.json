@@ -1,0 +1,13 @@
+{
+  "companySlug": "clearpool-finance",
+  "companyName": "Clearpool",
+  "websiteUrl": "https://clearpool.finance",
+  "careersPageUrl": "https://clearpool.finance/careers",
+  "twitterUrl": "https://x.com/ClearpoolFin",
+  "linkedinUrl": "https://www.linkedin.com/company/clearpool",
+  "description": "Decentralized credit marketplace for unsecured institutional lending, live on Ethereum, Polygon, Optimism and Arbitrum.",
+  "category": "defi",
+  "tags": ["rwa", "lending", "credit-marketplace"],
+  "priority": "medium",
+  "sources": []
+}

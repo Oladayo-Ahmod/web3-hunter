@@ -1,0 +1,13 @@
+{
+  "companySlug": "blockapex",
+  "companyName": "BlockApex",
+  "websiteUrl": "https://blockapex.io/",
+  "careersPageUrl": "https://blockapex.io/career",
+  "twitterUrl": "https://twitter.com/block_apex",
+  "linkedinUrl": "https://www.linkedin.com/company/BlockApex/",
+  "description": "Blockchain security consulting firm with offices in Pakistan, Australia, and the US, offering smart contract audits and tokenomics design across 25+ networks.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,23 @@
+{
+  "companySlug": "0xmacro",
+  "companyName": "0xMacro",
+  "websiteUrl": "https://0xmacro.com/",
+  "twitterUrl": "https://twitter.com/0xMacroSecurity",
+  "description": "Boutique smart contract audit firm with a deliberately small, hand-picked team of researchers, also running the Macro Engineering Fellowship.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Harsh Patel",
+      "role": "cofounder",
+      "profileUrl": "https://twitter.com/HarshOnInternet"
+    },
+    {
+      "name": "David Goldberg",
+      "role": "cofounder",
+      "profileUrl": "https://twitter.com/idavidgoldberg"
+    }
+  ],
+  "sources": []
+}

@@ -1,0 +1,10 @@
+{
+  "companySlug": "omniscia",
+  "companyName": "Omniscia",
+  "websiteUrl": "https://omniscia.io/",
+  "description": "Smart contract auditing firm founded in 2021 specializing in DeFi protocol security reviews across Ethereum, BNB Chain, and Polygon, with audits for GMX V2, Trader Joe, and Beefy Finance.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "sources": []
+}

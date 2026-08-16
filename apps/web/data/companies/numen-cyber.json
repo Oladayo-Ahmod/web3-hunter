@@ -1,0 +1,13 @@
+{
+  "companySlug": "numen-cyber",
+  "companyName": "Numen Cyber Technology",
+  "websiteUrl": "https://www.numencyber.com/",
+  "careersPageUrl": "https://www.numencyber.com/careers/",
+  "twitterUrl": "https://twitter.com/numencyber",
+  "linkedinUrl": "https://www.linkedin.com/company/numencyber/",
+  "description": "Singapore-based Web3 security firm founded in 2021 offering smart contract audits, chain security audits, and on-chain risk monitoring, staffed by researchers formerly of Aptos, Sui, and Binance.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "sources": []
+}

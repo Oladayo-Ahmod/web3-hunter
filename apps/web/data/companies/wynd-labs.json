@@ -1,0 +1,10 @@
+{
+  "companySlug": "wynd-labs",
+  "companyName": "Grass (Wynd Network)",
+  "websiteUrl": "https://wyndlabs.ai/",
+  "description": "Wynd Labs builds Grass, a decentralized data-collection network that pays users in $GRASS for sharing unused residential bandwidth, sourcing public web data at scale for AI training.",
+  "category": "ai",
+  "tags": ["crypto-ai", "data-network", "depin"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,12 @@
+{
+  "companySlug": "request-finance",
+  "companyName": "Request Finance",
+  "websiteUrl": "https://www.request.finance",
+  "careersPageUrl": "https://www.request.finance/career",
+  "linkedinUrl": "https://www.linkedin.com/company/request-finance/",
+  "description": "Crypto-native invoicing, payroll and expense management suite settling payments on-chain in stablecoins and 140+ cryptocurrencies.",
+  "category": "other",
+  "tags": ["stablecoin", "payments", "payroll", "invoicing"],
+  "priority": "medium",
+  "sources": []
+}

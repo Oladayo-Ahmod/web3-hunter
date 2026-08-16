@@ -1,0 +1,10 @@
+{
+  "companySlug": "fetch-ai",
+  "companyName": "Fetch.ai",
+  "websiteUrl": "https://fetch.ai/",
+  "description": "Fetch.ai builds an open, tokenized network of autonomous software agents for decentralized digital economies, and co-leads the Artificial Superintelligence (ASI) Alliance together with SingularityNET and CUDOS.",
+  "category": "ai",
+  "tags": ["crypto-ai", "ai-agents", "decentralized-network"],
+  "priority": "low",
+  "sources": []
+}

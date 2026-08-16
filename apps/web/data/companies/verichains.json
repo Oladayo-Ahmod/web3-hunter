@@ -1,0 +1,13 @@
+{
+  "companySlug": "verichains",
+  "companyName": "Verichains",
+  "websiteUrl": "https://verichains.io/",
+  "careersPageUrl": "https://career.verichains.io/",
+  "twitterUrl": "https://x.com/verichains",
+  "linkedinUrl": "https://www.linkedin.com/company/verichains",
+  "description": "APAC-based blockchain security firm since 2017 providing smart contract audits, protocol security, and incident investigation for clients including BNB Chain and Ronin.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "sources": []
+}

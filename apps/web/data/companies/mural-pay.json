@@ -1,0 +1,13 @@
+{
+  "companySlug": "mural-pay",
+  "companyName": "Mural Pay",
+  "websiteUrl": "https://muralpay.com",
+  "careersPageUrl": "https://www.muralpay.com/careers",
+  "twitterUrl": "https://x.com/mural_pay",
+  "linkedinUrl": "https://www.linkedin.com/company/muralpay",
+  "description": "Stablecoin-powered global payments API for pay-ins, payouts and invoicing across US, Europe, Latin America and Africa.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "payments", "infrastructure"],
+  "priority": "medium",
+  "sources": []
+}

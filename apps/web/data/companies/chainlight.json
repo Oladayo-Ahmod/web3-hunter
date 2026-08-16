@@ -1,0 +1,26 @@
+{
+  "companySlug": "chainlight",
+  "companyName": "ChainLight",
+  "websiteUrl": "https://chainlight.io/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/theori",
+  "twitterUrl": "https://x.com/ChainLight_io",
+  "linkedinUrl": "https://www.linkedin.com/company/chainlight",
+  "description": "Blockchain security audit brand of offensive-security firm Theori, staffed by DEF CON CTF champions performing smart contract audits for zkSync, Blur, and other protocols.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Brian Pak",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/brianairb/",
+      "notes": "CEO & co-founder of parent company Theori, which operates the ChainLight blockchain security brand"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "theori"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "companySlug": "credix",
+  "companyName": "Credix",
+  "websiteUrl": "https://www.credix.finance",
+  "careersPageUrl": "https://jobs.solana.com/companies/credix",
+  "linkedinUrl": "https://be.linkedin.com/company/credix-finance",
+  "description": "Solana-based portal connecting institutional investors with tokenized private credit deals in Latin America.",
+  "fundingStage": "Series B",
+  "category": "defi",
+  "tags": ["rwa", "private-credit", "tokenization", "solana"],
+  "priority": "high",
+  "sources": []
+}

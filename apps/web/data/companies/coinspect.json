@@ -1,0 +1,12 @@
+{
+  "companySlug": "coinspect",
+  "companyName": "Coinspect Security",
+  "websiteUrl": "https://www.coinspect.com/",
+  "twitterUrl": "https://x.com/coinspect",
+  "linkedinUrl": "https://linkedin.com/company/coinspect/",
+  "description": "Web3 security firm offering smart contract audits, blockchain protocol reviews, and penetration testing, with clients including Ledger and Zcash.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "sources": []
+}

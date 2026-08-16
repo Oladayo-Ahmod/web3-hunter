@@ -1,0 +1,31 @@
+{
+  "companySlug": "bvnk",
+  "companyName": "BVNK",
+  "websiteUrl": "https://www.bvnk.com",
+  "careersPageUrl": "https://www.bvnk.com/careers",
+  "twitterUrl": "https://x.com/BVNKFinance",
+  "linkedinUrl": "https://www.linkedin.com/company/bvnk/",
+  "description": "Enterprise-grade stablecoin payments infrastructure unifying banks and blockchains, acquired by Mastercard in August 2026.",
+  "fundingStage": "Acquisition",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "payments", "infrastructure"],
+  "priority": "low",
+  "recentlyFunded": true,
+  "fundingDate": "August 2026",
+  "fundingAmount": "$1.8B",
+  "fundingSource": "https://www.bvnk.com/newsroom",
+  "contacts": [
+    {
+      "name": "Jesse Hemson-Struthers",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/jessehs/",
+      "notes": "Co-founder & CEO"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "bvnk"
+    }
+  ]
+}
