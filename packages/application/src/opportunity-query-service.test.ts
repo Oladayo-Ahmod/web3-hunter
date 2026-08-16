@@ -209,6 +209,7 @@ describe("opportunity-query-service (integration)", () => {
         name: "Acme Detail",
         careersPageUrl: null,
         websiteUrl: null,
+        priority: null,
       });
       expect(detail?.signals.map((s) => s.id).sort()).toEqual([signalOne.id, signalTwo.id].sort());
       expect(detail?.companyIntelligence).toEqual({

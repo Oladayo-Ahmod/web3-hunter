@@ -28,6 +28,7 @@ export function toCompanySummaryDTO(row: CompanyRow): CompanySummaryDTO {
     name: row.name,
     careersPageUrl: row.careersPageUrl,
     websiteUrl: row.websiteUrl,
+    priority: row.priority,
   };
 }
 

@@ -1,7 +1,8 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import type { JobFeedItemDTO, PaginatedResult, SkillDTO } from "./dto";
+import { checkApplyEligibility } from "./apply-eligibility";
+import type { CompanyPriorityDTO, JobFeedItemDTO, PaginatedResult, SkillDTO } from "./dto";
 import { computeJobFreshness, JOB_FRESHNESS_LEVELS, type JobFreshness } from "./job-freshness";
 import {
   computeJobRelevance,
@@ -33,6 +34,15 @@ export type JobSortField = (typeof JOB_SORT_FIELDS)[number];
  * default view excludes `stale` postings (see `buildJobFilter`) rather
  * than silently deleting them — pass `freshness=stale` or
  * `includeStale=true` to see them.
+ *
+ * `eligibleOnly` (Milestone 22): the default `/jobs` view now runs every
+ * candidate through `apply-eligibility.ts`'s gate — the same one that
+ * fixed `/today`'s Apply section — rather than showing every open
+ * posting at every curated Company regardless of role. Pass
+ * `eligibleOnly=false` for the explicit "show everything, including
+ * roles this gate would normally hide" escape hatch (mirrors
+ * `includeStale`'s own opt-out shape); never silently dropped without a
+ * way back to the full set.
  */
 export const jobFeedQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -46,6 +56,7 @@ export const jobFeedQuerySchema = z.object({
   workplaceType: z.enum(["remote", "hybrid", "onsite"]).optional(),
   role: z.string().min(1).optional(),
   minMatch: z.coerce.number().int().min(0).max(100).optional(),
+  eligibleOnly: z.coerce.boolean().default(true),
 });
 export type JobFeedQuery = z.infer<typeof jobFeedQuerySchema>;
 
@@ -101,6 +112,7 @@ type OpenJobRow = {
   company_name: string;
   company_careers_page_url: string | null;
   company_website_url: string | null;
+  company_priority: CompanyPriorityDTO | null;
 };
 
 /**
@@ -219,6 +231,7 @@ function toJobFeedItemDTO(
       name: row.company_name,
       careersPageUrl: row.company_careers_page_url,
       websiteUrl: row.company_website_url,
+      priority: row.company_priority,
     },
     status: "open",
     postedAt: new Date(row.posted_at).toISOString(),
@@ -346,15 +359,13 @@ function buildJobFilter(query: JobFeedQuery) {
   `;
 }
 
-function buildJobOrderBy(query: JobFeedQuery) {
-  const direction = sql.raw(query.direction === "asc" ? "ASC" : "DESC");
-  return query.sort === "title"
-    ? sql`oj.metadata->>'title' ${direction}`
-    : sql`oj.posted_at ${direction}`;
+const PRIORITY_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
+function priorityRank(priority: CompanyPriorityDTO | null): number {
+  return priority ? (PRIORITY_RANK[priority] ?? 3) : 3;
 }
 
-/** Upper bound on how many open Jobs `listJobFeed` will pull into memory to sort by relevance — see that function's doc comment. Comfortably above real volume today (hundreds); revisit if it stops being so. */
-const RELEVANCE_SORT_MAX_ROWS = 5000;
+/** Upper bound on how many open Jobs `listJobFeed` pulls into memory to filter/score/sort — see that function's doc comment. Comfortably above real volume today (low thousands); revisit if it stops being so. */
+const JOB_FEED_MAX_ROWS = 5000;
 
 /**
  * The Job Feed read model. The job-listing counterpart to
@@ -362,26 +373,34 @@ const RELEVANCE_SORT_MAX_ROWS = 5000;
  * Application Layer function owns this query" rule
  * (docs/ARCHITECTURE.md §6).
  *
+ * Milestone 22 unified what used to be two separate code paths (a SQL-
+ * paginated fast path, and a fetch-everything-then-sort-in-memory path
+ * used only for `sort: "relevance"`) into one: `eligibleOnly`'s gate
+ * (`apply-eligibility.ts` — the same one that fixed `/today`'s Apply
+ * section) can only run in application code against a Job's title and
+ * description, so every candidate now goes through that one bounded
+ * fetch-then-filter-then-sort-then-paginate pipeline regardless of sort
+ * mode, not just relevance sort. Cheap at today's volume (low
+ * thousands); if that stops being true, this is exactly the computation
+ * a persisted `job_match` read model (deferred in the Milestone 13
+ * design doc, §3) would take over.
+ *
  * `viewerId` (Milestone 13 Phase 2, mirrors `listOpportunityFeed`'s own
  * parameter): when supplied and that User has a Profile, every returned
- * Job carries a `relevance` score/breakdown against it. `sort:
- * "relevance"` additionally *orders* by that score — which, unlike every
- * other sort here, cannot be pushed into the SQL `ORDER BY`/`LIMIT`
- * (the scorer is a TypeScript function of per-viewer data, not a SQL
- * expression). So this one mode fetches every currently-matching open
- * Job (bounded by `RELEVANCE_SORT_MAX_ROWS`), scores each in memory,
- * sorts, and paginates the resulting array — cheap at today's volume
- * (hundreds of Jobs); if that stops being true, this is exactly the
- * computation a persisted `job_match` table (deferred in the Milestone 13
- * design doc, §3) would take over. Every other sort/no-viewer path is
- * unchanged from Milestone 12/13-Phase-1: SQL-paginated, viewer-agnostic
- * volume.
+ * Job carries a `relevance` score/breakdown against it, and `sort:
+ * "relevance"` orders by that score. `minMatch` only filters in that
+ * same case — there is no score to filter by otherwise, so it's
+ * silently ignored (not an error) rather than erroring, mirroring
+ * `listOpportunityFeed`'s own fallback.
  *
- * `minMatch` only filters in the `sort: "relevance"` + viewer-with-
- * Profile case, for the same reason — there is no score to filter by
- * otherwise. It is silently ignored, not an error, outside that case:
- * mirrors `listOpportunityFeed`'s own "relevance falls back to score
- * without a viewer" fallback rather than erroring.
+ * The default sort (`postedAt`) is startup-first, not just freshness-
+ * first (Milestone 22 §"Startup-First"): a hand-curated 'high'-priority
+ * Company's Jobs sort before 'medium', before 'low', before an
+ * unclassified one — the same `company.priority` signal
+ * `outreach-query-service.ts`/`daily-digest-service.ts` already sort
+ * by — and only then by `postedAt` in the requested direction. Explicit
+ * `sort: "relevance"` or `sort: "title"` bypass this entirely; the user
+ * asked for a specific order and gets exactly that.
  */
 export async function listJobFeed(
   query: JobFeedQuery,
@@ -397,102 +416,32 @@ export async function listJobFeed(
 
   const viewerProfile = viewerId ? await getViewerRelevanceProfile(viewerId) : null;
 
-  if (query.sort === "relevance" && viewerProfile) {
-    const rows = await db.execute<OpenJobRow>(sql`
-      ${openJobsCte}
-      SELECT
-        oj.company_id, oj.external_id, oj.metadata, oj.posted_at, oj.state_at AS updated_at,
-        c.slug AS company_slug, c.name AS company_name,
-        c.careers_page_url AS company_careers_page_url, c.website_url AS company_website_url
-      FROM open_jobs oj
-      JOIN company c ON c.id = oj.company_id
-      WHERE true ${filter}
-      ORDER BY oj.posted_at DESC
-      LIMIT ${RELEVANCE_SORT_MAX_ROWS}
-    `);
-
-    // Skill *names* are only needed for the final page after
-    // scoring/sorting/pagination (below) — scoring itself only needs IDs.
-    const skillsByJob = await fetchJobSkillsByCompanyExternalId(rows);
-
-    const scored = rows.map((row) => {
-      const detectedSkillIds = skillsByJob.get(`${row.company_id}:${row.external_id}`) ?? [];
-      const relevance = computeJobRelevance(
-        {
-          title: row.metadata.title,
-          departmentNames: row.metadata.departmentNames,
-          workplaceType: asWorkplaceType(row.metadata.workplaceType),
-          locationName: row.metadata.locationName,
-          description: row.metadata.description ?? null,
-        },
-        detectedSkillIds,
-        viewerProfile,
-        new Map(), // names resolved once, below, after we know the final page
-      );
-      return { row, detectedSkillIds, relevance };
-    });
-
-    const filtered =
-      query.minMatch !== undefined
-        ? scored.filter((entry) => entry.relevance.score >= query.minMatch!)
-        : scored;
-
-    const direction = query.direction === "asc" ? 1 : -1;
-    filtered.sort((a, b) => direction * (a.relevance.score - b.relevance.score));
-
-    const totalCount = filtered.length;
-    const start = (query.page - 1) * query.pageSize;
-    const page = filtered.slice(start, start + query.pageSize);
-
-    const allSkillIds = page.flatMap((entry) => [
-      ...entry.detectedSkillIds,
-      ...entry.relevance.matchedSkillIds,
-    ]);
-    const resolvedSkillById = await resolveSkillsById(allSkillIds);
-
-    return {
-      items: page.map((entry) =>
-        toJobFeedItemDTO(
-          entry.row,
-          now,
-          entry.detectedSkillIds,
-          resolvedSkillById,
-          entry.relevance,
-        ),
-      ),
-      page: query.page,
-      pageSize: query.pageSize,
-      totalCount,
-      totalPages: totalCount === 0 ? 0 : Math.ceil(totalCount / query.pageSize),
-    };
-  }
-
-  const countRows = await db.execute<{ count: number }>(sql`
-    ${openJobsCte}
-    SELECT count(*)::int AS count FROM open_jobs oj WHERE true ${filter}
-  `);
-  const totalCount = countRows[0]?.count ?? 0;
-
   const rows = await db.execute<OpenJobRow>(sql`
     ${openJobsCte}
     SELECT
       oj.company_id, oj.external_id, oj.metadata, oj.posted_at, oj.state_at AS updated_at,
       c.slug AS company_slug, c.name AS company_name,
-      c.careers_page_url AS company_careers_page_url, c.website_url AS company_website_url
+      c.careers_page_url AS company_careers_page_url, c.website_url AS company_website_url,
+      c.priority AS company_priority
     FROM open_jobs oj
     JOIN company c ON c.id = oj.company_id
     WHERE true ${filter}
-    ORDER BY ${buildJobOrderBy(query)}
-    LIMIT ${query.pageSize} OFFSET ${(query.page - 1) * query.pageSize}
+    ORDER BY oj.posted_at DESC
+    LIMIT ${JOB_FEED_MAX_ROWS}
   `);
 
-  // Even outside `sort: "relevance"`, a viewer with a Profile still sees
-  // per-Job relevance on each card (Milestone 13 Phase 2's "show the
-  // match directly in the feed") — just not used to order/filter this
-  // page. Bounded to this page's rows (≤ `pageSize`), so this is cheap
-  // regardless of sort mode.
-  const skillsByJob = await fetchJobSkillsByCompanyExternalId(rows);
-  const scoredRows = rows.map((row) => {
+  const eligibleRows = query.eligibleOnly
+    ? rows.filter(
+        (row) =>
+          checkApplyEligibility(row.metadata.title, row.metadata.description ?? null).eligible,
+      )
+    : rows;
+
+  // Skill *names* are only needed for the final page after
+  // scoring/sorting/pagination (below) — scoring itself only needs IDs.
+  const skillsByJob = await fetchJobSkillsByCompanyExternalId(eligibleRows);
+
+  const scored = eligibleRows.map((row) => {
     const detectedSkillIds = skillsByJob.get(`${row.company_id}:${row.external_id}`) ?? [];
     const relevance = viewerProfile
       ? computeJobRelevance(
@@ -505,21 +454,46 @@ export async function listJobFeed(
           },
           detectedSkillIds,
           viewerProfile,
-          new Map(),
+          new Map(), // names resolved once, below, after we know the final page
         )
       : null;
     return { row, detectedSkillIds, relevance };
   });
 
-  const allSkillIds = scoredRows.flatMap((entry) => [
+  const filtered =
+    query.sort === "relevance" && viewerProfile && query.minMatch !== undefined
+      ? scored.filter((entry) => (entry.relevance?.score ?? 0) >= query.minMatch!)
+      : scored;
+
+  const direction = query.direction === "asc" ? 1 : -1;
+  filtered.sort((a, b) => {
+    if (query.sort === "relevance" && viewerProfile) {
+      return direction * ((a.relevance?.score ?? 0) - (b.relevance?.score ?? 0));
+    }
+    if (query.sort === "title") {
+      return direction * a.row.metadata.title.localeCompare(b.row.metadata.title);
+    }
+    const priorityDelta =
+      priorityRank(a.row.company_priority) - priorityRank(b.row.company_priority);
+    if (priorityDelta !== 0) {
+      return priorityDelta;
+    }
+    return direction * (new Date(a.row.posted_at).getTime() - new Date(b.row.posted_at).getTime());
+  });
+
+  const totalCount = filtered.length;
+  const start = (query.page - 1) * query.pageSize;
+  const page = filtered.slice(start, start + query.pageSize);
+
+  const allSkillIds = page.flatMap((entry) => [
     ...entry.detectedSkillIds,
     ...(entry.relevance?.matchedSkillIds ?? []),
   ]);
-  const skillById = await resolveSkillsById(allSkillIds);
+  const resolvedSkillById = await resolveSkillsById(allSkillIds);
 
   return {
-    items: scoredRows.map((entry) =>
-      toJobFeedItemDTO(entry.row, now, entry.detectedSkillIds, skillById, entry.relevance),
+    items: page.map((entry) =>
+      toJobFeedItemDTO(entry.row, now, entry.detectedSkillIds, resolvedSkillById, entry.relevance),
     ),
     page: query.page,
     pageSize: query.pageSize,
@@ -551,7 +525,8 @@ export async function getJobDetail(id: string, viewerId?: string): Promise<JobFe
     SELECT
       oj.company_id, oj.external_id, oj.metadata, oj.posted_at, oj.state_at AS updated_at,
       c.slug AS company_slug, c.name AS company_name,
-      c.careers_page_url AS company_careers_page_url, c.website_url AS company_website_url
+      c.careers_page_url AS company_careers_page_url, c.website_url AS company_website_url,
+      c.priority AS company_priority
     FROM open_jobs oj
     JOIN company c ON c.id = oj.company_id
     WHERE oj.company_id = ${companyId} AND oj.external_id = ${externalId}

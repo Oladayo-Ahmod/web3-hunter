@@ -4,31 +4,48 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Web3 Hunter",
-  description: "AI-powered opportunity intelligence platform for Web3 engineers.",
+  description: "A personal Web3 career-intelligence tool: who to apply to and DM today.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
-        <header className="flex items-center justify-between border-b px-6 py-3">
-          <Link href="/" className="font-semibold">
+      <body className="bg-background text-foreground antialiased">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b bg-background/85 px-6 py-3 backdrop-blur-sm">
+          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+            <span className="inline-block size-2 rounded-full bg-primary" />
             Web3 Hunter
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link href="/today" className="text-muted-foreground hover:text-foreground">
+          <nav className="flex items-center gap-1 text-sm">
+            <Link
+              href="/today"
+              className="rounded-md px-3 py-1.5 font-medium text-foreground hover:bg-accent"
+            >
               Today
             </Link>
-            <Link href="/outreach" className="text-muted-foreground hover:text-foreground">
+            <Link
+              href="/outreach"
+              className="rounded-md px-3 py-1.5 font-medium text-foreground hover:bg-accent"
+            >
               Outreach
             </Link>
-            <Link href="/jobs" className="text-muted-foreground hover:text-foreground">
+            <Link
+              href="/jobs"
+              className="rounded-md px-3 py-1.5 font-medium text-foreground hover:bg-accent"
+            >
               Jobs
             </Link>
-            <Link href="/opportunities" className="text-muted-foreground hover:text-foreground">
+            <span className="mx-1 h-4 w-px bg-border" />
+            <Link
+              href="/opportunities"
+              className="rounded-md px-3 py-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
               Opportunities
             </Link>
-            <Link href="/recommendations" className="text-muted-foreground hover:text-foreground">
+            <Link
+              href="/recommendations"
+              className="rounded-md px-3 py-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
               Recommendations
             </Link>
             {/* /profile and /recommendations redirect to /sign-in when not
@@ -36,7 +53,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 session state — doing so here would force every page,
                 including statically generated ones like /_not-found, to
                 require a live database/auth configuration at build time. */}
-            <Link href="/profile" className="text-muted-foreground hover:text-foreground">
+            <Link
+              href="/profile"
+              className="rounded-md px-3 py-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
               Account
             </Link>
           </nav>

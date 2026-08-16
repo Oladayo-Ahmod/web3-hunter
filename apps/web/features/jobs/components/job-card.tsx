@@ -1,4 +1,5 @@
 import type {
+  CompanyPriorityDTO,
   JobFeedItemDTO,
   JobFreshnessDTO,
   JobRelevanceTierDTO,
@@ -41,10 +42,16 @@ const WORKPLACE_TYPE_LABEL: Record<NonNullable<JobFeedItemDTO["workplaceType"]>,
 // (Phase A) gets its own, more muted treatment than "low" so a role-
 // incompatible job never visually reads as merely "a bit less relevant."
 const RELEVANCE_TIER_CLASS: Record<JobRelevanceTierDTO, string> = {
-  high: "bg-emerald-600 text-white dark:bg-emerald-500",
+  high: "bg-success text-success-foreground",
   medium: "bg-amber-500 text-white dark:bg-amber-600",
   low: "bg-muted text-muted-foreground",
   "very-low": "bg-muted text-muted-foreground/70",
+};
+
+const PRIORITY_LABEL: Record<CompanyPriorityDTO, string> = {
+  high: "Startup priority",
+  medium: "Growing team",
+  low: "Established",
 };
 
 /**
@@ -61,13 +68,20 @@ const RELEVANCE_TIER_CLASS: Record<JobRelevanceTierDTO, string> = {
  * freshness bucket (`packages/application/src/job-freshness.ts`) is the
  * honest version of the same signal — see
  * `docs/MILESTONE_13_JOB_HUNTING_PIVOT.md` §8/Phase 1.
+ *
+ * Milestone 22: every Job reaching this card already cleared the shared
+ * eligibility gate (`job-query-service.ts`'s default `eligibleOnly`), so
+ * this card's job is to communicate *why it's worth a look*, not to warn
+ * about noise that shouldn't be here in the first place — company
+ * priority (the same startup-bias signal `/outreach`/`/today` use) sits
+ * right under the company name for that reason.
  */
 export function JobCard({ job }: { job: JobFeedItemDTO }) {
   return (
-    <Link href={`/jobs/${job.id}`} className="block focus-visible:outline-none">
-      <Card className="h-full transition-colors hover:border-primary focus-visible:border-primary">
-        <CardHeader>
-          <CardTitle className="flex items-start justify-between gap-2 text-base">
+    <Link href={`/jobs/${job.id}`} className="group block focus-visible:outline-none">
+      <Card className="h-full gap-4 py-5 transition-all hover:border-primary hover:shadow-md focus-visible:border-primary">
+        <CardHeader className="gap-1.5 px-5">
+          <CardTitle className="flex items-start justify-between gap-2 text-base leading-snug">
             <span>{job.title}</span>
             {job.relevance ? (
               <Badge className={`shrink-0 ${RELEVANCE_TIER_CLASS[job.relevance.tier]}`}>
@@ -79,27 +93,34 @@ export function JobCard({ job }: { job: JobFeedItemDTO }) {
               </Badge>
             )}
           </CardTitle>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+            <span className="font-medium text-foreground">{job.company.name}</span>
+            {job.company.priority && (
+              <span className="text-xs text-muted-foreground">
+                · {PRIORITY_LABEL[job.company.priority]}
+              </span>
+            )}
+          </div>
         </CardHeader>
-        <CardContent className="space-y-1 text-sm text-muted-foreground">
-          <p className="font-medium text-foreground">{job.company.name}</p>
-          {job.locationName && <p>{job.locationName}</p>}
-          {job.departmentNames.length > 0 && <p>{job.departmentNames.join(", ")}</p>}
-          {job.relevance && <p>{FRESHNESS_LABEL[job.freshness]}</p>}
-          {(job.workplaceType || job.employmentType) && (
-            <div className="flex flex-wrap gap-1 pt-1">
-              {job.workplaceType && (
-                <Badge variant="outline">{WORKPLACE_TYPE_LABEL[job.workplaceType]}</Badge>
-              )}
-              {job.employmentType && (
-                <Badge variant="outline">{EMPLOYMENT_TYPE_LABEL[job.employmentType]}</Badge>
-              )}
-            </div>
-          )}
+        <CardContent className="space-y-2 px-5 text-sm text-muted-foreground">
+          <p>
+            {[
+              job.locationName,
+              job.workplaceType && WORKPLACE_TYPE_LABEL[job.workplaceType],
+              job.employmentType &&
+                job.employmentType !== "full-time" &&
+                EMPLOYMENT_TYPE_LABEL[job.employmentType],
+            ]
+              .filter(Boolean)
+              .join(" · ") || "Location not specified"}
+          </p>
+          {job.relevance && <p className="text-xs">{FRESHNESS_LABEL[job.freshness]}</p>}
           {job.detectedSkills.length > 0 && (
-            <p className="pt-1 text-xs">
-              {job.detectedSkills.map((skill) => skill.name).join(" · ")}
-            </p>
+            <p className="text-xs">{job.detectedSkills.map((skill) => skill.name).join(" · ")}</p>
           )}
+          <p className="pt-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+            View role →
+          </p>
         </CardContent>
       </Card>
     </Link>
