@@ -116,6 +116,7 @@ describe("checkApplyEligibility — real production regressions (Milestone 20)",
     "Senior Manager, DeFi Lending Growth",
     "Manager, Strategic Partnerships (Token Listing)",
     "Senior Manager, Web3 Growth (Protocols)",
+    "Senior Crypto Threat Analyst - Terrorism",
   ])(
     'excludes "%s" — no Web3 role signal at all, only present via unrelated skill overlap',
     (title) => {
