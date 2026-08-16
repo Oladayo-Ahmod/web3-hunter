@@ -47,6 +47,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     if (query.workplaceType) params.set("workplaceType", query.workplaceType);
     if (query.role) params.set("role", query.role);
     if (query.minMatch !== undefined) params.set("minMatch", String(query.minMatch));
+    if (!query.eligibleOnly) params.set("eligibleOnly", "false");
     params.set("page", String(page));
     params.set("pageSize", String(query.pageSize));
     return `/jobs?${params.toString()}`;
@@ -57,7 +58,10 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">Open Jobs</h1>
         <p className="text-muted-foreground">
-          Active postings across every tracked company — {result.totalCount} open right now.
+          {result.totalCount} role{result.totalCount === 1 ? "" : "s"}
+          {query.eligibleOnly
+            ? " genuinely relevant to Web3/blockchain engineering — corporate, sales, and other unrelated roles are filtered out by default."
+            : " shown, including generic/corporate roles the relevance filter would normally hide."}
           {query.sort === "relevance" && " Ranked by fit against your Profile."}
         </p>
       </div>
@@ -72,6 +76,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
           workplaceType: query.workplaceType,
           role: query.role,
           minMatch: query.minMatch,
+          eligibleOnly: query.eligibleOnly,
         }}
         showRelevanceControls={viewerId !== undefined}
       />

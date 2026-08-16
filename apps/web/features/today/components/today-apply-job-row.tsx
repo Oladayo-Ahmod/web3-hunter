@@ -13,9 +13,9 @@ const FRESHNESS_LABEL: Record<JobFreshnessDTO, string> = {
 };
 
 const PRIORITY_LABEL: Record<CompanyPriorityDTO, string> = {
-  high: "High priority",
-  medium: "Medium priority",
-  low: "Low priority",
+  high: "Startup priority",
+  medium: "Growing team",
+  low: "Established",
 };
 
 const WORKPLACE_LABEL: Record<NonNullable<TodayApplyJobDTO["workplaceType"]>, string> = {
@@ -33,10 +33,10 @@ const WORKPLACE_LABEL: Record<NonNullable<TodayApplyJobDTO["workplaceType"]>, st
  */
 export function TodayApplyJobRow({ job }: { job: TodayApplyJobDTO }) {
   return (
-    <a href={job.absoluteUrl} target="_blank" rel="noreferrer" className="block">
-      <Card className="transition-colors hover:border-primary">
-        <CardContent className="flex flex-wrap items-center justify-between gap-2 py-4">
-          <div className="space-y-1">
+    <a href={job.absoluteUrl} target="_blank" rel="noreferrer" className="group block">
+      <Card className="gap-0 py-0 transition-all hover:border-primary hover:shadow-md">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5">
+          <div className="space-y-0.5">
             <p className="font-medium text-foreground">{job.title}</p>
             <p className="text-sm text-muted-foreground">
               {job.companyName}
@@ -48,8 +48,15 @@ export function TodayApplyJobRow({ job }: { job: TodayApplyJobDTO }) {
             {job.companyPriority && (
               <Badge variant="outline">{PRIORITY_LABEL[job.companyPriority]}</Badge>
             )}
-            {job.relevanceScore !== null && <Badge>{job.relevanceScore}% match</Badge>}
+            {job.relevanceScore !== null && (
+              <Badge className="bg-success text-success-foreground">
+                {job.relevanceScore}% match
+              </Badge>
+            )}
             <Badge variant="outline">{FRESHNESS_LABEL[job.freshness]}</Badge>
+            <span className="text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+              Apply →
+            </span>
           </div>
         </CardContent>
       </Card>

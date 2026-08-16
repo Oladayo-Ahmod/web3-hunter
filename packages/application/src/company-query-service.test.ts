@@ -67,6 +67,7 @@ describe("company-query-service (integration)", () => {
       name: "Acme Profile",
       careersPageUrl: null,
       websiteUrl: null,
+      priority: null,
     });
     expect(profile?.intelligence?.trend).toBe("increasing");
     expect(profile?.activeOpportunities.map((o) => o.id).sort()).toEqual(

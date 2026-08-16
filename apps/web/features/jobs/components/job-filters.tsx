@@ -15,6 +15,7 @@ interface JobFiltersProps {
     | "workplaceType"
     | "role"
     | "minMatch"
+    | "eligibleOnly"
   >;
   /** Relevance-dependent controls (sort by match, minimum match) only make sense with a signed-in viewer — `job-query-service.ts` has nothing to score against otherwise. */
   showRelevanceControls: boolean;
@@ -129,6 +130,16 @@ export function JobFilters({ defaultValues, showRelevanceControls }: JobFiltersP
           defaultChecked={defaultValues.includeStale}
         />
         Include stale (60d+) postings
+      </label>
+
+      <label className="flex items-center gap-2 pb-2 text-sm text-muted-foreground">
+        <input
+          type="checkbox"
+          name="eligibleOnly"
+          value="false"
+          defaultChecked={defaultValues.eligibleOnly === false}
+        />
+        Show all roles (skip the Web3-relevance filter)
       </label>
 
       <Button type="submit">Apply filters</Button>

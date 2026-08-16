@@ -1,9 +1,12 @@
 /**
- * The Apply eligibility gate (Milestone 20) — a deterministic pass/fail
- * filter local to the "Apply" section of the Today Digest
- * (`daily-digest-service.ts`), separate from `job-relevance.ts`'s
- * scoring. This is a gate, not a score: `computeJobRelevance` still
- * ranks whatever clears this gate, unchanged.
+ * The Job eligibility gate (Milestone 20, generalized to `/jobs` itself
+ * in Milestone 22) — a deterministic pass/fail filter, separate from
+ * `job-relevance.ts`'s scoring, shared by the Today Digest's "Apply"
+ * section (`daily-digest-service.ts`) and the Job Feed's default view
+ * (`job-query-service.ts`). One gate, not two conflicting ones — the
+ * governing Milestone 22 directive's explicit instruction. This is a
+ * gate, not a score: `computeJobRelevance` still ranks whatever clears
+ * this gate, unchanged.
  *
  * WHY THIS EXISTS: a real production audit (Milestone 20) of the live
  * Apply 20 found roughly half the results were not genuinely Web3-
@@ -74,7 +77,9 @@ const HARD_NEGATIVE_TITLE_PHRASES = [
   "brand",
   "kol",
   "product manager",
+  "product lead",
   "product designer",
+  "product analytics",
   "designer",
   "project manager",
   "content manager",
@@ -83,9 +88,15 @@ const HARD_NEGATIVE_TITLE_PHRASES = [
   "business development",
   "account executive",
   "sales",
+  "listing manager",
+  "growth",
+  "partnerships",
+  "supply specialist",
+  "supply operations",
   "recruiter",
   "talent network",
   "talent community",
+  "head of talent",
   "human resources",
   "customer support",
   "customer success",
@@ -98,6 +109,7 @@ const HARD_NEGATIVE_TITLE_PHRASES = [
   "treasury",
   "capital market",
   "capital markets",
+  "risk control",
   "fp&a",
   "counsel",
   "legal",
@@ -108,6 +120,7 @@ const HARD_NEGATIVE_TITLE_PHRASES = [
   "data insights",
   "data engineer",
   "data scientist",
+  "data strategy",
   "qa",
   "quality assurance",
   "sdet",

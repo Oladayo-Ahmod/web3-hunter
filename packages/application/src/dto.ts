@@ -18,6 +18,8 @@ export interface CompanySummaryDTO {
   /** `null` when the Company has no curated `careersPageUrl` (Milestone 11) — never fabricated from `websiteUrl`. */
   careersPageUrl: string | null;
   websiteUrl: string | null;
+  /** Milestone 22's startup-bias signal, carried through to every surface that shows a Company summary — see `company.priority`'s own doc comment. */
+  priority: CompanyPriorityDTO | null;
 }
 
 export interface SignalSummaryDTO {
