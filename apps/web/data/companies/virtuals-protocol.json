@@ -1,0 +1,11 @@
+{
+  "companySlug": "virtuals-protocol",
+  "companyName": "Virtuals Protocol",
+  "websiteUrl": "https://www.virtuals.io/",
+  "twitterUrl": "https://x.com/virtuals_io",
+  "description": "Virtuals Protocol is a platform for tokenizing and launching autonomous AI agents that generate services and transact on-chain with humans and each other via the Agent Commerce Protocol (ERC-8183).",
+  "category": "ai",
+  "tags": ["crypto-ai", "ai-agents", "tokenized-agents"],
+  "priority": "medium",
+  "sources": []
+}

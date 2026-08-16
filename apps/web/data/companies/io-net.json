@@ -1,0 +1,11 @@
+{
+  "companySlug": "io-net",
+  "companyName": "io.net",
+  "websiteUrl": "https://io.net/",
+  "careersPageUrl": "https://io.net/careers",
+  "description": "io.net operates a decentralized GPU compute network that aggregates idle and enterprise GPUs worldwide, marketed as a large-scale decentralized supercloud powering AI inference, training, and autonomous agent execution.",
+  "category": "infrastructure",
+  "tags": ["crypto-ai", "decentralized-compute", "depin", "gpu-marketplace"],
+  "priority": "medium",
+  "sources": []
+}

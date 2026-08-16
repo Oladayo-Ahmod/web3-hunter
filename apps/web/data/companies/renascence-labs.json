@@ -1,0 +1,10 @@
+{
+  "companySlug": "renascence-labs",
+  "companyName": "Renascence Labs",
+  "websiteUrl": "https://renascence-labs.xyz/",
+  "description": "Smart contract security firm offering audits and consultation for DeFi platforms.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "low",
+  "sources": []
+}

@@ -1,0 +1,27 @@
+{
+  "companySlug": "valory",
+  "companyName": "Valory (Olas)",
+  "websiteUrl": "https://www.valory.xyz/",
+  "careersPageUrl": "https://wellfound.com/company/valory-3/jobs",
+  "twitterUrl": "https://x.com/valoryag",
+  "linkedinUrl": "https://www.linkedin.com/company/valoryag/",
+  "description": "Valory builds Olas, an open-source protocol and framework for co-owned, autonomous AI agents that are collectively operated, staked, and monetized on-chain via the OLAS token.",
+  "category": "ai",
+  "tags": ["crypto-ai", "ai-agents", "decentralized-autonomy"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "David Minarsch",
+      "role": "cofounder",
+      "profileUrl": "https://www.valory.xyz/",
+      "notes": "Listed as CEO & co-founder of Valory on the company's own website."
+    },
+    {
+      "name": "David Galindo",
+      "role": "cto",
+      "profileUrl": "https://www.valory.xyz/",
+      "notes": "Listed as CTO & co-founder of Valory on the company's own website."
+    }
+  ],
+  "sources": []
+}

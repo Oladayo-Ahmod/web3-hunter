@@ -1,0 +1,26 @@
+{
+  "companySlug": "sphere-labs",
+  "companyName": "Sphere Labs",
+  "websiteUrl": "https://spherepay.co",
+  "careersPageUrl": "https://spherelabs.co/",
+  "twitterUrl": "https://x.com/sphere_labs",
+  "linkedinUrl": "https://www.linkedin.com/company/sphere-laboratories/",
+  "description": "Small crypto-native team building SpherePay, a stablecoin payments API, and SphereNet, a Solana-based compliant settlement ledger.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "payments", "infrastructure"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Arnold Lee",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/arnoldhlee/",
+      "notes": "Co-founder & CEO"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "sphere-laboratories"
+    }
+  ]
+}

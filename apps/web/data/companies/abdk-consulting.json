@@ -1,0 +1,12 @@
+{
+  "companySlug": "abdk-consulting",
+  "companyName": "ABDK Consulting",
+  "websiteUrl": "https://abdk.consulting/",
+  "twitterUrl": "https://x.com/ABDKconsulting",
+  "linkedinUrl": "https://www.linkedin.com/company/abdk-consulting/",
+  "description": "Estonian boutique firm founded in 2016 specializing in mathematically rigorous smart contract, cryptography, and zero-knowledge circuit audits for Uniswap, Aave, and Balancer.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "cryptography"],
+  "priority": "high",
+  "sources": []
+}

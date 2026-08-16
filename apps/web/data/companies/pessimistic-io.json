@@ -1,0 +1,26 @@
+{
+  "companySlug": "pessimistic-io",
+  "companyName": "Pessimistic",
+  "websiteUrl": "https://pessimistic.io/",
+  "careersPageUrl": "https://pessimistic.io/company/junior",
+  "twitterUrl": "https://twitter.com/pessimistic_io",
+  "linkedinUrl": "https://www.linkedin.com/company/pessimistic-security/",
+  "description": "Blockchain security firm founded in 2017 performing smart contract, dApp, and protocol audits, with 400+ audits and 2,600+ vulnerabilities fixed.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Alexander Seleznev",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/aaseleznev/",
+      "notes": "CEO"
+    },
+    {
+      "name": "Evgeny Marchenko",
+      "role": "cto",
+      "profileUrl": "https://www.linkedin.com/in/evgenymarchenko/"
+    }
+  ],
+  "sources": []
+}

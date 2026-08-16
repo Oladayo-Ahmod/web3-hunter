@@ -1,0 +1,13 @@
+{
+  "companySlug": "least-authority",
+  "companyName": "Least Authority",
+  "websiteUrl": "https://leastauthority.com/",
+  "careersPageUrl": "https://leastauthority.com/careers/",
+  "twitterUrl": "https://twitter.com/LeastAuthority",
+  "linkedinUrl": "https://www.linkedin.com/company/leastauthority/",
+  "description": "Cryptographic and blockchain security audit firm with 190+ published audits for clients including the Ethereum Foundation, Zcash, Filecoin, and Polygon.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security", "cryptography"],
+  "priority": "medium",
+  "sources": []
+}

@@ -1,0 +1,18 @@
+{
+  "companySlug": "prime-intellect",
+  "companyName": "Prime Intellect",
+  "websiteUrl": "https://www.primeintellect.ai/",
+  "careersPageUrl": "https://www.primeintellect.ai/careers",
+  "twitterUrl": "https://x.com/PrimeIntellect",
+  "linkedinUrl": "https://www.linkedin.com/company/primeintellect-ai",
+  "description": "Prime Intellect provides an integrated stack of decentralized compute, distributed training, and inference infrastructure that lets anyone contribute compute, code, or capital to train open frontier AI models.",
+  "category": "infrastructure",
+  "tags": ["crypto-ai", "decentralized-compute", "decentralized-training", "open-source-ai"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "primeintellect"
+    }
+  ]
+}

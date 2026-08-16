@@ -1,0 +1,12 @@
+{
+  "companySlug": "triple-a",
+  "companyName": "Triple-A",
+  "websiteUrl": "https://www.triple-a.io",
+  "careersPageUrl": "https://www.triple-a.io/careers",
+  "linkedinUrl": "https://sg.linkedin.com/company/triple-a-technology",
+  "description": "Singapore-licensed crypto payment infrastructure enabling merchants to accept and settle stablecoin and crypto payments without balance-sheet exposure.",
+  "category": "infrastructure",
+  "tags": ["stablecoin", "payments", "infrastructure"],
+  "priority": "medium",
+  "sources": []
+}

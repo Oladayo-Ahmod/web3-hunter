@@ -1,0 +1,12 @@
+{
+  "companySlug": "untangled-finance",
+  "companyName": "Untangled Finance",
+  "websiteUrl": "https://www.untangled.finance",
+  "careersPageUrl": "https://www.untangled.finance/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/untangled-finance",
+  "description": "Tokenized RWA marketplace on Celo bringing institutional-grade private credit on-chain.",
+  "category": "defi",
+  "tags": ["rwa", "private-credit", "tokenization"],
+  "priority": "high",
+  "sources": []
+}

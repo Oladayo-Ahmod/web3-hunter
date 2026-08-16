@@ -1,0 +1,12 @@
+{
+  "companySlug": "sayfer",
+  "companyName": "Sayfer",
+  "websiteUrl": "https://sayfer.io/",
+  "twitterUrl": "https://twitter.com/SayferSecurity",
+  "linkedinUrl": "https://www.linkedin.com/company/sayfer-io/",
+  "description": "Tel Aviv-based blockchain security firm offering line-by-line smart contract audits and Web3 penetration testing.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "high",
+  "sources": []
+}

@@ -1,0 +1,21 @@
+{
+  "companySlug": "coinfabrik",
+  "companyName": "CoinFabrik",
+  "websiteUrl": "https://www.coinfabrik.com/",
+  "careersPageUrl": "https://www.coinfabrik.com/careers/",
+  "twitterUrl": "https://twitter.com/coinfabrik",
+  "linkedinUrl": "https://ar.linkedin.com/company/coinfabrik",
+  "description": "Buenos Aires-based blockchain security and development firm founded in 2014 with 350+ audits completed, including work for Polkadot Assurance Legion and Stellar.",
+  "category": "security",
+  "tags": ["audit", "smart-contract-security"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Sebastián Wain",
+      "role": "founder",
+      "profileUrl": "https://ar.linkedin.com/in/sebastianwain",
+      "notes": "Co-founder & CEO"
+    }
+  ],
+  "sources": []
+}

@@ -1,0 +1,16 @@
+{
+  "companySlug": "0g-labs",
+  "companyName": "0G Labs",
+  "websiteUrl": "https://0g.ai/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/0g",
+  "description": "0G Labs is building the first decentralized AI operating system (deAIOS) - a modular L1 blockchain combined with high-throughput decentralized storage and data availability purpose-built for verifiable AI and generative agents.",
+  "category": "infrastructure",
+  "tags": ["crypto-ai", "modular-blockchain", "decentralized-storage", "verifiable-ai"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "0g"
+    }
+  ]
+}

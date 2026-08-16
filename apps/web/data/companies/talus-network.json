@@ -1,0 +1,10 @@
+{
+  "companySlug": "talus-network",
+  "companyName": "Talus Network",
+  "websiteUrl": "https://talus.network/",
+  "description": "Talus Network is a MoveVM-based Layer 1 blockchain purpose-built for autonomous, composable 'Smart Agents' that developers and creators can build, own, and monetize on-chain.",
+  "category": "ai",
+  "tags": ["crypto-ai", "ai-agents", "layer-1", "movevm"],
+  "priority": "high",
+  "sources": []
+}

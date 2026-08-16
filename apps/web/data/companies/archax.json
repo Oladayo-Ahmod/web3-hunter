@@ -1,0 +1,13 @@
+{
+  "companySlug": "archax",
+  "companyName": "Archax",
+  "websiteUrl": "https://archax.com",
+  "careersPageUrl": "https://archax.com/careers",
+  "linkedinUrl": "https://uk.linkedin.com/company/archaxex",
+  "description": "FCA-authorised digital securities exchange, brokerage and custodian for tokenized real-world assets.",
+  "fundingStage": "Series A",
+  "category": "defi",
+  "tags": ["rwa", "tokenization", "exchange", "custody"],
+  "priority": "medium",
+  "sources": []
+}

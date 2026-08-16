@@ -1,0 +1,16 @@
+{
+  "companySlug": "render-network",
+  "companyName": "Render Network",
+  "websiteUrl": "https://renderfoundation.com/",
+  "careersPageUrl": "https://renderfoundation.com/jobs",
+  "description": "Render Network is a decentralized GPU compute marketplace, originally built for distributed 3D rendering and now expanding a dedicated Compute Subnet to serve AI training and inference workloads, coordinated via the RENDER token.",
+  "category": "infrastructure",
+  "tags": ["crypto-ai", "decentralized-compute", "gpu-marketplace", "depin"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "render"
+    }
+  ]
+}

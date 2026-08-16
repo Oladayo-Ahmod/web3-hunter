@@ -1,0 +1,18 @@
+{
+  "companySlug": "sentient-foundation",
+  "companyName": "Sentient",
+  "websiteUrl": "https://www.sentient.xyz/",
+  "careersPageUrl": "https://jobs.sentient.foundation/",
+  "twitterUrl": "https://x.com/SentientAGI",
+  "linkedinUrl": "https://www.linkedin.com/company/sentientagi/",
+  "description": "Sentient is an open-source AI research lab and foundation building decentralized, community-owned frontier AI models with an on-chain attribution and monetization framework (OML) so contributors are rewarded when models are used.",
+  "category": "ai",
+  "tags": ["crypto-ai", "open-source-agi", "decentralized-ai", "model-attribution"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "sentient"
+    }
+  ]
+}

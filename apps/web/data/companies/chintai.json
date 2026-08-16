@@ -1,0 +1,10 @@
+{
+  "companySlug": "chintai",
+  "companyName": "Chintai",
+  "websiteUrl": "https://www.chintai.io",
+  "description": "MAS-regulated real-world asset tokenization network (CHEX token) for issuing and managing on-chain securities.",
+  "category": "defi",
+  "tags": ["rwa", "tokenization", "capital-markets"],
+  "priority": "medium",
+  "sources": []
+}

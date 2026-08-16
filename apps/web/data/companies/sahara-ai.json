@@ -1,0 +1,16 @@
+{
+  "companySlug": "sahara-ai",
+  "companyName": "Sahara AI",
+  "websiteUrl": "https://saharaai.com/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/Sahara",
+  "description": "Sahara AI is a decentralized blockchain platform and marketplace for building, deploying, and monetizing AI agents, data, and models with on-chain provenance so contributors share in the value they create.",
+  "category": "ai",
+  "tags": ["crypto-ai", "ai-agents", "data-marketplace", "decentralized-ai"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "Sahara"
+    }
+  ]
+}
