@@ -1,0 +1,18 @@
+{
+  "companySlug": "zora",
+  "companyName": "Zora",
+  "websiteUrl": "https://zora.co/",
+  "careersPageUrl": "https://job-boards.greenhouse.io/zora",
+  "twitterUrl": "https://x.com/zora",
+  "linkedinUrl": "https://www.linkedin.com/company/ourzora",
+  "description": "Zora is an on-chain social network and NFT/media protocol built on Ethereum and its own Superchain L2, letting creators mint, trade, and monetize content directly on-chain.",
+  "category": "infrastructure",
+  "tags": ["nft-infrastructure", "protocol", "creator-economy"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "zora"
+    }
+  ]
+}

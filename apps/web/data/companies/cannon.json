@@ -1,0 +1,10 @@
+{
+  "companySlug": "cannon",
+  "companyName": "Cannon",
+  "websiteUrl": "https://usecannon.com",
+  "description": "Open-source DevOps tool for building, testing, deploying and managing smart contract protocols on EVM chains, maintained by Taihou Technologies and used heavily by Synthetix tooling.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "devops", "smart-contracts"],
+  "priority": "low",
+  "sources": []
+}

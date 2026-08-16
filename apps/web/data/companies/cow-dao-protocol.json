@@ -1,0 +1,16 @@
+{
+  "companySlug": "cow-dao-protocol",
+  "companyName": "CoW DAO",
+  "websiteUrl": "https://cow.fi",
+  "careersPageUrl": "https://jobs.ashbyhq.com/cow-dao",
+  "description": "DAO behind CoW Protocol, an intent-based DEX aggregator, and MEV Blocker, protecting Ethereum users from MEV.",
+  "category": "defi",
+  "tags": ["intents", "mev", "dex"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "cow-dao"
+    }
+  ]
+}

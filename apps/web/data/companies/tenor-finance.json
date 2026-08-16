@@ -1,0 +1,21 @@
+{
+  "companySlug": "tenor-finance",
+  "companyName": "Tenor",
+  "websiteUrl": "https://www.tenor.finance/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/tenor",
+  "description": "Fixed-rate onchain lending infrastructure live on Base, aiming to route institutional fixed-rate borrowing and lending onto stablecoin rails.",
+  "fundingStage": "Seed",
+  "category": "defi",
+  "tags": ["lending", "fixed-rate", "base", "institutional"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "July 2026",
+  "fundingAmount": "Undisclosed",
+  "fundingSource": "https://cryptorank.io/news/feed/tenor-finance-extended-seed-2026-07-22",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "tenor"
+    }
+  ]
+}

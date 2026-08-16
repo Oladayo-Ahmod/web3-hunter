@@ -1,0 +1,16 @@
+{
+  "companySlug": "kaiko",
+  "companyName": "Kaiko",
+  "websiteUrl": "https://www.kaiko.com",
+  "careersPageUrl": "https://www.kaiko.com/about-kaiko/careers",
+  "description": "Institutional-grade crypto market data, analytics and index provider serving exchanges, financial institutions and regulators.",
+  "category": "infrastructure",
+  "tags": ["market-data", "analytics", "indices"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "kaiko"
+    }
+  ]
+}

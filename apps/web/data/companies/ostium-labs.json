@@ -1,0 +1,22 @@
+{
+  "companySlug": "ostium-labs",
+  "companyName": "Ostium Labs",
+  "websiteUrl": "https://ostium.app",
+  "careersPageUrl": "https://jobs.ashbyhq.com/ostium",
+  "linkedinUrl": "https://www.linkedin.com/company/ostium-labs",
+  "description": "Non-custodial perpetuals exchange for real-world assets (FX, commodities, equities) built on Arbitrum.",
+  "fundingStage": "Series A",
+  "category": "defi",
+  "tags": ["derivatives", "dex", "perpetuals", "real-world-assets", "arbitrum"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "December 2025",
+  "fundingAmount": "$20 million",
+  "fundingSource": "https://www.coindesk.com/business/2025/12/03/ostium-raises-usd20m-series-a-led-by-general-catalyst-jump-crypto-to-put-tradfi-perps-onchain",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "ostium"
+    }
+  ]
+}

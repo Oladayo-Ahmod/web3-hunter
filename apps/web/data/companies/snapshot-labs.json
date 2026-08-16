@@ -1,0 +1,13 @@
+{
+  "companySlug": "snapshot-labs",
+  "companyName": "Snapshot Labs",
+  "websiteUrl": "https://snapshot.box/",
+  "careersPageUrl": "https://wellfound.com/company/snapshotlabs",
+  "twitterUrl": "https://x.com/snapshot",
+  "linkedinUrl": "https://www.linkedin.com/company/snapshot-labs",
+  "description": "Snapshot Labs builds Snapshot, the widely used off-chain, gasless voting platform for DAO and protocol governance.",
+  "category": "infrastructure",
+  "tags": ["dao-tooling", "governance", "voting"],
+  "priority": "medium",
+  "sources": []
+}

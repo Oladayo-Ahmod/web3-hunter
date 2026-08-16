@@ -1,0 +1,10 @@
+{
+  "companySlug": "karnot-starknet",
+  "companyName": "Karnot",
+  "websiteUrl": "https://www.karnot.xyz",
+  "description": "Infrastructure provider for deploying and operating production Starknet app-chains, and maintainer of the open-source Madara stack.",
+  "category": "infrastructure",
+  "tags": ["rollup", "starknet", "appchain-infrastructure"],
+  "priority": "high",
+  "sources": []
+}

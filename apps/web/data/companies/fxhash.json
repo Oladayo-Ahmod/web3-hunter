@@ -1,0 +1,13 @@
+{
+  "companySlug": "fxhash",
+  "companyName": "fxhash",
+  "websiteUrl": "https://www.fxhash.xyz/",
+  "careersPageUrl": "https://join.com/companies/fxhash",
+  "twitterUrl": "https://x.com/fx_hash_",
+  "linkedinUrl": "https://www.linkedin.com/company/fxhash",
+  "description": "fxhash is a generative-art NFT platform and marketplace (originally on Tezos, expanded to Ethereum) providing tooling for artists to mint and collectors to acquire on-chain generative artworks.",
+  "category": "infrastructure",
+  "tags": ["nft-infrastructure", "generative-art"],
+  "priority": "high",
+  "sources": []
+}

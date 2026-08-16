@@ -1,0 +1,15 @@
+{
+  "companySlug": "winna",
+  "companyName": "Winna",
+  "websiteUrl": "https://winna.com/",
+  "description": "Licensed cryptocurrency casino and sportsbook offering thousands of provably-fair games with instant crypto deposits and withdrawals.",
+  "fundingStage": "Seed",
+  "category": "gaming",
+  "tags": ["igaming", "provably-fair", "crypto-casino"],
+  "priority": "low",
+  "recentlyFunded": true,
+  "fundingDate": "2026",
+  "fundingAmount": "$15M",
+  "fundingSource": "https://next.io/news/investment/winna-com-raises-15m-seed-funding/",
+  "sources": []
+}

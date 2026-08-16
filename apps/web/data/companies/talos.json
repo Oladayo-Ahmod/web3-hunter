@@ -1,0 +1,16 @@
+{
+  "companySlug": "talos",
+  "companyName": "Talos",
+  "websiteUrl": "https://www.talos.com",
+  "careersPageUrl": "https://www.talos.com/working/open-roles",
+  "description": "Institutional-grade digital asset trading technology platform covering execution, settlement and portfolio management for crypto market participants.",
+  "category": "infrastructure",
+  "tags": ["trading-infrastructure", "institutional", "execution"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "Talos-Trading"
+    }
+  ]
+}

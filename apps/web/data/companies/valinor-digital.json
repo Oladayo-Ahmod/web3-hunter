@@ -1,0 +1,16 @@
+{
+  "companySlug": "valinor-digital",
+  "companyName": "Valinor Digital",
+  "websiteUrl": "https://www.valinordigital.com/",
+  "twitterUrl": "https://x.com/ValinorDigital",
+  "description": "Onchain private credit startup founded by ex-Blackstone credit investors, building smart-contract infrastructure to automate fund routing and condition-triggered execution for credit markets.",
+  "fundingStage": "Seed",
+  "category": "defi",
+  "tags": ["onchain-credit", "private-credit", "institutional"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "March 2026",
+  "fundingAmount": "$25M",
+  "fundingSource": "https://fortune.com/2026/03/30/valinor-seed-round-25-million-crypto-private-credit-blackstone-staffers",
+  "sources": []
+}

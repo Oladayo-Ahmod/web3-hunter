@@ -1,0 +1,10 @@
+{
+  "companySlug": "aevo",
+  "companyName": "Aevo",
+  "websiteUrl": "https://www.aevo.xyz",
+  "description": "Decentralized derivatives exchange for options and perpetuals built on a custom Ethereum L2, developed by the team behind Ribbon Finance.",
+  "category": "defi",
+  "tags": ["derivatives", "dex", "options", "perpetuals", "l2"],
+  "priority": "medium",
+  "sources": []
+}

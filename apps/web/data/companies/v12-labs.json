@@ -1,0 +1,17 @@
+{
+  "companySlug": "v12-labs",
+  "companyName": "V12 Labs",
+  "websiteUrl": "https://www.v12labs.io/",
+  "careersPageUrl": "https://www.v12labs.io/careers",
+  "linkedinUrl": "https://linkedin.com/company/v12labs",
+  "description": "AI-native offensive security startup building autonomous systems that discover and exploit software vulnerabilities in blockchains at scale, founded by the team behind security firm Zellic.",
+  "fundingStage": "Seed",
+  "category": "security",
+  "tags": ["ai-security", "vulnerability-research", "bug-bounty", "offensive-security"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "August 2026",
+  "fundingAmount": "$10M",
+  "fundingSource": "https://cryptorank.io/news/feed/v-12-security-seed-2026-07-30",
+  "sources": []
+}

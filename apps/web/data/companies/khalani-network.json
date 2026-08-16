@@ -1,0 +1,12 @@
+{
+  "companySlug": "khalani-network",
+  "companyName": "Khalani Network",
+  "websiteUrl": "https://khalani.network",
+  "twitterUrl": "https://x.com/khalani_network",
+  "linkedinUrl": "https://www.linkedin.com/company/khalani-labs/",
+  "description": "Decentralized solver infrastructure and intent-settlement network enabling cross-chain value movement.",
+  "category": "infrastructure",
+  "tags": ["intents", "solvers"],
+  "priority": "high",
+  "sources": []
+}

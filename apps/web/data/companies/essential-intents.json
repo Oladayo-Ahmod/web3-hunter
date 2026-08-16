@@ -1,0 +1,10 @@
+{
+  "companySlug": "essential-intents",
+  "companyName": "Essential",
+  "websiteUrl": "https://essential.builders",
+  "description": "Intent-centric infrastructure startup building an intent standard, a domain-specific expression language, and an intent-centric blockchain protocol.",
+  "category": "infrastructure",
+  "tags": ["intents"],
+  "priority": "high",
+  "sources": []
+}

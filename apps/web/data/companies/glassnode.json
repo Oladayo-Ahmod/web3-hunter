@@ -1,0 +1,10 @@
+{
+  "companySlug": "glassnode",
+  "companyName": "Glassnode",
+  "websiteUrl": "https://glassnode.com",
+  "description": "Digital asset market intelligence platform providing on-chain data, analytics and research used by institutional investors.",
+  "category": "infrastructure",
+  "tags": ["analytics", "onchain-data", "research"],
+  "priority": "medium",
+  "sources": []
+}

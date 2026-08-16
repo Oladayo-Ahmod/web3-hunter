@@ -1,0 +1,10 @@
+{
+  "companySlug": "apex-protocol",
+  "companyName": "ApeX Protocol",
+  "websiteUrl": "https://apex.exchange",
+  "description": "Decentralized, non-custodial derivatives and spot exchange incubated by Bybit-backed Davion Labs, backed by Dragonfly Capital, Jump Trading and Tiger Global.",
+  "category": "defi",
+  "tags": ["derivatives", "dex", "perpetuals", "multichain"],
+  "priority": "low",
+  "sources": []
+}

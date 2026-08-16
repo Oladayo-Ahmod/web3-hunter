@@ -1,0 +1,12 @@
+{
+  "companySlug": "utopia-labs",
+  "companyName": "Utopia Labs",
+  "websiteUrl": "https://utopialabs.com/",
+  "careersPageUrl": "https://wellfound.com/company/utopia-labs-3",
+  "twitterUrl": "https://x.com/UtopiaLabs",
+  "description": "Utopia Labs builds on-chain payment and payroll automation infrastructure for DAOs, integrating with Gnosis Safe to automate contributor payments, expense management, and financial reporting.",
+  "category": "infrastructure",
+  "tags": ["dao-tooling", "payments", "payroll"],
+  "priority": "high",
+  "sources": []
+}

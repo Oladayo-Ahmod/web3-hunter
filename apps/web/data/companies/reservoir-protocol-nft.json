@@ -1,0 +1,25 @@
+{
+  "companySlug": "reservoir-protocol-nft",
+  "companyName": "Reservoir",
+  "websiteUrl": "https://reservoir.tools/",
+  "careersPageUrl": "https://jobs.archetype.fund/companies/reservoir",
+  "twitterUrl": "https://x.com/reservoir0x",
+  "description": "Reservoir is developer-focused NFT/token trading infrastructure and liquidity aggregation used by Coinbase, OpenSea, MetaMask, Magic Eden, and Zora.",
+  "fundingStage": "Series A",
+  "category": "infrastructure",
+  "tags": ["nft-infrastructure", "trading", "aggregation"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "February 2025",
+  "fundingAmount": "$14M",
+  "fundingSource": "https://www.theblock.co/post/338994/token-trading-reservoir-funding",
+  "contacts": [
+    {
+      "name": "Jason Maier",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/jason-maier-93081230/",
+      "notes": "Co-Founder & COO of Reservoir"
+    }
+  ],
+  "sources": []
+}

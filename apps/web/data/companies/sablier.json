@@ -1,0 +1,10 @@
+{
+  "companySlug": "sablier",
+  "companyName": "Sablier",
+  "websiteUrl": "https://sablier.com",
+  "description": "Token streaming and distribution protocol for vesting, payroll, airdrops and grants across 24 EVM networks, backed by a16z crypto.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "token-vesting", "payments", "smart-contracts"],
+  "priority": "medium",
+  "sources": []
+}

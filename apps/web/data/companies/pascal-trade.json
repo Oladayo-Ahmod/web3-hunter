@@ -1,0 +1,16 @@
+{
+  "companySlug": "pascal-trade",
+  "companyName": "Pascal",
+  "websiteUrl": "https://www.pascal.trade/",
+  "twitterUrl": "https://x.com/pascaldottrade",
+  "description": "Non-custodial prediction market exchange on Solana built for professional traders, modeled after perpetual futures with an OTC desk and trading API.",
+  "fundingStage": "Series A",
+  "category": "defi",
+  "tags": ["prediction-markets", "solana", "trading-infrastructure", "derivatives"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "July 2026",
+  "fundingAmount": "$9M",
+  "fundingSource": "https://fortune.com/2026/07/16/exclusive-prediction-market-startup-pascal-9-million-heavyweights-kalshi-and-polymarket/",
+  "sources": []
+}

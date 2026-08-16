@@ -1,0 +1,12 @@
+{
+  "companySlug": "highlight-xyz",
+  "companyName": "Highlight",
+  "websiteUrl": "https://highlight.xyz/",
+  "careersPageUrl": "https://highlight.xyz/careers",
+  "twitterUrl": "https://x.com/highlight_xyz",
+  "description": "Highlight is a toolkit for NFT minting and on-chain membership infrastructure on Ethereum, helping creators launch collections, token-gated access, allowlists, and branded minting experiences.",
+  "category": "infrastructure",
+  "tags": ["nft-infrastructure", "minting", "membership"],
+  "priority": "high",
+  "sources": []
+}

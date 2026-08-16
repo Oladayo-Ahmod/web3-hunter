@@ -1,0 +1,26 @@
+{
+  "companySlug": "aragon-association",
+  "companyName": "Aragon",
+  "websiteUrl": "https://www.aragon.org/",
+  "careersPageUrl": "https://www.aragon.org/careers",
+  "twitterUrl": "https://x.com/AragonProject",
+  "linkedinUrl": "https://www.linkedin.com/company/aragonproject",
+  "description": "Aragon builds Aragon OSx, a modular smart contract framework and tooling suite for creating and managing on-chain organizations (DAOs), securing tens of billions in assets for projects like Lido and Curve.",
+  "category": "infrastructure",
+  "tags": ["dao-tooling", "governance", "smart-contracts"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Luis Cuende",
+      "role": "cofounder",
+      "profileUrl": "https://www.crunchbase.com/person/luis-ivn-cuende",
+      "notes": "Co-Founder and Core Contributor at Aragon"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "aragon"
+    }
+  ]
+}

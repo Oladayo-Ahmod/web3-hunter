@@ -1,0 +1,13 @@
+{
+  "companySlug": "gala-games",
+  "companyName": "Gala Games",
+  "websiteUrl": "https://gala.com/",
+  "careersPageUrl": "https://stage1.app.gala.games/careers/",
+  "twitterUrl": "https://x.com/GoGalaGames",
+  "linkedinUrl": "https://www.linkedin.com/company/gogala",
+  "description": "Gala Games is a large Web3 gaming and entertainment platform publishing blockchain-based games (Town Star and others) with its own token and node network.",
+  "category": "gaming",
+  "tags": ["gaming", "publisher"],
+  "priority": "medium",
+  "sources": []
+}

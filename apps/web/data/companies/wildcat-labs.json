@@ -1,0 +1,15 @@
+{
+  "companySlug": "wildcat-labs",
+  "companyName": "Wildcat Labs",
+  "websiteUrl": "https://wildcat.finance/",
+  "description": "Ethereum protocol for undercollateralized onchain credit, giving lenders real-time monitoring of market parameters and logs.",
+  "fundingStage": "Seed extension",
+  "category": "defi",
+  "tags": ["onchain-credit", "lending", "ethereum"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "September 2025",
+  "fundingAmount": "$3.5M",
+  "fundingSource": "https://www.theblock.co/post/339378/wildcat-decentralized-credit-platform-laurence-day-launches-version-ethereum",
+  "sources": []
+}

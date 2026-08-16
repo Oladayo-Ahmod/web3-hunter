@@ -1,0 +1,10 @@
+{
+  "companySlug": "luganodes-staking",
+  "companyName": "Luganodes",
+  "websiteUrl": "https://luganodes.com",
+  "description": "Swiss-operated institutional-grade non-custodial staking provider running validator infrastructure across 40+ proof-of-stake networks.",
+  "category": "infrastructure",
+  "tags": ["staking", "validator"],
+  "priority": "medium",
+  "sources": []
+}

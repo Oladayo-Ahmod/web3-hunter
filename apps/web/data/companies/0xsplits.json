@@ -1,0 +1,11 @@
+{
+  "companySlug": "0xsplits",
+  "companyName": "Splits (0xSplits)",
+  "websiteUrl": "https://splits.org",
+  "twitterUrl": "https://twitter.com/0xsplits",
+  "description": "Onchain financial infrastructure protocol for splitting, streaming and managing revenue and payments via self-custodied smart contracts.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "payments", "smart-contracts"],
+  "priority": "medium",
+  "sources": []
+}

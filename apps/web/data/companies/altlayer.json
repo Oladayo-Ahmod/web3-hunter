@@ -1,0 +1,11 @@
+{
+  "companySlug": "altlayer",
+  "companyName": "AltLayer",
+  "websiteUrl": "https://altlayer.io",
+  "careersPageUrl": "https://alt-research.notion.site/Careers-AltLayer-b81ba67574d344d5bc85944f64840a2e",
+  "description": "Restaked-rollup and no-code Rollup-as-a-Service platform that lets developers spin up app-specific execution layers (\"flash layers\").",
+  "category": "infrastructure",
+  "tags": ["rollup", "raas", "restaking"],
+  "priority": "medium",
+  "sources": []
+}

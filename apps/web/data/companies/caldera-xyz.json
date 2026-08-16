@@ -1,0 +1,13 @@
+{
+  "companySlug": "caldera-xyz",
+  "companyName": "Caldera",
+  "websiteUrl": "https://caldera.xyz",
+  "careersPageUrl": "https://app.dover.com/jobs/calderaxyz",
+  "twitterUrl": "https://twitter.com/Calderaxyz",
+  "linkedinUrl": "https://www.linkedin.com/company/calderaxyz",
+  "description": "Rollups-as-a-Service platform for launching and operating custom rollups across Arbitrum Orbit, OP Stack, Polygon CDK, and ZK Stack.",
+  "category": "infrastructure",
+  "tags": ["rollup", "raas", "infrastructure"],
+  "priority": "high",
+  "sources": []
+}

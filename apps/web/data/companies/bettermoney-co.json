@@ -1,0 +1,37 @@
+{
+  "companySlug": "bettermoney-co",
+  "companyName": "The Better Money Company",
+  "websiteUrl": "https://bettermoney.com/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/bettermoney/",
+  "twitterUrl": "https://x.com/bettermoney_co",
+  "linkedinUrl": "https://www.linkedin.com/company/the-better-money-company/",
+  "description": "Stablecoin clearinghouse letting institutions exchange different USD-pegged stablecoins at parity, founded by a former a16z crypto investor.",
+  "fundingStage": "Seed",
+  "category": "defi",
+  "tags": ["stablecoins", "clearinghouse", "payments", "fintech-infra"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "March 2026",
+  "fundingAmount": "$10M",
+  "fundingSource": "https://fortune.com/2026/03/31/the-better-money-company-stablecoin-clearinghouse-a16z-crypto-seed-round/",
+  "contacts": [
+    {
+      "name": "Sam Broner",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/sambroner/",
+      "notes": "Former a16z crypto investor"
+    },
+    {
+      "name": "Adam Zuckerman",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/adam-zuck/",
+      "notes": "Former Chief Legal Officer at Eigen Labs"
+    }
+  ],
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "bettermoney"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "dappradar",
+  "companyName": "DappRadar",
+  "websiteUrl": "https://dappradar.com",
+  "careersPageUrl": "https://dappradar.com/careers",
+  "description": "Decentralized application discovery and analytics platform tracking dapps, NFTs and on-chain activity across dozens of blockchains.",
+  "category": "infrastructure",
+  "tags": ["analytics", "dapp-discovery", "nft"],
+  "priority": "medium",
+  "sources": []
+}

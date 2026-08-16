@@ -1,0 +1,17 @@
+{
+  "companySlug": "rarimo",
+  "companyName": "Rarimo",
+  "websiteUrl": "https://rarimo.com/",
+  "careersPageUrl": "https://rarimoprotocol.recruitee.com/",
+  "twitterUrl": "https://x.com/rarimo_protocol",
+  "description": "Rarimo builds a permissionless zero-knowledge registry protocol enabling cross-chain, privacy-preserving identity, proof-of-personhood (e.g. ZK-wrapped biometric passports), and social-graph credentials.",
+  "fundingStage": "Vision Round",
+  "category": "infrastructure",
+  "tags": ["identity", "zero-knowledge", "cross-chain"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "November 2024",
+  "fundingAmount": "$2.5M",
+  "fundingSource": "https://www.biometricupdate.com/202412/rarimo-raises-2-5m-to-advance-zero-knowledge-proof-of-personhood",
+  "sources": []
+}

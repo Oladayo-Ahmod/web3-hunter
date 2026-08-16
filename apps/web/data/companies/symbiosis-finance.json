@@ -1,0 +1,10 @@
+{
+  "companySlug": "symbiosis-finance",
+  "companyName": "Symbiosis Finance",
+  "websiteUrl": "https://www.symbiosis.finance",
+  "description": "Cross-chain liquidity and swap protocol enabling token swaps across 50+ networks including Bitcoin, Solana, Tron, and EVM chains.",
+  "category": "defi",
+  "tags": ["cross-chain", "liquidity", "dex"],
+  "priority": "low",
+  "sources": []
+}

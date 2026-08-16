@@ -1,0 +1,20 @@
+{
+  "companySlug": "zodia-custody",
+  "companyName": "Zodia Custody",
+  "websiteUrl": "https://zodia-custody.com",
+  "careersPageUrl": "https://zodia-custody.com/careers/",
+  "linkedinUrl": "https://uk.linkedin.com/company/zodiacustody",
+  "description": "Institutional digital asset custodian backed by Standard Chartered, Northern Trust, SBI Holdings and National Australia Bank.",
+  "category": "security",
+  "tags": ["custody", "institutional", "digital-assets"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Julian Sawyer",
+      "role": "other",
+      "profileUrl": "https://uk.linkedin.com/in/juliansawyer",
+      "notes": "CEO of Zodia Custody; former Bitstamp CEO and Starling Bank co-founder/COO"
+    }
+  ],
+  "sources": []
+}

@@ -1,0 +1,11 @@
+{
+  "companySlug": "token-terminal",
+  "companyName": "Token Terminal",
+  "websiteUrl": "https://tokenterminal.com",
+  "careersPageUrl": "https://tokenterminal.com/careers",
+  "description": "Onchain analytics platform providing standardized financial and usage metrics for crypto protocols, used as a Bloomberg-style data terminal for digital finance.",
+  "category": "infrastructure",
+  "tags": ["analytics", "onchain-data", "protocol-metrics"],
+  "priority": "medium",
+  "sources": []
+}

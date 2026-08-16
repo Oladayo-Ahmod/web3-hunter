@@ -1,0 +1,18 @@
+{
+  "companySlug": "checker-corp",
+  "companyName": "Checker",
+  "websiteUrl": "https://www.checker.finance/",
+  "careersPageUrl": "https://www.linkedin.com/company/checker-corp/jobs/",
+  "twitterUrl": "https://x.com/checkercorp",
+  "linkedinUrl": "https://www.linkedin.com/company/checker-corp/",
+  "description": "Stablecoin infrastructure network giving financial institutions single-API access to digital asset liquidity, cross-border payments, treasury and credit.",
+  "fundingStage": "Seed",
+  "category": "infrastructure",
+  "tags": ["stablecoins", "cross-border-payments", "institutional-infra"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "May 2026",
+  "fundingAmount": "$8M",
+  "fundingSource": "https://www.theblock.co/post/401906/stablecoin-infrastructure-startup-checker-funding",
+  "sources": []
+}

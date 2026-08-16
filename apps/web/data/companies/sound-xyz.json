@@ -1,0 +1,18 @@
+{
+  "companySlug": "sound-xyz",
+  "companyName": "Sound.xyz",
+  "websiteUrl": "https://www.sound.xyz/",
+  "careersPageUrl": "https://jobs.ashbyhq.com/sound.xyz",
+  "twitterUrl": "https://x.com/soundxyz",
+  "linkedinUrl": "https://www.linkedin.com/company/soundxyz",
+  "description": "Sound.xyz builds web3-native music and economic tools for artists, letting them mint, sell, and share on-chain releases directly with fans (Snoop Dogg, RAC, Pussy Riot have released via the platform).",
+  "category": "infrastructure",
+  "tags": ["nft-infrastructure", "music", "creator-economy"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "sound.xyz"
+    }
+  ]
+}

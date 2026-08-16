@@ -1,0 +1,11 @@
+{
+  "companySlug": "merkle-io-mev",
+  "companyName": "Merkle.io",
+  "websiteUrl": "https://www.merkle.io",
+  "careersPageUrl": "https://jobs.ashbyhq.com/merkle",
+  "description": "MEV protection infrastructure providing private mempools and RPC endpoints for wallets and dApps to prevent sandwich attacks, founded by former MEV bot engineers.",
+  "category": "infrastructure",
+  "tags": ["mev", "privacy", "rpc"],
+  "priority": "high",
+  "sources": []
+}

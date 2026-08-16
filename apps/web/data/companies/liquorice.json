@@ -1,0 +1,16 @@
+{
+  "companySlug": "liquorice",
+  "companyName": "Liquorice",
+  "websiteUrl": "https://liquorice.tech/",
+  "twitterUrl": "https://x.com/LiquoriceHQ",
+  "description": "DeFi protocol combining one-sided lending pools with a gasless, MEV-free trading engine, integrating with 1inch, CoW Swap and UniswapX.",
+  "fundingStage": "Pre-seed",
+  "category": "defi",
+  "tags": ["mev", "dex-aggregation", "lending", "market-making"],
+  "priority": "medium",
+  "recentlyFunded": true,
+  "fundingDate": "July 2024",
+  "fundingAmount": "$1.2M",
+  "fundingSource": "https://x.com/LiquoriceHQ/status/1817957705195360552",
+  "sources": []
+}

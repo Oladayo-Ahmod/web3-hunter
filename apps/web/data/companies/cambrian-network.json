@@ -1,0 +1,17 @@
+{
+  "companySlug": "cambrian-network",
+  "companyName": "Cambrian",
+  "websiteUrl": "https://www.cambrian.org/",
+  "twitterUrl": "https://x.com/CambrianNetwork",
+  "linkedinUrl": "https://www.linkedin.com/company/cambriannetwork",
+  "description": "Blockchain data oracle and API providing real-time and historical onchain data — yields, risk, lending rates, liquidity and sentiment — for institutions and AI agents.",
+  "fundingStage": "Seed",
+  "category": "infrastructure",
+  "tags": ["oracle", "data-infrastructure", "ai-agents", "defi-data"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "June 2026",
+  "fundingAmount": "$6M",
+  "fundingSource": "https://www.theblock.co/post/406028/a16z-csx-backed-cambrian-seed-round-blockchain-data-oracle-network",
+  "sources": []
+}

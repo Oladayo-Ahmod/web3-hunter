@@ -1,0 +1,12 @@
+{
+  "companySlug": "ceffu",
+  "companyName": "Ceffu",
+  "websiteUrl": "https://www.ceffu.com",
+  "twitterUrl": "https://twitter.com/CeffuGlobal",
+  "linkedinUrl": "https://www.linkedin.com/company/ceffu",
+  "description": "Institutional crypto custody, MirrorX off-exchange settlement and asset management platform, formerly known as Binance Custody.",
+  "category": "security",
+  "tags": ["custody", "institutional", "off-exchange-settlement"],
+  "priority": "medium",
+  "sources": []
+}

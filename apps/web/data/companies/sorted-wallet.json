@@ -1,0 +1,17 @@
+{
+  "companySlug": "sorted-wallet",
+  "companyName": "Sorted",
+  "websiteUrl": "https://www.sorted.io/",
+  "twitterUrl": "https://x.com/sortedwallet",
+  "linkedinUrl": "https://www.linkedin.com/company/sortedwallet/",
+  "description": "Lightweight stablecoin wallet (under 10MB) built for feature phones and low-end smartphones, enabling remittances and mobile-money cash-out across emerging markets.",
+  "fundingStage": "Seed",
+  "category": "wallet",
+  "tags": ["stablecoins", "emerging-markets", "remittances", "mobile"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "May 2026",
+  "fundingAmount": "$4.4M",
+  "fundingSource": "https://techcabal.com/2026/05/20/sorted-raises-4-4m-to-bring-stablecoin-wallets-to-the-phones-that-fintech-forgot/",
+  "sources": []
+}

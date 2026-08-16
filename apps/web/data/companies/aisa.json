@@ -1,0 +1,17 @@
+{
+  "companySlug": "aisa",
+  "companyName": "AIsa",
+  "websiteUrl": "https://aisa.one/",
+  "twitterUrl": "https://x.com/AIsaOneHQ",
+  "linkedinUrl": "https://www.linkedin.com/company/aipayhq",
+  "description": "Unified resource and transaction network letting AI agents discover, access, and pay for APIs, data and SaaS tools via stablecoin and fiat settlement.",
+  "fundingStage": "Seed",
+  "category": "ai",
+  "tags": ["ai-agents", "machine-to-machine-payments", "stablecoins"],
+  "priority": "medium",
+  "recentlyFunded": true,
+  "fundingDate": "July 2026",
+  "fundingAmount": "$6.5M",
+  "fundingSource": "https://cryptorank.io/news/feed/alsa-seed-2026-07-03",
+  "sources": []
+}

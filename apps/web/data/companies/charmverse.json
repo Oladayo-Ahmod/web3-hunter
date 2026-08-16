@@ -1,0 +1,21 @@
+{
+  "companySlug": "charmverse",
+  "companyName": "CharmVerse",
+  "websiteUrl": "https://charmverse.io/",
+  "careersPageUrl": "https://angel.co/company/charmverse",
+  "twitterUrl": "https://x.com/charmverse",
+  "linkedinUrl": "https://www.linkedin.com/company/charmverse",
+  "description": "CharmVerse is an all-in-one DAO workspace combining wiki, proposal flow, task/project tracking, and grants management, used by Optimism, Mantle, and Taiko for grants programs.",
+  "category": "infrastructure",
+  "tags": ["dao-tooling", "grants", "coordination"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Alex Poon",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/alexchibunpoon",
+      "notes": "CEO & Co-founder of CharmVerse"
+    }
+  ],
+  "sources": []
+}

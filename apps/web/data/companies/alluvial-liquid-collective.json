@@ -1,0 +1,12 @@
+{
+  "companySlug": "alluvial-liquid-collective",
+  "companyName": "Alluvial",
+  "websiteUrl": "https://alluvial.finance",
+  "careersPageUrl": "https://alluvial.finance/careers/",
+  "linkedinUrl": "https://www.linkedin.com/company/alluvialfinance",
+  "description": "Software development company building the Liquid Collective institutional liquid-staking protocol.",
+  "category": "defi",
+  "tags": ["staking", "liquid-staking", "protocol"],
+  "priority": "medium",
+  "sources": []
+}

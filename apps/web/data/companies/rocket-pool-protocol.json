@@ -1,0 +1,10 @@
+{
+  "companySlug": "rocket-pool-protocol",
+  "companyName": "Rocket Pool",
+  "websiteUrl": "https://rocketpool.net",
+  "description": "Decentralized, non-custodial liquid staking protocol for Ethereum governed by the Rocket Pool DAO.",
+  "category": "defi",
+  "tags": ["staking", "liquid-staking"],
+  "priority": "medium",
+  "sources": []
+}
