@@ -117,6 +117,9 @@ describe("checkApplyEligibility — real production regressions (Milestone 20)",
     "Manager, Strategic Partnerships (Token Listing)",
     "Senior Manager, Web3 Growth (Protocols)",
     "Senior Crypto Threat Analyst - Terrorism",
+    "All Source Investigator",
+    "Manager, All Source Investigations",
+    "Global Investigator",
   ])(
     'excludes "%s" — no Web3 role signal at all, only present via unrelated skill overlap',
     (title) => {

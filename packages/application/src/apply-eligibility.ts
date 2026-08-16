@@ -65,6 +65,9 @@ const HARD_NEGATIVE_TITLE_PHRASES = [
   "grc analyst",
   "threat analyst",
   "investigations analyst",
+  "investigator",
+  "investigations",
+  "sanctions",
   "java backend",
   ".net backend",
   // Role families outside the target profile entirely (mirrors
