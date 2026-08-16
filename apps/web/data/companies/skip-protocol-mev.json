@@ -1,0 +1,12 @@
+{
+  "companySlug": "skip-protocol-mev",
+  "companyName": "Skip Protocol",
+  "websiteUrl": "https://skip.money",
+  "careersPageUrl": "http://notion.skip.build/Skip-Open-Positions-a80c9cd99f2247118f89706f07fb563a/",
+  "linkedinUrl": "https://www.linkedin.com/company/skip-protocol",
+  "description": "Builds MEV and interchain infrastructure for Cosmos, including cross-chain routing (Skip:Go) and block-building tooling.",
+  "category": "infrastructure",
+  "tags": ["mev", "cosmos", "interoperability"],
+  "priority": "medium",
+  "sources": []
+}

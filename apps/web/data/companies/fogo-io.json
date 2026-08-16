@@ -1,0 +1,10 @@
+{
+  "companySlug": "fogo-io",
+  "companyName": "Fogo",
+  "websiteUrl": "https://www.fogo.io",
+  "description": "High-performance SVM-compatible Layer-1 blockchain built for institutional-grade trading with sub-second finality and colocated validators.",
+  "category": "other",
+  "tags": ["l1", "svm", "trading-infrastructure"],
+  "priority": "high",
+  "sources": []
+}

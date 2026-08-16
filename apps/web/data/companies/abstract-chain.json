@@ -1,0 +1,10 @@
+{
+  "companySlug": "abstract-chain",
+  "companyName": "Abstract",
+  "websiteUrl": "https://abs.xyz",
+  "description": "Ethereum L2 built on the ZKsync ZK Stack focused on consumer crypto applications and onchain communities.",
+  "category": "l2",
+  "tags": ["rollup", "zk", "consumer"],
+  "priority": "medium",
+  "sources": []
+}

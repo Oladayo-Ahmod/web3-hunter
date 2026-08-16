@@ -1,0 +1,12 @@
+{
+  "companySlug": "boardroom",
+  "companyName": "Boardroom",
+  "websiteUrl": "https://boardroom.info/",
+  "careersPageUrl": "https://boardroom.applytojob.com/",
+  "twitterUrl": "https://x.com/boardroom_info",
+  "description": "Boardroom provides governance stewardship, analytics, and coordination infrastructure that helps DAOs and stakeholder-owned protocols manage voting, communication, and engagement.",
+  "category": "infrastructure",
+  "tags": ["dao-tooling", "governance", "analytics"],
+  "priority": "medium",
+  "sources": []
+}

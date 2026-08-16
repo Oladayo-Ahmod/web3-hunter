@@ -1,0 +1,10 @@
+{
+  "companySlug": "stakewise-protocol",
+  "companyName": "StakeWise",
+  "websiteUrl": "https://www.stakewise.io",
+  "description": "Non-custodial liquid staking protocol on Ethereum and Gnosis Chain issuing osETH and osGNO for independent validators.",
+  "category": "defi",
+  "tags": ["staking", "liquid-staking"],
+  "priority": "medium",
+  "sources": []
+}

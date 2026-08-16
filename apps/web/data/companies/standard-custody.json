@@ -1,0 +1,12 @@
+{
+  "companySlug": "standard-custody",
+  "companyName": "Standard Custody & Trust Company (PolySign)",
+  "websiteUrl": "https://www.polysign.io",
+  "twitterUrl": "https://twitter.com/polysigninc",
+  "linkedinUrl": "https://www.linkedin.com/company/polysign",
+  "description": "Institutional-grade custody and settlement platform for digital assets, operated by PolySign with an integrated escrow trading model.",
+  "category": "security",
+  "tags": ["custody", "institutional", "settlement"],
+  "priority": "medium",
+  "sources": []
+}

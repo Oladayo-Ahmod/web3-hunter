@@ -1,0 +1,13 @@
+{
+  "companySlug": "venly",
+  "companyName": "Venly",
+  "websiteUrl": "https://www.venly.io/",
+  "careersPageUrl": "https://www.venly.io/company/careers",
+  "twitterUrl": "https://x.com/venly_io",
+  "linkedinUrl": "https://be.linkedin.com/company/venly-io",
+  "description": "Venly provides wallet-as-a-service, NFT/token APIs, and blockchain payment infrastructure used by Web3 game developers (clients include The Sandbox and Aavegotchi).",
+  "category": "gaming",
+  "tags": ["gaming", "infrastructure", "wallets"],
+  "priority": "medium",
+  "sources": []
+}

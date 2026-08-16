@@ -1,0 +1,11 @@
+{
+  "companySlug": "llamapay",
+  "companyName": "LlamaPay",
+  "websiteUrl": "https://llamapay.io",
+  "twitterUrl": "https://twitter.com/llamapay_io",
+  "description": "Multi-chain payment streaming protocol from the DefiLlama ecosystem enabling automated, per-second recurring crypto payments.",
+  "category": "infrastructure",
+  "tags": ["developer-tooling", "payments", "smart-contracts"],
+  "priority": "medium",
+  "sources": []
+}

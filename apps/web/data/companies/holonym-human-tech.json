@@ -1,0 +1,17 @@
+{
+  "companySlug": "holonym-human-tech",
+  "companyName": "Holonym (human.tech)",
+  "websiteUrl": "https://human.tech/",
+  "careersPageUrl": "https://consider.com/boards/co/holonym-foundation",
+  "twitterUrl": "https://x.com/human_tech",
+  "description": "Holonym Foundation builds human.tech, a zero-knowledge proof-of-personhood and privacy-preserving identity network; in 2025 it acquired Gitcoin Passport, relaunched as Human Passport, to expand its Sybil-resistance and identity-verification stack.",
+  "fundingStage": "Acquisition",
+  "category": "infrastructure",
+  "tags": ["identity", "zero-knowledge", "proof-of-humanity", "sybil-resistance"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "February 2025",
+  "fundingAmount": "$10M (acquisition of Gitcoin Passport)",
+  "fundingSource": "https://www.coindesk.com/business/2025/02/10/digital-identity-startup-holonym-acquires-gitcoin-passport",
+  "sources": []
+}

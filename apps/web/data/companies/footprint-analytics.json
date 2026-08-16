@@ -1,0 +1,12 @@
+{
+  "companySlug": "footprint-analytics",
+  "companyName": "Footprint Analytics",
+  "websiteUrl": "https://www.footprint.network",
+  "twitterUrl": "https://twitter.com/Footprint_Data",
+  "linkedinUrl": "https://www.linkedin.com/company/footprintanalytics",
+  "description": "Web3 data platform providing structured blockchain analytics across 30+ chains and 30,000+ protocols, focused on GameFi, NFT and DeFi data.",
+  "category": "infrastructure",
+  "tags": ["analytics", "onchain-data", "gamefi", "nft"],
+  "priority": "medium",
+  "sources": []
+}

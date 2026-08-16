@@ -1,0 +1,16 @@
+{
+  "companySlug": "elliptic",
+  "companyName": "Elliptic",
+  "websiteUrl": "https://www.elliptic.co",
+  "careersPageUrl": "https://elliptic.co/careers/",
+  "description": "Blockchain analytics company detecting, preventing and investigating criminal activity in cryptocurrency for exchanges, financial institutions and governments.",
+  "category": "infrastructure",
+  "tags": ["analytics", "compliance", "blockchain-intelligence"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "elliptic"
+    }
+  ]
+}

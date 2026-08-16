@@ -1,0 +1,16 @@
+{
+  "companySlug": "trm-labs",
+  "companyName": "TRM Labs",
+  "websiteUrl": "https://www.trmlabs.com",
+  "careersPageUrl": "https://jobs.ashbyhq.com/trm-labs",
+  "description": "Blockchain intelligence company providing AI-powered tools for investigating and disrupting crypto-enabled crime for public and private sector clients.",
+  "category": "infrastructure",
+  "tags": ["analytics", "compliance", "blockchain-intelligence"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "trm-labs"
+    }
+  ]
+}

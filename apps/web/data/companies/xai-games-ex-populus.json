@@ -1,0 +1,13 @@
+{
+  "companySlug": "xai-games-ex-populus",
+  "companyName": "Xai Games (Ex Populus)",
+  "websiteUrl": "https://xai.games/",
+  "careersPageUrl": "https://expopulus.com/",
+  "twitterUrl": "https://x.com/XAI_GAMES",
+  "linkedinUrl": "https://www.linkedin.com/company/ex-populus",
+  "description": "Xai is an Arbitrum Layer 3 blockchain purpose-built for AAA gaming, co-developed with Offchain Labs; Ex Populus is the game studio (ex-Pixar/Ubisoft/Blizzard talent) building autonomous on-chain games on Xai.",
+  "category": "gaming",
+  "tags": ["gaming", "infrastructure", "arbitrum"],
+  "priority": "high",
+  "sources": []
+}

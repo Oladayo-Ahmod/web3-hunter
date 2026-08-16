@@ -1,0 +1,12 @@
+{
+  "companySlug": "privado-id",
+  "companyName": "Privado ID",
+  "websiteUrl": "https://www.privado.id/",
+  "twitterUrl": "https://x.com/privado_id",
+  "linkedinUrl": "https://www.linkedin.com/company/privadoid/",
+  "description": "Privado ID (spun out of Polygon ID / iden3) builds open-source middleware infrastructure for privacy-preserving, zero-knowledge digital identity and verifiable credentials.",
+  "category": "infrastructure",
+  "tags": ["identity", "zero-knowledge", "verifiable-credentials"],
+  "priority": "high",
+  "sources": []
+}

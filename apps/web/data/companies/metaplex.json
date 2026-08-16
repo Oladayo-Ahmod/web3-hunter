@@ -1,0 +1,21 @@
+{
+  "companySlug": "metaplex",
+  "companyName": "Metaplex",
+  "websiteUrl": "https://www.metaplex.com/",
+  "careersPageUrl": "https://www.metaplex.com/careers",
+  "twitterUrl": "https://x.com/metaplex",
+  "linkedinUrl": "https://www.linkedin.com/company/metaplex-foundation",
+  "description": "Metaplex is the leading open-source NFT and digital asset protocol on Solana, powering the vast majority of Solana NFT minting, marketplaces, and programmable on-chain assets.",
+  "category": "infrastructure",
+  "tags": ["nft-infrastructure", "solana", "protocol"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Stephen Hess",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/stephennhess/",
+      "notes": "Co-founder and CEO of Metaplex Studios / Director of Metaplex Foundation"
+    }
+  ],
+  "sources": []
+}

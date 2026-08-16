@@ -1,0 +1,12 @@
+{
+  "companySlug": "twinstake-institutional",
+  "companyName": "Twinstake",
+  "websiteUrl": "https://www.twinstake.com",
+  "twitterUrl": "https://twitter.com/twinstake_io",
+  "linkedinUrl": "https://www.linkedin.com/company/twinstake/",
+  "description": "Institutional-grade non-custodial staking provider offering API, concierge, restaking, and liquid staking across 25+ protocols, backed by Nethermind.",
+  "category": "infrastructure",
+  "tags": ["staking", "restaking", "institutional"],
+  "priority": "medium",
+  "sources": []
+}

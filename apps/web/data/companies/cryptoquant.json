@@ -1,0 +1,10 @@
+{
+  "companySlug": "cryptoquant",
+  "companyName": "CryptoQuant",
+  "websiteUrl": "https://cryptoquant.com",
+  "description": "On-chain and exchange-flow data platform providing quant-grade indicators for Bitcoin and crypto market analysis.",
+  "category": "infrastructure",
+  "tags": ["analytics", "onchain-data", "market-data"],
+  "priority": "medium",
+  "sources": []
+}

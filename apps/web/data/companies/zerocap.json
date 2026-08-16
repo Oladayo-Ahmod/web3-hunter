@@ -1,0 +1,10 @@
+{
+  "companySlug": "zerocap",
+  "companyName": "Zerocap",
+  "websiteUrl": "https://zerocap.com",
+  "description": "Melbourne-based digital asset trading, market making and MPC custody firm serving institutional and wealth-management clients.",
+  "category": "security",
+  "tags": ["custody", "trading", "market-making", "mpc"],
+  "priority": "medium",
+  "sources": []
+}

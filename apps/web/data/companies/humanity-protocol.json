@@ -1,0 +1,23 @@
+{
+  "companySlug": "humanity-protocol",
+  "companyName": "Humanity Protocol",
+  "websiteUrl": "https://www.humanity.org/",
+  "careersPageUrl": "https://jobs.lever.co/humanityprotocol",
+  "twitterUrl": "https://x.com/join_humanity",
+  "linkedinUrl": "https://www.linkedin.com/company/humanityprotocol/",
+  "description": "Humanity Protocol is a proof-of-humanity / decentralized identity network using palm-vein biometrics and zero-knowledge proofs to issue portable, privacy-preserving identity credentials.",
+  "fundingStage": "Venture Round",
+  "category": "infrastructure",
+  "tags": ["identity", "proof-of-humanity", "zero-knowledge"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "January 2025",
+  "fundingAmount": "$20M",
+  "fundingSource": "https://www.coindesk.com/business/2025/01/27/worldcoin-rival-humanity-protocol-s-valuation-jumps-to-usd1-1b-after-fresh-fund-raise",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "humanityprotocol"
+    }
+  ]
+}

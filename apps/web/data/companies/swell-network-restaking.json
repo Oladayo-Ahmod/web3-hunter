@@ -1,0 +1,12 @@
+{
+  "companySlug": "swell-network-restaking",
+  "companyName": "Swell Network",
+  "websiteUrl": "https://www.swellnetwork.io",
+  "twitterUrl": "https://twitter.com/swellnetworkio",
+  "linkedinUrl": "https://www.linkedin.com/company/swellnetworkio",
+  "description": "Non-custodial liquid restaking protocol on Ethereum issuing rswETH, currently evolving its product brand toward \"Faro\".",
+  "category": "defi",
+  "tags": ["restaking", "liquid-staking"],
+  "priority": "medium",
+  "sources": []
+}

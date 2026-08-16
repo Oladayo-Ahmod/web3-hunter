@@ -1,0 +1,21 @@
+{
+  "companySlug": "pixels-online",
+  "companyName": "Pixels",
+  "websiteUrl": "https://www.pixels.xyz/",
+  "careersPageUrl": "https://wellfound.com/company/pixels-xyz/jobs",
+  "twitterUrl": "https://x.com/pixels_online",
+  "linkedinUrl": "https://www.linkedin.com/company/pixelsxyz",
+  "description": "Pixels is a social Web3 farming/MMO game built on the Ronin network where players' owned NFTs and in-game progress function as real digital assets.",
+  "category": "gaming",
+  "tags": ["gaming", "ronin", "mmo"],
+  "priority": "high",
+  "contacts": [
+    {
+      "name": "Luke Barwikowski",
+      "role": "founder",
+      "profileUrl": "https://www.linkedin.com/in/lbarwiko/",
+      "notes": "Founder, CEO, and CTO of Pixels"
+    }
+  ],
+  "sources": []
+}

@@ -1,0 +1,25 @@
+{
+  "companySlug": "byzantine-finance",
+  "companyName": "Byzantine Finance",
+  "websiteUrl": "https://www.byzantine.fi/",
+  "twitterUrl": "https://x.com/byzantine_fi",
+  "linkedinUrl": "https://www.linkedin.com/company/byzantine-finance/",
+  "description": "White-label restaking aggregation layer letting Web3 enterprises build custom, institution-grade restaking offerings via an open-source protocol.",
+  "fundingStage": "Pre-seed",
+  "category": "defi",
+  "tags": ["restaking", "institutional", "aggregation-layer"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "February 2025",
+  "fundingAmount": "$3M",
+  "fundingSource": "https://www.theblock.co/post/343113/institution-restaking-byzantine-raises-3-million-pre-seed-funding",
+  "contacts": [
+    {
+      "name": "Gaia Ferrero Regis",
+      "role": "cofounder",
+      "profileUrl": "https://www.linkedin.com/in/gaiaferreroregis/",
+      "notes": "Co-founder & CEO"
+    }
+  ],
+  "sources": []
+}

@@ -1,0 +1,17 @@
+{
+  "companySlug": "river-markets",
+  "companyName": "River Markets",
+  "websiteUrl": "https://www.rivermarkets.com/",
+  "careersPageUrl": "https://www.ycombinator.com/companies/river-markets",
+  "twitterUrl": "https://x.com/river_markets",
+  "description": "Prime brokerage and cross-venue execution platform for prediction markets, routing orders across Kalshi, Polymarket and other venues for institutional traders.",
+  "fundingStage": "Seed",
+  "category": "defi",
+  "tags": ["prediction-markets", "prime-brokerage", "trading-infrastructure", "yc"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "August 2026",
+  "fundingAmount": "$8.5M",
+  "fundingSource": "https://fortune.com/2026/08/11/exclusive-river-markets-seed-round-prediction-market-trading-tools-institutions/",
+  "sources": []
+}

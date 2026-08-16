@@ -1,0 +1,17 @@
+{
+  "companySlug": "octane-security",
+  "companyName": "Octane",
+  "websiteUrl": "https://www.octane.security",
+  "twitterUrl": "https://x.com/octane_security",
+  "linkedinUrl": "https://www.linkedin.com/company/octane-security-platform/",
+  "description": "AI-powered cybersecurity startup that continuously analyzes onchain smart contracts to detect vulnerabilities and issue one-click fixes for developers.",
+  "fundingStage": "Seed",
+  "category": "security",
+  "tags": ["ai-security", "smart-contract-audit", "vulnerability-detection"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "April 2025",
+  "fundingAmount": "$6.75M",
+  "fundingSource": "https://www.octane.security/post/octane-seed-round",
+  "sources": []
+}

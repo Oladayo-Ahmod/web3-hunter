@@ -1,0 +1,16 @@
+{
+  "companySlug": "nava-labs",
+  "companyName": "Nava",
+  "websiteUrl": "https://navalabs.ai/",
+  "twitterUrl": "https://x.com/navaai",
+  "description": "Verification and guardrails infrastructure for agentic finance, intercepting AI-agent-constructed onchain transactions before execution to prevent errant or malicious fund movement.",
+  "fundingStage": "Seed",
+  "category": "ai",
+  "tags": ["ai-agents", "onchain-verification", "risk-management"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "April 2026",
+  "fundingAmount": "$8.3M",
+  "fundingSource": "https://fortune.com/2026/04/14/nava-seed-funding-ai-financial-agents/",
+  "sources": []
+}

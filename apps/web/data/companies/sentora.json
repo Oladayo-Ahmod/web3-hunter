@@ -1,0 +1,11 @@
+{
+  "companySlug": "sentora",
+  "companyName": "Sentora (formerly IntoTheBlock)",
+  "websiteUrl": "https://sentora.com",
+  "careersPageUrl": "https://sentora.com/careers",
+  "description": "Institutional DeFi platform combining strategy design, risk management and market intelligence, rebranded from IntoTheBlock (www.intotheblock.com now redirects to sentora.com).",
+  "category": "infrastructure",
+  "tags": ["analytics", "defi", "risk-management"],
+  "priority": "medium",
+  "sources": []
+}

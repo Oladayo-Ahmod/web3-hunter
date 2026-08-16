@@ -1,0 +1,17 @@
+{
+  "companySlug": "curio-games",
+  "companyName": "Curio",
+  "websiteUrl": "https://curio.gg/",
+  "twitterUrl": "https://x.com/0xcurio",
+  "linkedinUrl": "https://www.linkedin.com/company/curio-games",
+  "description": "Web3 game studio building Keystone, an onchain-game rollup SDK, and social strategy games like Treaty and Duper where players form arbitrary onchain agreements.",
+  "fundingStage": "Seed",
+  "category": "gaming",
+  "tags": ["onchain-games", "rollup-sdk", "social-games"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "2024",
+  "fundingAmount": "$5.7M",
+  "fundingSource": "https://www.theblock.co/post/309587/web3-game-studio-curio-raises-5-7-million-in-seed-funding",
+  "sources": []
+}

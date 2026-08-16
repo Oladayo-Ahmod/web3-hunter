@@ -1,0 +1,16 @@
+{
+  "companySlug": "blockworks-research",
+  "companyName": "Blockworks Research",
+  "websiteUrl": "https://blockworks.co/research",
+  "careersPageUrl": "https://jobs.ashbyhq.com/blockworks",
+  "description": "Research arm of Blockworks producing data-driven crypto research, dashboards and analyst coverage of onchain capital markets.",
+  "category": "infrastructure",
+  "tags": ["analytics", "research", "data"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "blockworks"
+    }
+  ]
+}

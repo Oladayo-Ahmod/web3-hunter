@@ -1,0 +1,15 @@
+{
+  "companySlug": "utexo",
+  "companyName": "Utexo",
+  "websiteUrl": "https://utexo.com/",
+  "description": "UAE-based blockchain infrastructure startup enabling native USDT settlement on Bitcoin via Lightning and RGB protocols, backed by Tether.",
+  "fundingStage": "Seed",
+  "category": "infrastructure",
+  "tags": ["bitcoin", "lightning-network", "stablecoins", "settlement"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "March 2026",
+  "fundingAmount": "$7.5M",
+  "fundingSource": "https://www.wamda.com/2026/03/uae-blockchain-startup-utexo-raises-7-5-million-seed-led-tether",
+  "sources": []
+}

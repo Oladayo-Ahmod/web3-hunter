@@ -1,0 +1,21 @@
+{
+  "companySlug": "civic-technologies",
+  "companyName": "Civic Technologies",
+  "websiteUrl": "https://www.civic.com/",
+  "careersPageUrl": "https://www.civic.com/careers/",
+  "twitterUrl": "https://x.com/civickey",
+  "linkedinUrl": "https://www.linkedin.com/company/civic-technologies",
+  "description": "Civic is a leader in decentralized identity for web3, providing Civic Pass and identity/verification tooling that lets businesses gate on-chain access without holding user PII.",
+  "category": "infrastructure",
+  "tags": ["identity", "kyc", "verification"],
+  "priority": "medium",
+  "contacts": [
+    {
+      "name": "Chris Hart",
+      "role": "other",
+      "profileUrl": "https://www.linkedin.com/in/chrishart1",
+      "notes": "CEO of Civic Technologies"
+    }
+  ],
+  "sources": []
+}

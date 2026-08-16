@@ -1,0 +1,16 @@
+{
+  "companySlug": "eclipse-labs-svm",
+  "companyName": "Eclipse Labs",
+  "websiteUrl": "https://www.eclipse.xyz",
+  "careersPageUrl": "https://boards.greenhouse.io/eclipse",
+  "description": "Builds Eclipse, an Ethereum L2 that runs the Solana Virtual Machine (SVM) with Celestia for data availability.",
+  "category": "l2",
+  "tags": ["rollup", "svm", "data-availability"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "greenhouse",
+      "sourceIdentifier": "eclipse"
+    }
+  ]
+}

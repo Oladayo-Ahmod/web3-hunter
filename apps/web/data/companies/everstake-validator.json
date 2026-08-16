@@ -1,0 +1,13 @@
+{
+  "companySlug": "everstake-validator",
+  "companyName": "Everstake",
+  "websiteUrl": "https://everstake.one",
+  "careersPageUrl": "https://everstake.one/company/careers",
+  "twitterUrl": "https://twitter.com/everstake_pool",
+  "linkedinUrl": "https://www.linkedin.com/company/everstake",
+  "description": "Institutional staking provider and validator operating infrastructure across 85+ proof-of-stake networks.",
+  "category": "infrastructure",
+  "tags": ["staking", "validator"],
+  "priority": "medium",
+  "sources": []
+}

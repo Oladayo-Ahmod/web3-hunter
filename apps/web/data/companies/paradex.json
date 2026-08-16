@@ -1,0 +1,11 @@
+{
+  "companySlug": "paradex",
+  "companyName": "Paradex",
+  "websiteUrl": "https://paradex.trade",
+  "careersPageUrl": "https://paradex.trade/careers",
+  "description": "Self-custodial crypto derivatives exchange built as Starknet's first appchain, incubated by trading-liquidity network Paradigm and StarkWare.",
+  "category": "defi",
+  "tags": ["derivatives", "dex", "perpetuals", "starknet", "appchain"],
+  "priority": "medium",
+  "sources": []
+}

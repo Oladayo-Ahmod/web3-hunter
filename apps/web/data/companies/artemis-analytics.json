@@ -1,0 +1,17 @@
+{
+  "companySlug": "artemis-analytics",
+  "companyName": "Artemis",
+  "websiteUrl": "https://www.artemis.ai",
+  "careersPageUrl": "https://www.artemis.ai/careers",
+  "linkedinUrl": "https://www.linkedin.com/company/artemis-xyz",
+  "description": "Open data and AI research platform organizing standardized metrics for digital finance and crypto, now expanded to cover equities alongside crypto fundamentals.",
+  "category": "infrastructure",
+  "tags": ["analytics", "onchain-data", "research"],
+  "priority": "high",
+  "sources": [
+    {
+      "collectorSlug": "ashby",
+      "sourceIdentifier": "artemisanalytics"
+    }
+  ]
+}

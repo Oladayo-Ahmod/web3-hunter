@@ -1,0 +1,16 @@
+{
+  "companySlug": "bitway",
+  "companyName": "Bitway",
+  "websiteUrl": "https://bitway.com/",
+  "twitterUrl": "https://x.com/BitwayOfficial",
+  "description": "Onchain strategy infrastructure connecting digital capital to risk-managed TradFi and DeFi strategies, via Bitway Earn and its Bitway Chain payments/financing L1.",
+  "fundingStage": "Seed",
+  "category": "defi",
+  "tags": ["onchain-yield", "l1", "payments", "wealth-management"],
+  "priority": "medium",
+  "recentlyFunded": true,
+  "fundingDate": "2026",
+  "fundingAmount": "$4.444M",
+  "fundingSource": "https://phemex.com/news/article/bitway-secures-4444-million-in-seed-funding-led-by-tron-dao-54937",
+  "sources": []
+}

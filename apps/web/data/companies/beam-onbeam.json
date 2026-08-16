@@ -1,0 +1,12 @@
+{
+  "companySlug": "beam-onbeam",
+  "companyName": "Beam (Merit Circle)",
+  "websiteUrl": "https://onbeam.com/",
+  "careersPageUrl": "https://apply.workable.com/onbeam/",
+  "twitterUrl": "https://x.com/onbeam_",
+  "description": "Beam is a gaming-focused blockchain subnet on Avalanche launched and stewarded by Merit Circle DAO, providing an SDK, wallet, and marketplace infrastructure for Web3 game developers.",
+  "category": "gaming",
+  "tags": ["gaming", "infrastructure", "avalanche"],
+  "priority": "medium",
+  "sources": []
+}

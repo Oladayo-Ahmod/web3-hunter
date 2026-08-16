@@ -1,0 +1,10 @@
+{
+  "companySlug": "diva-staking-dvt",
+  "companyName": "Diva Staking",
+  "websiteUrl": "https://divastaking.com",
+  "description": "Ethereum liquid staking protocol using Distributed Validator Technology (DVT) to spread validator duties across permissionless node operators.",
+  "category": "defi",
+  "tags": ["staking", "dvt", "liquid-staking"],
+  "priority": "high",
+  "sources": []
+}

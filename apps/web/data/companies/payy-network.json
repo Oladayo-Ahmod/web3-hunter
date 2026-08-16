@@ -1,0 +1,15 @@
+{
+  "companySlug": "payy-network",
+  "companyName": "Payy",
+  "websiteUrl": "https://payy.network/",
+  "description": "Ethereum's first privacy-enabled EVM L2 for stablecoin payments, using zero-knowledge proofs to keep sender, receiver and amount private by default, with a self-custodial wallet and Visa card.",
+  "fundingStage": "Seed",
+  "category": "l2",
+  "tags": ["privacy", "zero-knowledge", "stablecoins", "wallet"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "March 2026",
+  "fundingAmount": "$6M",
+  "fundingSource": "https://www.theblock.co/post/395106/stablecoin-startup-payy-funding-private-transactions",
+  "sources": []
+}

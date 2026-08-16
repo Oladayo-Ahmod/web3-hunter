@@ -1,0 +1,17 @@
+{
+  "companySlug": "bebop-dex",
+  "companyName": "Bebop",
+  "websiteUrl": "https://bebop.xyz",
+  "careersPageUrl": "https://jobs.lever.co/Bebop",
+  "linkedinUrl": "https://www.linkedin.com/company/bebopdex",
+  "description": "Decentralized RFQ and intent-based liquidity aggregator, incubated by Wintermute, offering zero-slippage trades via professional market makers and solvers.",
+  "category": "defi",
+  "tags": ["intents", "rfq", "dex"],
+  "priority": "medium",
+  "sources": [
+    {
+      "collectorSlug": "lever",
+      "sourceIdentifier": "Bebop"
+    }
+  ]
+}

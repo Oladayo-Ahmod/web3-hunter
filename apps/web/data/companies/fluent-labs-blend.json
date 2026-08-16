@@ -1,0 +1,16 @@
+{
+  "companySlug": "fluent-labs-blend",
+  "companyName": "Fluent Labs",
+  "websiteUrl": "https://www.fluent.xyz",
+  "twitterUrl": "https://x.com/fluentxyz",
+  "description": "Ethereum L2 rollup combining EVM, SVM, and Wasm execution into a single blended, atomically composable environment.",
+  "fundingStage": "Seed",
+  "category": "l2",
+  "tags": ["rollup", "evm", "svm", "wasm"],
+  "priority": "high",
+  "recentlyFunded": true,
+  "fundingDate": "February 2025",
+  "fundingAmount": "$8M",
+  "fundingSource": "https://www.theblock.co/post/341744/fluent-labs-raises-8-million-usd-polychain-capital-blended-execution-network",
+  "sources": []
+}

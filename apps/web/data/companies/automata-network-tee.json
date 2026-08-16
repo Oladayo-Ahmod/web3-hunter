@@ -1,0 +1,11 @@
+{
+  "companySlug": "automata-network-tee",
+  "companyName": "Automata Network",
+  "websiteUrl": "https://www.ata.network",
+  "careersPageUrl": "https://ata.careers/",
+  "description": "Verification layer using Trusted Execution Environments (TEEs) for Web3 and AI, including MEV-protective private RPC via 1RPC.",
+  "category": "infrastructure",
+  "tags": ["mev", "privacy", "tee"],
+  "priority": "medium",
+  "sources": []
+}

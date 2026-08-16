@@ -1,0 +1,11 @@
+{
+  "companySlug": "arkham-intelligence",
+  "companyName": "Arkham Intelligence",
+  "websiteUrl": "https://info.arkm.com",
+  "careersPageUrl": "https://info.arkm.com/careers",
+  "description": "On-chain intelligence platform that deanonymizes blockchain activity and runs an intel-for-token incentive marketplace.",
+  "category": "infrastructure",
+  "tags": ["analytics", "on-chain-intelligence", "data"],
+  "priority": "high",
+  "sources": []
+}

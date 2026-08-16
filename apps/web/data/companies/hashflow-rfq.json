@@ -1,0 +1,11 @@
+{
+  "companySlug": "hashflow-rfq",
+  "companyName": "Hashflow",
+  "websiteUrl": "https://www.hashflow.com",
+  "twitterUrl": "https://x.com/hashflow",
+  "description": "DeFi protocol using cryptographically signed RFQs from professional market makers to provide slippage- and MEV-protected trades.",
+  "category": "defi",
+  "tags": ["rfq", "mev", "dex"],
+  "priority": "low",
+  "sources": []
+}

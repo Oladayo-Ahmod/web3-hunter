@@ -1,0 +1,15 @@
+{
+  "companySlug": "kulipa",
+  "companyName": "Kulipa",
+  "websiteUrl": "https://www.kulipa.xyz/",
+  "description": "Paris-based platform letting non-custodial wallets issue branded crypto payment cards compatible with Apple Pay and Google Pay.",
+  "fundingStage": "Pre-seed",
+  "category": "wallet",
+  "tags": ["payment-cards", "non-custodial-wallets", "payfi"],
+  "priority": "medium",
+  "recentlyFunded": true,
+  "fundingDate": "2024",
+  "fundingAmount": "$3M",
+  "fundingSource": "https://www.kulipa.xyz/post/reinforcing-our-vision-through-partnership-with-argent-and-3-million-pre-seed-funding",
+  "sources": []
+}

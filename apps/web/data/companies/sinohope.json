@@ -1,0 +1,10 @@
+{
+  "companySlug": "sinohope",
+  "companyName": "Sinohope",
+  "websiteUrl": "https://www.sinohope.com",
+  "description": "Hong Kong-listed digital asset custody and wallet infrastructure provider offering MPC-based custody, AML/KYT and asset management tools.",
+  "category": "security",
+  "tags": ["custody", "mpc", "wallet-infrastructure"],
+  "priority": "low",
+  "sources": []
+}

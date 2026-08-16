@@ -1,0 +1,13 @@
+{
+  "companySlug": "anoma-foundation",
+  "companyName": "Anoma Foundation",
+  "websiteUrl": "https://anoma.net",
+  "careersPageUrl": "https://www.anoma.io/careers/",
+  "twitterUrl": "https://x.com/anoma",
+  "linkedinUrl": "https://www.linkedin.com/company/anoma-network",
+  "description": "Foundation building Anoma, a distributed operating system for intent-centric decentralized applications.",
+  "category": "infrastructure",
+  "tags": ["intents"],
+  "priority": "medium",
+  "sources": []
+}

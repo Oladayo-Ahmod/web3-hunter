@@ -1,0 +1,10 @@
+{
+  "companySlug": "eden-network-mev",
+  "companyName": "Eden Network",
+  "websiteUrl": "https://edennetwork.io",
+  "description": "Multichain MEV infrastructure providing private RPC, relay, and bundle services to reduce negative MEV externalities for users and validators.",
+  "category": "infrastructure",
+  "tags": ["mev"],
+  "priority": "low",
+  "sources": []
+}

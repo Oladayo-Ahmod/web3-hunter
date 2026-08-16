@@ -1,0 +1,13 @@
+{
+  "companySlug": "tally-xyz",
+  "companyName": "Tally",
+  "websiteUrl": "https://www.tally.xyz/",
+  "careersPageUrl": "https://wellfound.com/company/tally-xyz/jobs",
+  "twitterUrl": "https://x.com/tallyxyz",
+  "linkedinUrl": "https://www.linkedin.com/company/tallyxyz",
+  "description": "Tally is a leading on-chain governance platform providing tooling for token launches, capital formation, and DAO/protocol governance (used by Arbitrum, Uniswap, ENS).",
+  "category": "infrastructure",
+  "tags": ["dao-tooling", "governance"],
+  "priority": "high",
+  "sources": []
+}

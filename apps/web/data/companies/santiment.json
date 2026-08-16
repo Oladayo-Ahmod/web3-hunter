@@ -1,0 +1,12 @@
+{
+  "companySlug": "santiment",
+  "companyName": "Santiment",
+  "websiteUrl": "https://santiment.net",
+  "careersPageUrl": "https://santiment.net/jobs/",
+  "twitterUrl": "https://twitter.com/SantimentData",
+  "description": "Crypto intelligence platform aggregating social, on-chain, financial and development metrics across thousands of assets since 2016.",
+  "category": "infrastructure",
+  "tags": ["analytics", "onchain-data", "social-data"],
+  "priority": "medium",
+  "sources": []
+}
