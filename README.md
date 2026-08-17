@@ -164,9 +164,25 @@ Adding a company on an already-supported source (Greenhouse, Lever, Ashby, GitHu
 
 ### Automating the pipeline
 
-Running the commands above by hand every time isn't required. There is still no scheduler inside this codebase — nothing here decides *when* to run; every route below only responds to a request an external scheduler chooses to send. This project uses an external scheduler, [cron-job.org](https://cron-job.org), rather than Vercel Cron, so the same setup works whether the app is deployed on Vercel, Docker, or anywhere else.
+Running the commands above by hand every time isn't required. There is still no scheduler inside this codebase — nothing here decides *when* to run; everything below only runs in response to a request or trigger an external scheduler chooses to send.
 
-**Recommended: one cron job per stage**, each independently schedulable, so a slow or rate-limited stage never delays the others and no single request risks a host's execution-time cap:
+**Recommended (production): a scheduled GitHub Actions workflow**, [`.github/workflows/job-ingestion.yml`](.github/workflows/job-ingestion.yml), running every 6 hours. This is the primary recommendation because of a real measurement, not a preference: a full run of the three ATS Collectors against the current curated directory (~500 companies) took **5m31s (Lever) / 24m35s (Greenhouse) / 23m40s (Ashby)**, and Job classification over the resulting ~1,500 open postings took **11m46s** — all well past any Vercel serverless function's execution ceiling (Hobby: 60s hard cap; Pro: 300s standard). A GitHub Actions job has no such ceiling (up to 6h on the free tier), so it's the smallest change that makes the existing pipeline actually finish, rather than silently truncating every scheduled run.
+
+The workflow runs the same CLI commands from "Populating data" above, in dependency order, in one job:
+
+`collect:greenhouse` → `collect:lever` → `collect:ashby` → `collect:github` → `classify:jobs` → `score:companies` → `classify:opportunities` → `detect:technology` → `match:users` → `decide:recommendations`
+
+Each step has `continue-on-error: true` — one Collector's transient failure never blocks the others or the downstream stages (the same per-entity-isolation philosophy every stage already applies internally, extended to per-stage isolation here).
+
+**Setup:**
+
+1. In your GitHub repo, go to **Settings → Secrets and variables → Actions** and add one repository secret: `DATABASE_URL` (the same value as `apps/web/.env`). Nothing else to add — the workflow's `GITHUB_TOKEN` reference is the token GitHub automatically provides to every workflow run, not a secret you create.
+2. That's it. The workflow fires automatically every 6 hours, or trigger it manually anytime from the repo's **Actions** tab → "Job Ingestion Pipeline" → **Run workflow** (also works as your manual test — watch the per-step logs there).
+
+**The `/api/cron/*` HTTP routes remain fully functional and unchanged in behavior** (auth included) — they're just no longer the recommended path for the *recurring* schedule, for the timing reason above. They're still useful for:
+
+- A manual "run one stage now" trigger via `curl` (see below).
+- A deployment with no serverless execution-time ceiling at all (Docker/self-hosted) — see the [cron-job.org](https://cron-job.org) setup this project used before this milestone.
 
 | Endpoint | Same as |
 |---|---|
@@ -181,21 +197,23 @@ Running the commands above by hand every time isn't required. There is still no 
 | `GET/POST /api/cron/matching` | `match:users` |
 | `GET/POST /api/cron/decision` | `decide:recommendations` |
 
-Each returns `{ ok, stage, results }` — `200` on full success, `207` if any individual entity within that stage failed (the rest still ran, per-entity isolation as always), `401` on a missing/incorrect bearer token, `503` if `CRON_SECRET` isn't configured.
+Each returns `{ ok, stage, results }` — `200` on full success, `207` if any individual entity within that stage failed (the rest still ran, per-entity isolation as always), `401` on a missing/incorrect bearer token, `503` if `CRON_SECRET` isn't configured. `GET/POST /api/cron/pipeline` still runs all 9 above in one request too, but is even more likely to be truncated than any single stage — see its own doc comment.
 
-`GET /api/cron/pipeline` also still exists, running all 9 stages above (`seed:skills` and `seed:companies` excepted — both are one-time/as-needed steps, not recurring ones) in dependency order in a single request. Useful for a manual "run everything now" trigger (a fresh deploy, a backfill); not recommended as the regular schedule, for the reasons above.
+**Manually testing any endpoint** (requires `CRON_SECRET` set wherever the app is deployed):
 
-**Setup (per endpoint you want scheduled):**
-1. Set `CRON_SECRET` (generate one with `openssl rand -base64 32`) alongside your other env vars, wherever the app is deployed — one secret authorizes every `/api/cron/*` route.
-2. In cron-job.org, create a job per endpoint:
-   - URL: `https://<your-deployment>/api/cron/<stage>`
-   - Method: `GET` or `POST` — both work
-   - Header: `Authorization: Bearer <your CRON_SECRET>`
-   - Schedule: your choice. Respect dependency order across jobs — e.g. Collectors before Scoring, Scoring before Classification/Matching, Matching before Decision — Technology only depends on `collect-github`, independently of the others.
+```bash
+curl -i -X POST "https://<your-deployment>/api/cron/collect-greenhouse" \
+  -H "Authorization: Bearer <your CRON_SECRET>"
+```
 
-Two things worth knowing before turning this on:
-- **GitHub rate limits.** Without `GITHUB_TOKEN` set, frequent automated runs of `collect-github` will exhaust the unauthenticated 60-requests/hour limit quickly — either set `GITHUB_TOKEN`, or schedule that one endpoint less frequently than the others.
-- **Execution time limits.** A cold run against a large backlog can take a while, especially the four Collectors (live network calls). Each per-stage route declares `maxDuration = 120` (the combined route: `300`), but your host still enforces its own ceiling regardless — e.g. Vercel's Hobby plan caps at 60 seconds; Pro allows configuring higher.
+**If you still want cron-job.org instead of (or alongside) GitHub Actions** — e.g. for a non-Vercel deployment — set `CRON_SECRET` (generate one with `openssl rand -base64 32`) alongside your other env vars, then in cron-job.org create one job per endpoint:
+
+- URL: `https://<your-deployment>/api/cron/<stage>`
+- Method: `GET` or `POST` — both work
+- Header: `Authorization: Bearer <your CRON_SECRET>`
+- Schedule: respect dependency order across jobs — Collectors before Scoring/Job-classification, Scoring before Classification/Matching, Matching before Decision; Technology only depends on `collect-github`, independently of the others. Without `GITHUB_TOKEN` set, frequent runs of `collect-github` will exhaust GitHub's unauthenticated 60-requests/hour limit — either set `GITHUB_TOKEN`, or schedule that one less frequently.
+
+**Company/contact/funding research is intentionally not part of this recurring pipeline.** The curated company directory (`apps/web/data/companies/`) is hand-verified data, updated by editing/adding JSON files and re-running `seed:companies` as a deliberate, one-time action — never a scheduled job. See "Tracked companies" above.
 
 ### Common commands
 

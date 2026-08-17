@@ -2,7 +2,12 @@ import { authorizeCronRequest, cronStageResponse } from "@/lib/cron/shared";
 import { classifyJobsForAllCompanies } from "@/lib/pipeline/stages";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+// Milestone 23: raised from 120 after measuring a real production run —
+// 11m46s against the current open-job volume (~1,500 postings). See
+// `../collect-greenhouse/route.ts`'s doc comment for the same rationale.
+// Recurring schedule should use `.github/workflows/job-ingestion.yml`,
+// not this route.
+export const maxDuration = 300;
 
 /**
  * Job-level Skill classification — Milestone 13 Phase 2. Depends only on

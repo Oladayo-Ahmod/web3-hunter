@@ -3,7 +3,14 @@ import { getTrackedCompaniesForCollector } from "@/lib/collectors/tracked-compan
 import { authorizeCronRequest, cronStageResponse } from "@/lib/cron/shared";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+// Milestone 23: raised from 120 to match the other three Collector
+// routes — see `../collect-greenhouse/route.ts`'s doc comment. Not
+// separately measured (no evidence this one is as slow as the ATS
+// collectors — likely fewer tracked orgs than companies), but the same
+// network-bound, sequential-per-entity execution shape, so the same
+// conservative ceiling applies. Recurring schedule should use
+// `.github/workflows/job-ingestion.yml`, not this route.
+export const maxDuration = 300;
 
 /**
  * One of 7 independently-schedulable cron entry points — see
