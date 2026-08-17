@@ -33,6 +33,18 @@ export const maxDuration = 300;
  * backfill) where chaining every stage in one request is actually what
  * you want.
  *
+ * Milestone 23: a real production measurement makes this route
+ * unreliable for anything but a small/cold dataset today - the three
+ * ATS Collector stages alone took 5m31s/24m35s/23m40s in sequence
+ * against the current curated directory, and Job classification took
+ * another 11m46s; the combined total is well past even this route's own
+ * 300s ceiling (which is itself the largest value worth declaring here -
+ * see individual stage routes' doc comments). Prefer
+ * `.github/workflows/job-ingestion.yml` (no serverless time ceiling) for
+ * a real "run everything" trigger at current data volume - keep using
+ * this route only for a genuinely small/cold dataset, or as a quick
+ * manual smoke test of the request/auth shape.
+ *
  * Every architectural constraint this system has held since Milestone 2 -
  * "no queue, no worker, no scheduler inside this codebase" - still holds:
  * this route does not schedule anything itself, it only responds to a
