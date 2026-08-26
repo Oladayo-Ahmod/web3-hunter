@@ -1,13 +1,47 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { publishEventSafely } from "@web3-hunter/events";
 import { deriveDeterministicId } from "@web3-hunter/shared";
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
+import { z } from "zod";
 import { computeDetectionWindow } from "./detection-window";
 import { OpportunityDetected, OpportunityScored } from "./event-types";
 import { meetsOpportunityThreshold } from "./opportunity-detection";
 import { ENGINEERING_HIRING_SURGE, deriveOpportunityId } from "./opportunity-id";
 import { computeOpportunityScore } from "./scoring";
 import type { CompanyIntelligenceState, SignalSummary } from "./types";
+
+const opportunityScoredMetadataSchema = z.object({
+  signalCount: z.number().int().min(0).optional(),
+});
+
+/**
+ * The most recent previous `OpportunityScored` Event for this specific
+ * Opportunity, if any, plus how many Signals it was computed over — see
+ * `evaluateOpportunity`'s doc comment. Scoped by
+ * `metadata->>'opportunityId'`, not just `relatedEntityId` (which is the
+ * Company, since one Company can have multiple Opportunities across
+ * different detection windows). `signalCount` comes back `undefined` for
+ * a pre-Milestone-26 Event that predates this field.
+ */
+async function findPreviousOpportunityScoredEvent(
+  opportunityId: string,
+): Promise<{ id: string; signalCount: number | undefined } | null> {
+  const [row] = await getDb()
+    .select({ id: schema.event.id, metadata: schema.event.metadata })
+    .from(schema.event)
+    .where(
+      sql`${schema.event.type} = ${OpportunityScored.name} AND ${schema.event.metadata}->>'opportunityId' = ${opportunityId}`,
+    )
+    .orderBy(desc(schema.event.occurredAt), desc(schema.event.id))
+    .limit(1);
+
+  if (!row) {
+    return null;
+  }
+
+  const parsed = opportunityScoredMetadataSchema.safeParse(row.metadata);
+  return { id: row.id, signalCount: parsed.success ? parsed.data.signalCount : undefined };
+}
 
 async function getCompanySignals(companyId: string): Promise<SignalSummary[]> {
   const rows = await getDb()
@@ -125,16 +159,27 @@ export async function evaluateOpportunity(
       `web3-hunter:scoring:opportunity-scored:${opportunityId}:${asOf.toISOString()}:${signals.length}`,
     );
 
+    // Milestone 26 (see `updateCompanyIntelligence`'s doc comment for the
+    // full production-audit reasoning behind this pattern): cite only
+    // Signals new since this Opportunity's most recent previous score,
+    // plus a link to that previous Event, instead of the full Company
+    // Signal history every time it re-scores.
+    const previousScore = await findPreviousOpportunityScoredEvent(opportunityId);
+    const provenance =
+      previousScore && previousScore.signalCount !== undefined
+        ? [...signalIds.slice(previousScore.signalCount), previousScore.id]
+        : signalIds;
+
     await publishEventSafely({
       id: scoreEventId,
       type: OpportunityScored.name,
-      metadata: { opportunityId, score, reasoning: scoreReasoning },
+      metadata: { opportunityId, score, reasoning: scoreReasoning, signalCount: signals.length },
       occurredAt: asOf,
       confidence: intelligence.confidence,
       sourceLabel: "scoring-engine",
       relatedEntityType: "company",
       relatedEntityId: companyId,
-      provenance: signalIds,
+      provenance,
     });
 
     await db

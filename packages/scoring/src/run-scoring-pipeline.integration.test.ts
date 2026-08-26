@@ -1,7 +1,7 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { publishEvent, registerEventType } from "@web3-hunter/events";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { rebuildCompanyIntelligence } from "./company-intelligence-store";
 import { deriveOpportunityId, ENGINEERING_HIRING_SURGE } from "./opportunity-id";
@@ -314,6 +314,194 @@ describe("runScoringPipeline (integration)", () => {
 
     expect(opportunityB?.score).toEqual(opportunityA?.score);
     expect(opportunityB?.detectionWindow).toEqual(opportunityA?.detectionWindow);
+  });
+
+  // Milestone 26 — real production audit found `IntelligenceUpdated` and
+  // `HiringSignalDetected` together responsible for ~92% of
+  // `event_provenance`'s 772k rows, because every recompute re-cited a
+  // Company's *entire* Signal/Event history. These tests prove the fix
+  // (cite only what's new since the previous same-type Event, plus a
+  // link to it) without weakening any of the replay-determinism or
+  // state-correctness coverage above, which still passes unchanged.
+  it("bounds event_provenance growth: later IntelligenceUpdated Events cite only new Signals, not the full accumulated history", async () => {
+    const { collectorId, companyId } = await seedCollectorAndCompany("acme-provenance-bound");
+
+    // Enough distinct postings, spread across enough days, to trigger
+    // several separate Intelligence recomputes as Signals accumulate one
+    // at a time (each new-backend-role/infrastructure-activity posting
+    // is its own triggering Event).
+    const postings = [
+      { title: "Backend Engineer", day: 0 },
+      { title: "Infrastructure Engineer", day: 3 },
+      { title: "Backend Developer", day: 6 },
+      { title: "Platform Engineer", day: 9 },
+      { title: "Site Reliability Engineer", day: 12 },
+    ];
+    for (const posting of postings) {
+      await publishJobPosted({
+        collectorId,
+        companyId,
+        title: posting.title,
+        occurredAt: daysAfter(posting.day),
+      });
+    }
+
+    await runScoringPipeline(companyId);
+
+    const intelligenceEvents = await getDb()
+      .select({
+        id: schema.event.id,
+        metadata: schema.event.metadata,
+        occurredAt: schema.event.occurredAt,
+      })
+      .from(schema.event)
+      .where(
+        and(
+          eq(schema.event.type, "IntelligenceUpdated"),
+          eq(schema.event.relatedEntityId, companyId),
+        ),
+      );
+    expect(intelligenceEvents.length).toBeGreaterThan(1); // multiple recomputes actually happened
+
+    const sorted = [...intelligenceEvents].sort(
+      (a, b) => a.occurredAt.getTime() - b.occurredAt.getTime(),
+    );
+    const lastEvent = sorted[sorted.length - 1]!;
+    const lastMetadata = lastEvent.metadata as { signalCount: number };
+
+    const provenanceForLastEvent = await getDb()
+      .select()
+      .from(schema.eventProvenance)
+      .where(eq(schema.eventProvenance.eventId, lastEvent.id));
+
+    // The real bug this fixes: before Milestone 26, this would equal
+    // `lastMetadata.signalCount` (the full accumulated history) once
+    // that count grows past a handful. It must now be small — the new
+    // Signal(s) since the previous recompute, plus one link — never the
+    // full total.
+    expect(provenanceForLastEvent.length).toBeLessThan(lastMetadata.signalCount);
+  });
+
+  it("preserves full audit reconstructability: walking the IntelligenceUpdated provenance chain backward recovers every Signal", async () => {
+    const { collectorId, companyId } = await seedCollectorAndCompany("acme-provenance-chain");
+
+    const postings = [
+      { title: "Backend Engineer", day: 0 },
+      { title: "Infrastructure Engineer", day: 3 },
+      { title: "Backend Developer", day: 6 },
+    ];
+    for (const posting of postings) {
+      await publishJobPosted({
+        collectorId,
+        companyId,
+        title: posting.title,
+        occurredAt: daysAfter(posting.day),
+      });
+    }
+
+    await runScoringPipeline(companyId);
+
+    const allSignals = await getDb()
+      .select({ id: schema.signal.id })
+      .from(schema.signal)
+      .where(eq(schema.signal.companyId, companyId));
+    const allSignalIds = new Set(allSignals.map((s) => s.id));
+
+    const intelligenceEvents = await getDb()
+      .select({ id: schema.event.id, occurredAt: schema.event.occurredAt })
+      .from(schema.event)
+      .where(
+        and(
+          eq(schema.event.type, "IntelligenceUpdated"),
+          eq(schema.event.relatedEntityId, companyId),
+        ),
+      );
+    const sorted = [...intelligenceEvents].sort(
+      (a, b) => b.occurredAt.getTime() - a.occurredAt.getTime(),
+    );
+    const latestEventId = sorted[0]!.id;
+
+    // Walk the chain: at each step, collect every cited Signal id, and
+    // follow any cited id that is itself an IntelligenceUpdated Event
+    // (the "link to the previous recompute") one step further back.
+    const recovered = new Set<string>();
+    const toVisit = [latestEventId];
+    const visited = new Set<string>();
+    while (toVisit.length > 0) {
+      const eventId = toVisit.pop()!;
+      if (visited.has(eventId)) continue;
+      visited.add(eventId);
+
+      const citations = await getDb()
+        .select({ causedByEventId: schema.eventProvenance.causedByEventId })
+        .from(schema.eventProvenance)
+        .where(eq(schema.eventProvenance.eventId, eventId));
+
+      for (const { causedByEventId } of citations) {
+        if (allSignalIds.has(causedByEventId)) {
+          recovered.add(causedByEventId);
+        } else {
+          toVisit.push(causedByEventId);
+        }
+      }
+    }
+
+    expect(recovered).toEqual(allSignalIds);
+  });
+
+  it("bounds HiringSignalDetected provenance too: a sustained posting streak doesn't re-cite the whole rolling window on every new Signal", async () => {
+    const { collectorId, companyId } = await seedCollectorAndCompany("acme-signal-window");
+
+    // Six postings within a 30-day window is enough to keep
+    // multipleRelatedOpeningsDetector/hiringVelocityDetector firing
+    // repeatedly on an overlapping window — the exact real-production
+    // pattern that drove HiringSignalDetected's 45% share of
+    // event_provenance.
+    const postings = [0, 4, 8, 12, 16, 20].map((day) => ({
+      title: `Backend Engineer #${day}`,
+      day,
+    }));
+    for (const posting of postings) {
+      await publishJobPosted({
+        collectorId,
+        companyId,
+        title: posting.title,
+        occurredAt: daysAfter(posting.day),
+      });
+    }
+
+    await runScoringPipeline(companyId);
+
+    const windowSignals = await getDb()
+      .select({ id: schema.signal.id, sourceEventIds: schema.signal.sourceEventIds })
+      .from(schema.signal)
+      .where(
+        and(
+          eq(schema.signal.companyId, companyId),
+          eq(schema.signal.signalType, "multiple-related-openings"),
+        ),
+      );
+
+    // The detector itself should have fired more than once as the
+    // window filled up with successive postings.
+    expect(windowSignals.length).toBeGreaterThan(1);
+
+    const lastSignal = windowSignals[windowSignals.length - 1]!;
+    const provenanceForLastSignal = await getDb()
+      .select()
+      .from(schema.eventProvenance)
+      .where(eq(schema.eventProvenance.eventId, lastSignal.id));
+
+    // Before Milestone 26 this would equal `lastSignal.sourceEventIds.length`
+    // (the detector's full, currently-in-window candidate list, cited
+    // again from scratch). It must now be smaller — only the JobPosted
+    // Event(s) new to the window since the previous same-type Signal,
+    // plus one link.
+    expect(provenanceForLastSignal.length).toBeLessThan(lastSignal.sourceEventIds.length);
+    // The product-facing column is untouched — still the detector's
+    // full, untrimmed candidate list, so nothing reading it sees any
+    // behavior change.
+    expect(lastSignal.sourceEventIds.length).toBeGreaterThan(1);
   });
 
   it("extensibility: a newly registered detector is exercised with zero changes to the pipeline runner", async () => {
