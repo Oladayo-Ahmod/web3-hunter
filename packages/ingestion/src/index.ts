@@ -15,4 +15,9 @@ export {
   type ReconcileMissingRecordsInput,
   type RunIngestionPipelineInput,
 } from "./run-ingestion-pipeline";
-export { storeRawRecord, type RawRecord, type StoreRawRecordInput } from "./store-raw-record";
+export {
+  storeRawRecord,
+  storeRawRecords,
+  type RawRecord,
+  type StoreRawRecordInput,
+} from "./store-raw-record";

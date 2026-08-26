@@ -2,7 +2,7 @@ import { getDb, resolveOrCreateCollector, schema } from "@web3-hunter/db";
 import {
   reconcileMissingRecords,
   runIngestionPipeline,
-  storeRawRecord,
+  storeRawRecords,
   type NormalizedEvent,
   type Normalizer,
 } from "@web3-hunter/ingestion";
@@ -175,6 +175,8 @@ export async function runCollector<TRecord>(
     recordsProcessed,
     recordsPublished,
     errors,
+    successCount: results.filter((result) => result.status === "ok").length,
+    totalCount: results.length,
   });
 
   return results;
@@ -194,13 +196,22 @@ async function persistAndIngest<TRecord>(
   companyId: string,
   records: readonly TRecord[],
 ): Promise<Extract<RunCollectorResult, { status: "ok" }>> {
-  for (const record of records) {
-    await storeRawRecord({
-      collectorId,
-      payload: record,
-      externalId: config.externalIdOf(record),
-      sourceIdentifier,
-    });
+  // Milestone 25: one batched call instead of one `storeRawRecord` round
+  // trip per job — see `storeRawRecords`'s doc comment. This was the
+  // dominant cost behind the ATS Collectors' real 5-25 minute runtimes
+  // (companies with hundreds of open roles meant hundreds of sequential
+  // network round trips to Supabase per company); batching changes
+  // nothing about *what* gets written or its dedup guarantees, only how
+  // many round trips it costs.
+  if (records.length > 0) {
+    await storeRawRecords(
+      records.map((record) => ({
+        collectorId,
+        payload: record,
+        externalId: config.externalIdOf(record),
+        sourceIdentifier,
+      })),
+    );
   }
 
   const pipelineResult = await runIngestionPipeline({
@@ -310,16 +321,44 @@ interface RunHealth {
   recordsProcessed: number;
   recordsPublished: number;
   errors: readonly string[];
+  /** How many tracked Companies this run fetched/persisted/ingested without error. */
+  successCount: number;
+  /** How many tracked Companies this run attempted in total (`successCount` + failures). */
+  totalCount: number;
 }
 
 /**
  * Records exactly one Collector Health snapshot per full run — the fix for
  * the pre-Milestone-8 bug where each company's outcome overwrote the
- * previous one mid-run. A run counts as a "successful run" only if every
- * tracked company in it succeeded; any single company's failure marks the
- * whole run as the "last failed run", increments `consecutiveFailures`,
- * and cites every failing company's error (not just the last one) — this
- * is a deliberate run-level definition of health, not a per-company one.
+ * previous one mid-run.
+ *
+ * Milestone 25 (governing directive Part C): three distinct run outcomes,
+ * not two. A real production audit found a handful of permanently dead
+ * company boards (404s from a renamed/removed ATS board) holding
+ * `lastRunAt` frozen for *weeks* and `status` stuck on "degraded" even
+ * while every other tracked Company kept publishing fresh JobPosted/
+ * JobUpdated Events run after run — because the previous version of this
+ * function only ever advanced `lastRunAt` on a *zero-error* run. A
+ * Collector tracking 100 Companies where 1 permanently 404s would never
+ * again report a fresh `lastRunAt`, making the freshness signal
+ * (`pipeline-health-service.ts`'s `isStale`) actively wrong: it would
+ * flag a Collector as stale while it was, in fact, successfully
+ * publishing new job data every single run.
+ *
+ * - **Successful run** (`errors.length === 0`): `status: "active"`,
+ *   `lastRunAt` advances, `consecutiveFailures` resets to 0.
+ * - **Partial run** (`successCount > 0` but some Companies errored):
+ *   `status: "degraded"` (still worth a human's attention — the error
+ *   log and `consecutiveFailures` streak are unchanged from before) BUT
+ *   `lastRunAt` **still advances**, because real, fresh data was
+ *   collected for every Company that didn't fail. This is the actual
+ *   fix: staleness must reflect "is this Collector still doing its job,"
+ *   not "did every single tracked Company succeed."
+ * - **Failed run** (`successCount === 0`, i.e. every tracked Company
+ *   failed — a systemic problem, not a handful of dead boards):
+ *   `status: "degraded"`, `lastRunAt` does **not** advance. This is the
+ *   only case where staleness should genuinely be flagged, since no new
+ *   data came in at all.
  */
 async function recordRunHealth(collectorId: string, health: RunHealth): Promise<void> {
   const db = getDb();
@@ -345,10 +384,18 @@ async function recordRunHealth(collectorId: string, health: RunHealth): Promise<
     .where(eq(schema.collector.id, collectorId))
     .limit(1);
 
+  const madeProgress = health.successCount > 0;
+
   await db
     .update(schema.collector)
     .set({
       status: "degraded",
+      // A partial run's `lastRunAt` still advances — see this function's
+      // doc comment. Only a total failure (zero successes) leaves it
+      // untouched, which is what correctly makes staleness detection
+      // fire for a genuinely broken Collector instead of one with a
+      // handful of permanently dead boards mixed into a healthy run.
+      ...(madeProgress ? { lastRunAt: new Date() } : {}),
       lastErrorAt: new Date(),
       lastErrorMessage: health.errors.join("; "),
       consecutiveFailures: (current?.consecutiveFailures ?? 0) + 1,
