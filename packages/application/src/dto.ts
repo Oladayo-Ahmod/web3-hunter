@@ -420,6 +420,36 @@ export interface TodayApplyJobDTO {
  * already-ranked lists built entirely from `listJobFeed`/
  * `listOutreachTargets`'s own data; no new scoring subsystem, no AI.
  */
+/**
+ * `CollectorHealthDTO` (above) plus one derived field — whether this
+ * Collector's own health data is older than its expected cadence allows
+ * (Milestone 24, governing directive Part 8). A separate, wrapping type
+ * rather than adding `isStale` directly onto `CollectorHealthDTO` itself:
+ * that DTO's only mapper, `toCollectorHealthDTO`, is a pure "flatten one
+ * `collector` row" function with no knowledge of scheduling — staleness
+ * needs each Collector's *own* cadence (job Collectors vs. `github`),
+ * which is a `pipeline-health-service.ts` concern, not a row-mapping one.
+ */
+export interface CollectorHealthWithFreshnessDTO extends CollectorHealthDTO {
+  isStale: boolean;
+}
+
+/**
+ * Data-freshness as a first-class, observable fact (Milestone 24,
+ * governing directive Part 8) — "the system must not silently become
+ * stale." `jobsLastRefreshedAt` is the single most important field: the
+ * most recent `JobPosted`/`JobUpdated` Event timestamp across the entire
+ * `event` table, independent of any one Collector's self-reported
+ * health, so it reflects what actually landed in the database rather
+ * than what a Collector merely claims to have done.
+ */
+export interface PipelineHealthDTO {
+  jobsLastRefreshedAt: string | null;
+  /** True when `jobsLastRefreshedAt` is older than the acceptable staleness threshold — see `pipeline-health-service.ts`. */
+  jobsAreStale: boolean;
+  collectors: CollectorHealthWithFreshnessDTO[];
+}
+
 export interface TodayDigestDTO {
   applyJobs: TodayApplyJobDTO[];
   dmTargets: OutreachTargetDTO[];

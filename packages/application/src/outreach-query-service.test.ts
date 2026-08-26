@@ -1,7 +1,7 @@
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { classifyOpportunityType, listOutreachTargets } from "./outreach-query-service";
-import { seedCompany, seedCompanyContact } from "./test-support/seed";
+import { seedCompany, seedCompanyContact, seedJobPostedEvent } from "./test-support/seed";
 
 describe("classifyOpportunityType", () => {
   it("prefers an open role over every other reason to reach out", () => {
@@ -122,5 +122,47 @@ describe("listOutreachTargets (integration)", () => {
 
     expect(target?.reasonToContact).toEqual(expect.any(String));
     expect(target?.reasonToContact.length).toBeGreaterThan(0);
+  });
+
+  // Milestone 24: outreach-query-service.ts now runs the exact same
+  // eligibility gate job-query-service.ts's default /jobs view uses —
+  // "open role" means an *eligible* open role, not any posting.
+  it("does NOT classify a Company as OPEN_ROLE when its only posting is ineligible, and falls through to a DM bucket instead", async () => {
+    const company = await seedCompany({ slug: "irrelevant-role-co", priority: "high" });
+    await seedJobPostedEvent({
+      companyId: company.id,
+      externalId: "sales-1",
+      title: "Account Executive, Enterprise Sales",
+    });
+
+    const targets = await listOutreachTargets();
+    const target = targets.find((entry) => entry.slug === "irrelevant-role-co");
+
+    expect(target?.openJobCount).toBe(0);
+    expect(target?.openJobTitles).toEqual([]);
+    // No eligible role and no funding signal, but curator-flagged high
+    // priority — falls through to the next bucket down, not OPEN_ROLE.
+    expect(target?.opportunityType).toBe("HIGH_PRIORITY_STARTUP");
+  });
+
+  it("counts only the eligible postings when a Company has a mix of relevant and irrelevant open roles", async () => {
+    const company = await seedCompany({ slug: "mixed-roles-co" });
+    await seedJobPostedEvent({
+      companyId: company.id,
+      externalId: "eng-1",
+      title: "Smart Contract Engineer",
+    });
+    await seedJobPostedEvent({
+      companyId: company.id,
+      externalId: "mktg-1",
+      title: "Product Marketing Manager",
+    });
+
+    const targets = await listOutreachTargets();
+    const target = targets.find((entry) => entry.slug === "mixed-roles-co");
+
+    expect(target?.openJobCount).toBe(1);
+    expect(target?.openJobTitles).toEqual(["Smart Contract Engineer"]);
+    expect(target?.opportunityType).toBe("OPEN_ROLE");
   });
 });

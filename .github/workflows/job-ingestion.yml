@@ -1,120 +1,108 @@
 name: Job Ingestion Pipeline
 
-# Milestone 23 — the recurring production schedule for the existing
-# ingestion pipeline. This workflow adds NO new ingestion logic: every
-# step below runs the exact same `pnpm --filter @web3-hunter/web
-# <script>` command documented in README.md's "Populating data" section
-# and already used for local/manual runs all along.
+# Milestone 24 — the CORE, freshness-critical path only: the three ATS
+# job collectors plus job classification. Nothing else. This workflow
+# adds no new ingestion logic - every job below runs the exact same
+# `pnpm --filter @web3-hunter/web <script>` command already documented
+# in README.md's "Populating data" section.
 #
-# Why GitHub Actions and not the `/api/cron/*` HTTP routes for the
-# *recurring* schedule: a real production measurement (see those routes'
-# own doc comments) found the three ATS Collectors alone take
-# 5m31s/24m35s/23m40s against the current curated directory, and Job
-# classification another 11m46s — all well past any Vercel serverless
-# function's execution-time ceiling (Hobby: 60s max; Pro: 300s standard).
-# A GitHub Actions job has no such ceiling (up to 6h on the free tier),
-# so it's the smallest change that makes the *existing* pipeline actually
-# complete, rather than silently truncating every run. The `/api/cron/*`
-# routes are unchanged and still valid for a manual "run now" trigger or
-# a non-Vercel deployment with no serverless time limit of its own.
+# Split into separate JOBS (not sequential steps in one job, as
+# Milestone 23 originally had it) so a crash, hang, or runner-level
+# failure in one collector cannot prevent the others - or job
+# classification - from running. Milestone 24's real production
+# measurement found Greenhouse fresh (hours old) while Lever/Ashby sat
+# stale for days despite all three being steps in the same job with
+# `continue-on-error: true` - step-level isolation wasn't enough; job-
+# level isolation (separate runners entirely) is the actually-reliable
+# fix. `.github/workflows/enrichment.yml` covers everything else
+# (GitHub repo data, company scoring/classification/technology/matching/
+# decision) on its own, much less frequent schedule - see that file for
+# why those are deliberately NOT here.
 on:
   schedule:
-    # Every 6 hours - 00:00, 06:00, 12:00, 18:00 UTC. Matches the
-    # recommended collector cadence; every downstream stage below runs
-    # immediately after, in the same job, respecting dependency order.
+    # Every 6 hours - 00:00, 06:00, 12:00, 18:00 UTC.
     - cron: "0 */6 * * *"
   workflow_dispatch: {} # manual "Run workflow" button, for testing
 
 concurrency:
-  # Never run two ingestion passes at once - a slow run (see the timings
-  # above) can still be going when the next scheduled trigger fires.
   group: job-ingestion-pipeline
   cancel-in-progress: false
 
 jobs:
-  ingest:
-    name: Collect, classify, score, match, decide
+  collect-greenhouse:
+    name: Collect - Greenhouse
     runs-on: ubuntu-latest
-    # Real measured total (~66 min) plus headroom for data growth and the
-    # untested downstream stages; GitHub's own ceiling is 360 (Free tier).
-    timeout-minutes: 120
+    # Real measured duration: 24m35s against ~500 tracked companies.
+    # Generous headroom for data growth; GitHub's own ceiling is 360
+    # (Free tier) if this value is ever exceeded.
+    timeout-minutes: 45
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+      - run: pnpm install --frozen-lockfile
       - name: Write environment file
-        # Every script here reads `apps/web/.env` via `tsx --env-file`
-        # (see apps/web/package.json) - this writes exactly the two
-        # variables the CLI scripts actually need (packages/db only
-        # requires DATABASE_URL; the GitHub collector's rate-limit boost
-        # is the only other one - see packages/collectors/src/github/env.ts).
-        # GITHUB_TOKEN here is the token GitHub automatically provides to
-        # every workflow run - no separate secret to create for it.
-        run: |
-          cat > apps/web/.env << EOF
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          EOF
+        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > apps/web/.env
+      - run: pnpm --filter @web3-hunter/web collect:greenhouse
 
-      # Collectors - independent of each other, dependency-order-wise;
-      # run sequentially (not in parallel jobs) to keep this workflow the
-      # smallest possible change and avoid concurrent-write contention
-      # against the same database. `continue-on-error` on every step:
-      # one Collector's transient failure (e.g. a source API outage)
-      # should never block the others, or downstream classification/
-      # scoring/matching from still running against what did succeed.
-      - name: Collect - Greenhouse
-        run: pnpm --filter @web3-hunter/web collect:greenhouse
-        continue-on-error: true
+  collect-lever:
+    name: Collect - Lever
+    runs-on: ubuntu-latest
+    # Real measured duration: 5m31s. Padded for headroom.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Write environment file
+        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > apps/web/.env
+      - run: pnpm --filter @web3-hunter/web collect:lever
 
-      - name: Collect - Lever
-        run: pnpm --filter @web3-hunter/web collect:lever
-        continue-on-error: true
+  collect-ashby:
+    name: Collect - Ashby
+    runs-on: ubuntu-latest
+    # Real measured duration: 23m40s against ~500 tracked companies.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Write environment file
+        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > apps/web/.env
+      - run: pnpm --filter @web3-hunter/web collect:ashby
 
-      - name: Collect - Ashby
-        run: pnpm --filter @web3-hunter/web collect:ashby
-        continue-on-error: true
-
-      - name: Collect - GitHub
-        run: pnpm --filter @web3-hunter/web collect:github
-        continue-on-error: true
-
-      # Downstream stages - dependency order per README.md's table:
-      # Collectors before Scoring/Job-classification, Scoring before
-      # Classification/Matching, Matching before Decision. Technology
-      # only depends on collect:github, independently of the others.
-      - name: Classify jobs
-        run: pnpm --filter @web3-hunter/web classify:jobs
-        continue-on-error: true
-
-      - name: Score companies
-        run: pnpm --filter @web3-hunter/web score:companies
-        continue-on-error: true
-
-      - name: Classify opportunities
-        run: pnpm --filter @web3-hunter/web classify:opportunities
-        continue-on-error: true
-
-      - name: Detect technology
-        run: pnpm --filter @web3-hunter/web detect:technology
-        continue-on-error: true
-
-      - name: Match users
-        run: pnpm --filter @web3-hunter/web match:users
-        continue-on-error: true
-
-      - name: Decide recommendations
-        run: pnpm --filter @web3-hunter/web decide:recommendations
-        continue-on-error: true
+  classify-jobs:
+    name: Classify jobs
+    needs: [collect-greenhouse, collect-lever, collect-ashby]
+    # Runs regardless of whether any collector above failed - it
+    # classifies whatever JobPosted/JobUpdated Events exist so far;
+    # per-entity isolation inside the classifier itself (unchanged) means
+    # a failed collector just means fewer new jobs to classify this run,
+    # not a blocked run. This is the direct fix for "one failed stage
+    # must not prevent later stages" (governing directive, Part 10).
+    if: always()
+    runs-on: ubuntu-latest
+    # Real measured duration: 11m46s over ~1,500 open postings.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Write environment file
+        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > apps/web/.env
+      - run: pnpm --filter @web3-hunter/web classify:jobs

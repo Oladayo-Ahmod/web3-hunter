@@ -166,18 +166,27 @@ Adding a company on an already-supported source (Greenhouse, Lever, Ashby, GitHu
 
 Running the commands above by hand every time isn't required. There is still no scheduler inside this codebase — nothing here decides *when* to run; everything below only runs in response to a request or trigger an external scheduler chooses to send.
 
-**Recommended (production): a scheduled GitHub Actions workflow**, [`.github/workflows/job-ingestion.yml`](.github/workflows/job-ingestion.yml), running every 6 hours. This is the primary recommendation because of a real measurement, not a preference: a full run of the three ATS Collectors against the current curated directory (~500 companies) took **5m31s (Lever) / 24m35s (Greenhouse) / 23m40s (Ashby)**, and Job classification over the resulting ~1,500 open postings took **11m46s** — all well past any Vercel serverless function's execution ceiling (Hobby: 60s hard cap; Pro: 300s standard). A GitHub Actions job has no such ceiling (up to 6h on the free tier), so it's the smallest change that makes the existing pipeline actually finish, rather than silently truncating every scheduled run.
+**Recommended (production): two scheduled GitHub Actions workflows**, split by how freshness-critical each stage is — not one workflow running everything on one schedule. This split (Milestone 24) replaced an earlier single-workflow design after production evidence showed why: real GitHub Actions runs found Greenhouse completing while Lever/Ashby sat stale for days despite all three being `continue-on-error: true` *steps* in the same job — step-level isolation wasn't enough to survive a runner-level hang. Splitting each Collector into its own **job** (a separate runner each) is the fix; see each workflow file's own comments for the full reasoning.
 
-The workflow runs the same CLI commands from "Populating data" above, in dependency order, in one job:
+**[`.github/workflows/job-ingestion.yml`](.github/workflows/job-ingestion.yml) — the CORE path, every 6 hours.** The only thing that makes `/jobs` fresh: the three ATS Collectors plus Job classification, each its own job so one crashing or hanging never blocks the others:
 
-`collect:greenhouse` → `collect:lever` → `collect:ashby` → `collect:github` → `classify:jobs` → `score:companies` → `classify:opportunities` → `detect:technology` → `match:users` → `decide:recommendations`
+`collect-greenhouse` + `collect-lever` + `collect-ashby` (parallel, independent runners) → `classify-jobs` (runs regardless of which Collectors above succeeded, via `needs` + `if: always()`)
 
-Each step has `continue-on-error: true` — one Collector's transient failure never blocks the others or the downstream stages (the same per-entity-isolation philosophy every stage already applies internally, extended to per-stage isolation here).
+Real measured durations, each job's `timeout-minutes` set with headroom above them: Lever 5m31s, Greenhouse 24m35s, Ashby 23m40s, Job classification 11m46s over ~1,500 open postings against the current curated directory (~500 companies) — all well past any Vercel serverless function's execution ceiling (Hobby: 60s hard cap; Pro: 300s standard), which is why GitHub Actions (no such ceiling; up to 6h on the free tier) remains the recommendation over the `/api/cron/*` routes below for the recurring schedule.
 
-**Setup:**
+**[`.github/workflows/enrichment.yml`](.github/workflows/enrichment.yml) — everything else, once daily.** GitHub repository collection and the Company-level Scoring/Classification/Technology/Matching/Decision pipelines — none of which make job data fresher, so none of which need the 6h cadence:
 
-1. In your GitHub repo, go to **Settings → Secrets and variables → Actions** and add one repository secret: `DATABASE_URL` (the same value as `apps/web/.env`). Nothing else to add — the workflow's `GITHUB_TOKEN` reference is the token GitHub automatically provides to every workflow run, not a secret you create.
-2. That's it. The workflow fires automatically every 6 hours, or trigger it manually anytime from the repo's **Actions** tab → "Job Ingestion Pipeline" → **Run workflow** (also works as your manual test — watch the per-step logs there).
+`collect:github` → `score:companies` → `classify:opportunities` → `detect:technology` → `match:users` → `decide:recommendations` → prune old `pipeline_run` history
+
+Each step has `continue-on-error: true` and this entire workflow is a separate file from `job-ingestion.yml`, not just a separate job within it — a slowdown or failure here can never affect the core job feed. GitHub collection in particular moved here (not just to a slower cadence) because it contributes to Technology Detection only — zero rows read by `/jobs`, `/today`, or `/outreach` — so it has no business sharing a schedule, or a failure blast radius, with the data that actually needs to be fresh every few hours.
+
+**Setup (both workflows):**
+
+1. In your GitHub repo, go to **Settings → Secrets and variables → Actions** and add one repository secret: `DATABASE_URL` (the same value as `apps/web/.env`). Nothing else to add — the `GITHUB_TOKEN` reference in `enrichment.yml` is the token GitHub automatically provides to every workflow run, not a secret you create.
+2. That's it. Each workflow fires on its own schedule automatically, or trigger either manually anytime from the repo's **Actions** tab → pick the workflow → **Run workflow** (also works as your manual test — watch the per-job logs there).
+3. **Repo Settings → Actions → General → Workflow permissions** must have at least one runner available ("There are no runners configured" means GitHub-hosted runners are disabled for this repo/org — enable them, or self-host a runner, before either schedule can fire).
+
+**Data freshness is observable at `GET /api/health`** (Milestone 24) — alongside the original database-connectivity check, the response's `pipeline` field reports `jobsLastRefreshedAt` (the most recent `JobPosted`/`JobUpdated` Event in the database, read directly rather than trusted from any one Collector's self-report) and, per Collector, `status`/`lastRunAt`/`consecutiveFailures`/`isStale`. A stale `github` Collector is expected and harmless if GitHub enrichment is left disabled; a stale `greenhouse`/`lever`/`ashby` is the signal worth alerting on.
 
 **The `/api/cron/*` HTTP routes remain fully functional and unchanged in behavior** (auth included) — they're just no longer the recommended path for the *recurring* schedule, for the timing reason above. They're still useful for:
 
@@ -211,7 +220,7 @@ curl -i -X POST "https://<your-deployment>/api/cron/collect-greenhouse" \
 - URL: `https://<your-deployment>/api/cron/<stage>`
 - Method: `GET` or `POST` — both work
 - Header: `Authorization: Bearer <your CRON_SECRET>`
-- Schedule: respect dependency order across jobs — Collectors before Scoring/Job-classification, Scoring before Classification/Matching, Matching before Decision; Technology only depends on `collect-github`, independently of the others. Without `GITHUB_TOKEN` set, frequent runs of `collect-github` will exhaust GitHub's unauthenticated 60-requests/hour limit — either set `GITHUB_TOKEN`, or schedule that one less frequently.
+- Schedule: mirror the two-workflow split above — `collect-greenhouse`/`collect-lever`/`collect-ashby` then `job-classification` every 6h (the CORE, freshness-critical path); `collect-github` → `scoring` → `classification`/`technology` → `matching` → `decision` once daily (the SECONDARY path — none of it affects job freshness). Job data volume at this scale is trivial for GitHub's API either way, but `collect-github` still needs a valid `GITHUB_TOKEN` — an invalid or missing one fails every run outright, not just faster rate-limiting.
 
 **Company/contact/funding research is intentionally not part of this recurring pipeline.** The curated company directory (`apps/web/data/companies/`) is hand-verified data, updated by editing/adding JSON files and re-running `seed:companies` as a deliberate, one-time action — never a scheduled job. See "Tracked companies" above.
 
