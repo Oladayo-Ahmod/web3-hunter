@@ -3,25 +3,32 @@ import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { hashContent } from "./content-hash";
-import { storeRawRecord } from "./store-raw-record";
+import { storeRawRecord, storeRawRecords } from "./store-raw-record";
+
+// One shared test database for the whole file — `getDb()` caches its
+// connection pool as a module-level singleton on first use (see
+// packages/db/src/client.ts), so a second `createTestDatabase()` call
+// later in the same process would be invisible to it.
+let testDb: TestDatabase;
+
+beforeAll(async () => {
+  testDb = await createTestDatabase();
+  process.env.DATABASE_URL = testDb.connectionString;
+}, 60_000);
+
+afterAll(async () => {
+  await testDb.stop();
+});
 
 describe("storeRawRecord (integration)", () => {
-  let testDb: TestDatabase;
   let collectorId: string;
 
   beforeAll(async () => {
-    testDb = await createTestDatabase();
-    process.env.DATABASE_URL = testDb.connectionString;
-
     const [row] = await getDb()
       .insert(schema.collector)
       .values({ slug: "test-collector", sourceType: "test" })
       .returning();
     collectorId = row!.id;
-  }, 60_000);
-
-  afterAll(async () => {
-    await testDb.stop();
   });
 
   it("persists a new Raw Record", async () => {
@@ -151,6 +158,145 @@ describe("storeRawRecord (integration)", () => {
         externalId: "collision-6",
         sourceIdentifier: "source-two",
       }),
+    ).rejects.toThrow(/different sourceIdentifier/);
+  });
+});
+
+/**
+ * Milestone 25 — `storeRawRecords` is the batched sibling of the tests
+ * above: same guarantees (content-hash dedup, cross-source-collision
+ * defense-in-depth, key-order irrelevance), just in bounded round trips.
+ * These tests exist to prove batching didn't quietly change what gets
+ * persisted or how many rows result — only how many round trips it took.
+ */
+describe("storeRawRecords (integration)", () => {
+  let collectorId: string;
+
+  beforeAll(async () => {
+    const [row] = await getDb()
+      .insert(schema.collector)
+      .values({ slug: "test-batch-collector", sourceType: "test" })
+      .returning();
+    collectorId = row!.id;
+  });
+
+  it("returns [] without touching the database for an empty batch", async () => {
+    const result = await storeRawRecords([]);
+    expect(result).toEqual([]);
+  });
+
+  it("persists every new record in a batch, in input order", async () => {
+    const results = await storeRawRecords([
+      { collectorId, payload: { id: "b1" }, externalId: "b1", sourceIdentifier: "batch-source" },
+      { collectorId, payload: { id: "b2" }, externalId: "b2", sourceIdentifier: "batch-source" },
+      { collectorId, payload: { id: "b3" }, externalId: "b3", sourceIdentifier: "batch-source" },
+    ]);
+
+    expect(results.map((r) => r.externalId)).toEqual(["b1", "b2", "b3"]);
+  });
+
+  it("is idempotent at batch scale: re-storing the same batch returns the same rows, creates no duplicates", async () => {
+    const input = [
+      { collectorId, payload: { id: "c1" }, externalId: "c1", sourceIdentifier: "batch-source" },
+      { collectorId, payload: { id: "c2" }, externalId: "c2", sourceIdentifier: "batch-source" },
+    ];
+
+    const first = await storeRawRecords(input);
+    const second = await storeRawRecords(input);
+
+    expect(second.map((r) => r.id)).toEqual(first.map((r) => r.id));
+
+    const rows = await getDb().select().from(schema.rawRecord);
+    expect(rows.filter((r) => r.externalId === "c1")).toHaveLength(1);
+    expect(rows.filter((r) => r.externalId === "c2")).toHaveLength(1);
+  });
+
+  it("dedupes an in-batch duplicate payload against itself within one call", async () => {
+    const results = await storeRawRecords([
+      {
+        collectorId,
+        payload: { id: "dup", title: "Same" },
+        externalId: "dup",
+        sourceIdentifier: "batch-source",
+      },
+      {
+        collectorId,
+        payload: { id: "dup", title: "Same" },
+        externalId: "dup",
+        sourceIdentifier: "batch-source",
+      },
+    ]);
+
+    expect(results[0]!.id).toBe(results[1]!.id);
+    const rows = await getDb().select().from(schema.rawRecord);
+    expect(rows.filter((r) => r.externalId === "dup")).toHaveLength(1);
+  });
+
+  it("handles a mixed batch: some records new, some already existing", async () => {
+    const existing = await storeRawRecord({
+      collectorId,
+      payload: { id: "mix-1" },
+      externalId: "mix-1",
+      sourceIdentifier: "batch-source",
+    });
+
+    const results = await storeRawRecords([
+      {
+        collectorId,
+        payload: { id: "mix-1" },
+        externalId: "mix-1",
+        sourceIdentifier: "batch-source",
+      },
+      {
+        collectorId,
+        payload: { id: "mix-2" },
+        externalId: "mix-2",
+        sourceIdentifier: "batch-source",
+      },
+    ]);
+
+    expect(results[0]!.id).toBe(existing.id);
+    expect(results[1]!.externalId).toBe("mix-2");
+  });
+
+  it("throws on a mixed-collectorId batch rather than silently misattributing rows", async () => {
+    const [otherCollector] = await getDb()
+      .insert(schema.collector)
+      .values({ slug: "test-batch-collector-2", sourceType: "test" })
+      .returning();
+
+    await expect(
+      storeRawRecords([
+        { collectorId, payload: { id: "x1" }, externalId: "x1", sourceIdentifier: "batch-source" },
+        {
+          collectorId: otherCollector!.id,
+          payload: { id: "x2" },
+          externalId: "x2",
+          sourceIdentifier: "batch-source",
+        },
+      ]),
+    ).rejects.toThrow(/mixed batch/);
+  });
+
+  it("throws the same cross-source-collision error as the single-record path", async () => {
+    await storeRawRecords([
+      {
+        collectorId,
+        payload: { id: "collision-batch" },
+        externalId: "collision-batch",
+        sourceIdentifier: "source-one",
+      },
+    ]);
+
+    await expect(
+      storeRawRecords([
+        {
+          collectorId,
+          payload: { id: "collision-batch" },
+          externalId: "collision-batch",
+          sourceIdentifier: "source-two",
+        },
+      ]),
     ).rejects.toThrow(/different sourceIdentifier/);
   });
 });

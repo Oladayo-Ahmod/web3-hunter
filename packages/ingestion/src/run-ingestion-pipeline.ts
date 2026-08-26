@@ -1,6 +1,6 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { publishEvent } from "@web3-hunter/events";
-import { and, asc, desc, eq, isNotNull, lt, notExists } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, lt, notExists } from "drizzle-orm";
 import { deriveEventId } from "./deterministic-id";
 import type { NormalizedEvent, Normalizer } from "./normalizer";
 
@@ -207,19 +207,43 @@ export async function reconcileMissingRecords(
   let published = 0;
   let skipped = 0;
 
-  for (const externalId of missing) {
-    const [latest] = await db
-      .select()
+  // Milestone 26: one batched query for every missing externalId's most
+  // recent Raw Record, instead of one round trip per missing job — the
+  // same "batch the round trips, not the semantics" fix
+  // `storeRawRecords` already applies to the fetch/persist phase. Rows
+  // come back ordered newest-first per (collectorId, sourceIdentifier,
+  // externalId, id DESC), so the first row seen for a given externalId
+  // is always its latest — matching exactly what the old per-record
+  // `ORDER BY id DESC LIMIT 1` returned.
+  const latestByExternalId = new Map<string, { id: string; payload: unknown }>();
+  if (missing.length > 0) {
+    const candidates = await db
+      .select({
+        id: schema.rawRecord.id,
+        externalId: schema.rawRecord.externalId,
+        payload: schema.rawRecord.payload,
+      })
       .from(schema.rawRecord)
       .where(
         and(
           eq(schema.rawRecord.collectorId, input.collectorId),
           eq(schema.rawRecord.sourceIdentifier, input.sourceIdentifier),
-          eq(schema.rawRecord.externalId, externalId),
+          inArray(schema.rawRecord.externalId, missing),
         ),
       )
-      .orderBy(desc(schema.rawRecord.id))
-      .limit(1);
+      .orderBy(desc(schema.rawRecord.id));
+
+    for (const row of candidates) {
+      // externalId is guaranteed non-null here (missing[] was already
+      // filtered to non-null externalIds above).
+      if (row.externalId !== null && !latestByExternalId.has(row.externalId)) {
+        latestByExternalId.set(row.externalId, { id: row.id, payload: row.payload });
+      }
+    }
+  }
+
+  for (const externalId of missing) {
+    const latest = latestByExternalId.get(externalId);
 
     if (!latest) {
       continue;
