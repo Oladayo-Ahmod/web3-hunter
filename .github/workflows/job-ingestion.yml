@@ -20,8 +20,13 @@ name: Job Ingestion Pipeline
 # why those are deliberately NOT here.
 on:
   schedule:
-    # Every 6 hours - 00:00, 06:00, 12:00, 18:00 UTC.
-    - cron: "0 */6 * * *"
+    # Every 12 hours - 00:00, 12:00 UTC. Milestone 26: halved from every
+    # 6 hours specifically to cut GitHub Actions minutes (~4,320/month
+    # projected at 6h even after the collector-batching fixes, still over
+    # the 2,000/month free-tier budget) - job data a few hours older is
+    # an acceptable trade for a personal job-hunting tool, per that
+    # milestone's measurement.
+    - cron: "0 */12 * * *"
   workflow_dispatch: {} # manual "Run workflow" button, for testing
 
 concurrency:
