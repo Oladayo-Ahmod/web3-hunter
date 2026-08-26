@@ -49,5 +49,15 @@ export const OpportunityScored = registerEventType({
     opportunityId: z.string().uuid(),
     score: z.number().min(0).max(1),
     reasoning: z.string(),
+    // Milestone 26: how many of the Company's Signals this score was
+    // computed over — lets a future OpportunityScored for the same
+    // Opportunity cite only the Signals new since this one, instead of
+    // the full list again. Same pattern as IntelligenceUpdated.signalCount.
+    // Optional, not required: existing pre-Milestone-26 events in
+    // production don't have this field, and metadataSchema.parse() runs
+    // against historical events too (replay) — a required field here
+    // would fail parsing every OpportunityScored Event published before
+    // this change.
+    signalCount: z.number().int().min(0).optional(),
   }),
 });
