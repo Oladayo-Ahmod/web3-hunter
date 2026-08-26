@@ -21,7 +21,8 @@
     "classify:jobs": "tsx --env-file=.env scripts/run-job-classification.ts",
     "match:users": "tsx --env-file=.env scripts/run-matching.ts",
     "decide:recommendations": "tsx --env-file=.env scripts/run-decisions.ts",
-    "detect:technology": "tsx --env-file=.env scripts/run-technology.ts"
+    "detect:technology": "tsx --env-file=.env scripts/run-technology.ts",
+    "maintenance:prune-pipeline-runs": "tsx --env-file=.env scripts/prune-pipeline-runs.ts"
   },
   "dependencies": {
     "@web3-hunter/ai": "workspace:*",

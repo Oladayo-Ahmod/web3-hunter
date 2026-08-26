@@ -171,3 +171,43 @@ describe("checkApplyEligibility — real production regressions (Milestone 20)",
     expect(result.eligible).toBe(true);
   });
 });
+
+// Milestone 24 (governing directive, Part 5): the gate now returns a
+// machine-readable `reasonCode` alongside the existing prose `reason`.
+describe("checkApplyEligibility — reasonCode", () => {
+  it.each([
+    ["Solidity Engineer", "ELIGIBLE_PROTOCOL_ENGINEERING"],
+    // "Protocol Security," not "Smart Contract Security" — that title
+    // would match the broader "smart contract" phrase first (title
+    // matching checks phrases in a fixed priority order, not text order),
+    // which is the correctly-prioritized ELIGIBLE_PROTOCOL_ENGINEERING
+    // result for that title.
+    ["Protocol Security Engineer", "ELIGIBLE_SMART_CONTRACT_SECURITY"],
+    ["Blockchain Infrastructure Engineer", "ELIGIBLE_BLOCKCHAIN_INFRASTRUCTURE"],
+    ["ZK Engineer", "ELIGIBLE_ZK"],
+    ["DeFi Engineer", "ELIGIBLE_DEFI_ENGINEERING"],
+  ] as const)('tags "%s" as %s', (title, expectedCode) => {
+    const result = checkApplyEligibility(title, null);
+    expect(result.eligible).toBe(true);
+    expect(result.reasonCode).toBe(expectedCode);
+  });
+
+  it.each([
+    ["Corporate Security Engineer", "REJECT_CORPORATE_SECURITY"],
+    ["Senior Accountant", "REJECT_FINANCE"],
+    ["Compliance Operations Lead", "REJECT_OPERATIONS"],
+    ["Data Analyst", "REJECT_GENERIC_DATA"],
+    ["Product Manager", "REJECT_GENERIC_PRODUCT"],
+    ["Account Executive, Enterprise Sales", "REJECT_NON_TECHNICAL"],
+  ] as const)('tags "%s" as %s', (title, expectedCode) => {
+    const result = checkApplyEligibility(title, null);
+    expect(result.eligible).toBe(false);
+    expect(result.reasonCode).toBe(expectedCode);
+  });
+
+  it("falls back to REJECT_NON_TECHNICAL when there is no evidence either way", () => {
+    const result = checkApplyEligibility("Senior Software Engineer", null);
+    expect(result.eligible).toBe(false);
+    expect(result.reasonCode).toBe("REJECT_NON_TECHNICAL");
+  });
+});

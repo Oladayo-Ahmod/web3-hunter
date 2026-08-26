@@ -3,6 +3,7 @@ export { getCompanyProfile } from "./company-query-service";
 export type {
   AIArtifactSummaryDTO,
   CollectorHealthDTO,
+  CollectorHealthWithFreshnessDTO,
   CollectorStatusDTO,
   CompanyContactDTO,
   CompanyContactRoleDTO,
@@ -24,6 +25,7 @@ export type {
   OpportunityTypeDTO,
   OutreachTargetDTO,
   PaginatedResult,
+  PipelineHealthDTO,
   PipelineRunDTO,
   PipelineRunStatusDTO,
   RecommendationDetailDTO,
@@ -38,7 +40,11 @@ export type {
   UserProfileSummaryDTO,
 } from "./dto";
 export { getTodayDigest } from "./daily-digest-service";
-export { checkApplyEligibility, type ApplyEligibilityResult } from "./apply-eligibility";
+export {
+  checkApplyEligibility,
+  type ApplyEligibilityReasonCode,
+  type ApplyEligibilityResult,
+} from "./apply-eligibility";
 export { classifyOpportunityType, listOutreachTargets } from "./outreach-query-service";
 export {
   getOpportunityDetail,
@@ -75,6 +81,7 @@ export {
   pipelineRunQuerySchema,
   type PipelineRunQuery,
 } from "./pipeline-run-query-service";
+export { getPipelineHealth } from "./pipeline-health-service";
 export { getRecommendationDetail, listRecommendations } from "./recommendation-query-service";
 export { search, searchQuerySchema, type SearchQuery } from "./search-service";
 export { listSkills } from "./skill-query-service";

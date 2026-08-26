@@ -1,0 +1,99 @@
+name: Company Enrichment Pipeline
+
+# Milestone 24 — everything that is NOT freshness-critical for /jobs:
+# GitHub repository data and the Company-level Scoring/Classification/
+# Technology/Matching/Decision pipelines. Deliberately a separate
+# workflow file from job-ingestion.yml, on a much less frequent
+# schedule, so a failure or slowdown here can never affect the core job
+# feed (governing directive, Part 10) - not just step- or job-level
+# isolation within one workflow, but full workflow-level isolation.
+#
+# Why GitHub repo collection moved here instead of staying on the 6h job
+# schedule: real production evidence found (a) the configured
+# GITHUB_TOKEN is invalid (a direct API call returns "Bad credentials"),
+# so every run was failing outright, and (b) even fixed, GitHub repo
+# data feeds only Technology Detection - a Company-profile enrichment
+# feature with zero contribution to /jobs, /today, or /outreach (the
+# actual job-hunting surfaces). Once-daily is a generous cadence for
+# data that changes on the order of weeks (a company's repos/stack), not
+# hours - see README.md's "Automating the pipeline" section.
+#
+# Why Scoring/Classification/Technology/Matching/Decision moved off the
+# 6h schedule too: none of them make job data fresher - only the
+# Collectors and Job classification (job-ingestion.yml) do that. Running
+# them every 6h against a largely-unchanged company/opportunity set is
+# exactly the "blindly run everything every 6 hours" the governing
+# directive's Part 9 asks to stop doing; once daily is enough for a
+# scoring/recommendation layer whose own upstream Company data changes
+# on the order of days, not hours.
+on:
+  schedule:
+    - cron: "0 3 * * *" # once daily, 03:00 UTC
+  workflow_dispatch: {}
+
+concurrency:
+  group: company-enrichment-pipeline
+  cancel-in-progress: false
+
+jobs:
+  enrich:
+    name: GitHub, score, classify, detect, match, decide
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Write environment file
+        # GITHUB_TOKEN here is the token GitHub automatically provides to
+        # every workflow run (raises the collector's rate limit from
+        # 60/hr to ~1,000/hr for this repo) - not a secret to create. If
+        # GitHub enrichment stays disabled (see README), this step and
+        # the "Collect - GitHub" step below are harmless no-ops.
+        run: |
+          cat > apps/web/.env << EOF
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          EOF
+
+      # Each step isolated with continue-on-error - none of this is on
+      # the freshness-critical path, so one failure should never block
+      # the rest, but a real failure should still be visible (per-step
+      # icons in the Actions log) rather than silently swallowed.
+      - name: Collect - GitHub
+        run: pnpm --filter @web3-hunter/web collect:github
+        continue-on-error: true
+
+      - name: Score companies
+        run: pnpm --filter @web3-hunter/web score:companies
+        continue-on-error: true
+
+      - name: Classify opportunities
+        run: pnpm --filter @web3-hunter/web classify:opportunities
+        continue-on-error: true
+
+      - name: Detect technology
+        run: pnpm --filter @web3-hunter/web detect:technology
+        continue-on-error: true
+
+      - name: Match users
+        run: pnpm --filter @web3-hunter/web match:users
+        continue-on-error: true
+
+      - name: Decide recommendations
+        run: pnpm --filter @web3-hunter/web decide:recommendations
+        continue-on-error: true
+
+      - name: Prune old pipeline_run history
+        # Milestone 24: pipeline_run is pure operational telemetry (see
+        # packages/db/src/schema/pipeline-run.ts's own doc comment) with
+        # no product read-dependency - it was 80MB/254k rows (29% of the
+        # entire database) with no retention policy. Safe to run daily
+        # regardless of the stages above succeeding or not.
+        run: pnpm --filter @web3-hunter/web maintenance:prune-pipeline-runs
+        continue-on-error: true
