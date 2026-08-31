@@ -29,7 +29,20 @@ async function main() {
     );
   }
 
-  if (results.some((result) => result.status === "error")) {
+  const successCount = results.filter((result) => result.status !== "error").length;
+  const errorCount = results.length - successCount;
+
+  if (errorCount > 0) {
+    console.error(`[lever] ${errorCount}/${results.length} companies failed this run.`);
+  }
+
+  // Fail the process (and therefore the GitHub Actions job) only when the
+  // run made zero forward progress at all — a handful of permanently-dead
+  // company boards must not make an otherwise-successful run look like a
+  // total outage. Mirrors the identical partial-vs-total-failure
+  // distinction `run-collector.ts`'s `recordRunHealth` already applies at
+  // the Collector Health level.
+  if (results.length > 0 && successCount === 0) {
     process.exitCode = 1;
   }
 }

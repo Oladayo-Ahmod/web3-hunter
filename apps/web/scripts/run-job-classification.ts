@@ -24,7 +24,18 @@ async function main() {
     },
   });
 
-  if (results.some((entry) => entry.status === "error")) {
+  const successCount = results.filter((entry) => entry.status !== "error").length;
+  const errorCount = results.length - successCount;
+
+  if (errorCount > 0) {
+    console.error(
+      `[job-classification] ${errorCount}/${results.length} companies failed this run.`,
+    );
+  }
+
+  // Same partial-vs-total-failure distinction as run-greenhouse.ts et al.
+  // — see that file's comment.
+  if (results.length > 0 && successCount === 0) {
     process.exitCode = 1;
   }
 }
