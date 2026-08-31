@@ -29,7 +29,15 @@ async function main() {
     );
   }
 
-  if (results.some((result) => result.status === "error")) {
+  const successCount = results.filter((result) => result.status !== "error").length;
+  const errorCount = results.length - successCount;
+
+  if (errorCount > 0) {
+    console.error(`[ashby] ${errorCount}/${results.length} companies failed this run.`);
+  }
+
+  // See run-lever.ts's identical comment: fail only on zero successes.
+  if (results.length > 0 && successCount === 0) {
     process.exitCode = 1;
   }
 }
