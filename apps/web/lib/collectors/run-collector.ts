@@ -170,14 +170,33 @@ export async function runCollector<TRecord>(
     }
   }
 
-  await recordRunHealth(collectorId, {
-    durationMs: Date.now() - startedAt,
-    recordsProcessed,
-    recordsPublished,
-    errors,
-    successCount: results.filter((result) => result.status === "ok").length,
-    totalCount: results.length,
-  });
+  // Milestone 26: not allowed to fail the run. By this point every tracked
+  // Company has already been fetched, persisted, and ingested — that data
+  // is durably committed. `recordRunHealth` only writes a bookkeeping
+  // snapshot on top of already-successful work; a transient failure
+  // writing *that* (a dropped Supabase connection, most plausibly - this
+  // is the single DB write that happens after everything else, so it's
+  // the one most likely to land after a long run's connection has gone
+  // stale) must not discard an otherwise fully-successful run's exit
+  // status. Real production symptom this fixes: an Ashby run where every
+  // one of ~180 Companies succeeded, with zero `status: "error"` results,
+  // still failed the GitHub Actions job - because this call threw,
+  // uncaught, after the loop that would have reported success.
+  try {
+    await recordRunHealth(collectorId, {
+      durationMs: Date.now() - startedAt,
+      recordsProcessed,
+      recordsPublished,
+      errors,
+      successCount: results.filter((result) => result.status === "ok").length,
+      totalCount: results.length,
+    });
+  } catch (error) {
+    console.error(
+      `[${config.slug}] Failed to record Collector Health (the run's own data was already committed successfully):`,
+      error,
+    );
+  }
 
   return results;
 }
