@@ -111,6 +111,20 @@ export async function storeRawRecord(input: StoreRawRecordInput): Promise<RawRec
   return existing;
 }
 
+/** A stored Raw Record's identity, without its (large) `payload` — see `storeRawRecords`. */
+export type StoredRawRecordRef = Pick<
+  RawRecord,
+  "id" | "collectorId" | "contentHash" | "externalId" | "sourceIdentifier"
+>;
+
+const storedRawRecordRefColumns = {
+  id: schema.rawRecord.id,
+  collectorId: schema.rawRecord.collectorId,
+  contentHash: schema.rawRecord.contentHash,
+  externalId: schema.rawRecord.externalId,
+  sourceIdentifier: schema.rawRecord.sourceIdentifier,
+};
+
 /**
  * The batched sibling of `storeRawRecord`: persists every input with the
  * same content-hash-dedup and cross-source-collision guarantees, but in a
@@ -126,6 +140,16 @@ export async function storeRawRecord(input: StoreRawRecordInput): Promise<RawRec
  *
  * Returns records in the same order as `inputs`.
  *
+ * Returns `StoredRawRecordRef`s, not full `RawRecord`s — deliberately
+ * without `payload`. Real production finding (Supabase egress quota
+ * exhausted, 12.35 GB in ~3 weeks): every Collector run used to read
+ * back the *entire stored payload* of every unchanged job (a job
+ * description is several KB) just to discard it, because the one
+ * caller ignores the returned rows. The only things this function
+ * needs from an already-existing row are its identity and
+ * `sourceIdentifier` (for the collision check below), so that is all it
+ * reads, for both newly inserted and already-existing rows.
+ *
  * Assumes every input shares the same `collectorId` — true for this
  * function's one real caller, `persistAndIngest` (one company's records
  * under the one Collector currently running), and asserted rather than
@@ -134,7 +158,7 @@ export async function storeRawRecord(input: StoreRawRecordInput): Promise<RawRec
  */
 export async function storeRawRecords(
   inputs: readonly StoreRawRecordInput[],
-): Promise<RawRecord[]> {
+): Promise<StoredRawRecordRef[]> {
   if (inputs.length === 0) {
     return [];
   }
@@ -170,7 +194,7 @@ export async function storeRawRecords(
     .onConflictDoNothing({
       target: [schema.rawRecord.collectorId, schema.rawRecord.contentHash],
     })
-    .returning();
+    .returning(storedRawRecordRefColumns);
 
   const insertedByHash = new Map(inserted.map((row) => [row.contentHash, row]));
   const stillMissing = withHashes.filter(({ contentHash }) => !insertedByHash.has(contentHash));
@@ -178,10 +202,10 @@ export async function storeRawRecords(
   // Every row that conflicted (unchanged content since a previous
   // capture) needs the pre-existing row fetched back — one batched
   // SELECT for the whole group, not one per record.
-  const existingByHash = new Map<string, RawRecord>();
+  const existingByHash = new Map<string, StoredRawRecordRef>();
   if (stillMissing.length > 0) {
     const existingRows = await db
-      .select()
+      .select(storedRawRecordRefColumns)
       .from(schema.rawRecord)
       .where(
         and(

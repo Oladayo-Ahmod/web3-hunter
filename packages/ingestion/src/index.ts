@@ -19,5 +19,6 @@ export {
   storeRawRecord,
   storeRawRecords,
   type RawRecord,
+  type StoredRawRecordRef,
   type StoreRawRecordInput,
 } from "./store-raw-record";
