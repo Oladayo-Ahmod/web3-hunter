@@ -1,8 +1,8 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { checkApplyEligibility } from "./apply-eligibility";
 import type { CompanyPriorityDTO, JobFeedItemDTO, PaginatedResult, SkillDTO } from "./dto";
+import { ensureJobEligibility, jobEligibilityIsCurrent } from "./job-eligibility-service";
 import { computeJobFreshness, JOB_FRESHNESS_LEVELS, type JobFreshness } from "./job-freshness";
 import {
   computeJobRelevance,
@@ -270,13 +270,14 @@ function toJobFeedItemDTO(
 const openJobsCte = sql`
   WITH latest_state AS (
     SELECT DISTINCT ON (related_entity_id, metadata->>'externalId')
+      id AS state_event_id,
       related_entity_id AS company_id,
       metadata->>'externalId' AS external_id,
       metadata,
       occurred_at AS state_at
     FROM event
     WHERE type IN ('JobPosted', 'JobUpdated') AND related_entity_type = 'company'
-    ORDER BY related_entity_id, metadata->>'externalId', occurred_at DESC
+    ORDER BY related_entity_id, metadata->>'externalId', occurred_at DESC, id DESC
   ),
   posted AS (
     SELECT related_entity_id AS company_id, metadata->>'externalId' AS external_id, MIN(occurred_at) AS posted_at
@@ -291,7 +292,7 @@ const openJobsCte = sql`
     GROUP BY 1, 2
   ),
   open_jobs AS (
-    SELECT ls.company_id, ls.external_id, ls.metadata, ls.state_at, p.posted_at
+    SELECT ls.state_event_id, ls.company_id, ls.external_id, ls.metadata, ls.state_at, p.posted_at
     FROM latest_state ls
     JOIN posted p ON p.company_id = ls.company_id AND p.external_id = ls.external_id
     LEFT JOIN closures cl ON cl.company_id = ls.company_id AND cl.external_id = ls.external_id
@@ -364,6 +365,66 @@ function priorityRank(priority: CompanyPriorityDTO | null): number {
   return priority ? (PRIORITY_RANK[priority] ?? 3) : 3;
 }
 
+/** How many Jobs' descriptions one `fetchJobDescriptions` query looks up — keeps the query's parameter count small however large the feed is. */
+const DESCRIPTION_LOOKUP_CHUNK_SIZE = 1000;
+
+/**
+ * Latest-state descriptions for the given Jobs, keyed
+ * `${companyId}:${externalId}`. Descriptions are most of a job row's
+ * bytes, so `listJobFeed` leaves them out of its main query and asks for
+ * only the ones something will actually read: scoring (when the viewer
+ * has a Profile) or the returned page's DTOs.
+ */
+async function fetchJobDescriptions(
+  jobs: readonly Pick<OpenJobRow, "company_id" | "external_id">[],
+): Promise<Map<string, string | null>> {
+  const descriptions = new Map<string, string | null>();
+
+  for (let start = 0; start < jobs.length; start += DESCRIPTION_LOOKUP_CHUNK_SIZE) {
+    const pairs = sql.join(
+      jobs
+        .slice(start, start + DESCRIPTION_LOOKUP_CHUNK_SIZE)
+        .map((job) => sql`(${job.company_id}::uuid, ${job.external_id})`),
+      sql`, `,
+    );
+
+    const found = await getDb().execute<{
+      company_id: string;
+      external_id: string;
+      description: string | null;
+    }>(sql`
+      SELECT DISTINCT ON (related_entity_id, metadata->>'externalId')
+        related_entity_id AS company_id,
+        metadata->>'externalId' AS external_id,
+        metadata->>'description' AS description
+      FROM event
+      WHERE type IN ('JobPosted', 'JobUpdated')
+        AND related_entity_type = 'company'
+        AND (related_entity_id, metadata->>'externalId') IN (${pairs})
+      ORDER BY related_entity_id, metadata->>'externalId', occurred_at DESC, id DESC
+    `);
+
+    for (const row of found) {
+      descriptions.set(`${row.company_id}:${row.external_id}`, row.description);
+    }
+  }
+
+  return descriptions;
+}
+
+function withDescription(
+  row: OpenJobRow,
+  descriptions: ReadonlyMap<string, string | null>,
+): OpenJobRow {
+  return {
+    ...row,
+    metadata: {
+      ...row.metadata,
+      description: descriptions.get(`${row.company_id}:${row.external_id}`) ?? null,
+    },
+  };
+}
+
 /** Upper bound on how many open Jobs `listJobFeed` pulls into memory to filter/score/sort — see that function's doc comment. Comfortably above real volume today (low thousands); revisit if it stops being so. */
 const JOB_FEED_MAX_ROWS = 5000;
 
@@ -414,34 +475,51 @@ export async function listJobFeed(
   // queries a few milliseconds apart.
   const now = new Date();
 
+  if (query.eligibleOnly) {
+    await ensureJobEligibility();
+  }
+
   const viewerProfile = viewerId ? await getViewerRelevanceProfile(viewerId) : null;
 
+  // Eligibility is decided here, in SQL, from the stored verdict
+  // (`job_eligibility`) — not by downloading every open job's description
+  // to run the gate in JS, which is what this used to do on every request
+  // (up to `JOB_FEED_MAX_ROWS` full descriptions to render one page of 20,
+  // and a large share of the Supabase egress that exhausted the project's
+  // quota). `metadata - 'description'` drops the bulky field from every row;
+  // descriptions are then fetched only for the rows that actually use one
+  // (`fetchJobDescriptions`, below).
   const rows = await db.execute<OpenJobRow>(sql`
     ${openJobsCte}
     SELECT
-      oj.company_id, oj.external_id, oj.metadata, oj.posted_at, oj.state_at AS updated_at,
+      oj.company_id, oj.external_id, oj.metadata - 'description' AS metadata,
+      oj.posted_at, oj.state_at AS updated_at,
       c.slug AS company_slug, c.name AS company_name,
       c.careers_page_url AS company_careers_page_url, c.website_url AS company_website_url,
       c.priority AS company_priority
     FROM open_jobs oj
     JOIN company c ON c.id = oj.company_id
-    WHERE true ${filter}
+    LEFT JOIN job_eligibility je
+      ON je.company_id = oj.company_id
+      AND je.external_id = oj.external_id
+      AND ${jobEligibilityIsCurrent("oj")}
+    WHERE true ${filter} ${query.eligibleOnly ? sql`AND je.eligible` : sql``}
     ORDER BY oj.posted_at DESC
     LIMIT ${JOB_FEED_MAX_ROWS}
   `);
 
-  const eligibleRows = query.eligibleOnly
-    ? rows.filter(
-        (row) =>
-          checkApplyEligibility(row.metadata.title, row.metadata.description ?? null).eligible,
-      )
-    : rows;
+  // Relevance scoring reads a posting's description, so a viewer with a
+  // Profile needs it for every scored row; without one, only the returned
+  // page needs it (below), for the DTO.
+  const scoringDescriptions = viewerProfile
+    ? await fetchJobDescriptions(rows)
+    : new Map<string, string | null>();
 
   // Skill *names* are only needed for the final page after
   // scoring/sorting/pagination (below) — scoring itself only needs IDs.
-  const skillsByJob = await fetchJobSkillsByCompanyExternalId(eligibleRows);
+  const skillsByJob = await fetchJobSkillsByCompanyExternalId(rows);
 
-  const scored = eligibleRows.map((row) => {
+  const scored = rows.map((row) => {
     const detectedSkillIds = skillsByJob.get(`${row.company_id}:${row.external_id}`) ?? [];
     const relevance = viewerProfile
       ? computeJobRelevance(
@@ -450,7 +528,7 @@ export async function listJobFeed(
             departmentNames: row.metadata.departmentNames,
             workplaceType: asWorkplaceType(row.metadata.workplaceType),
             locationName: row.metadata.locationName,
-            description: row.metadata.description ?? null,
+            description: scoringDescriptions.get(`${row.company_id}:${row.external_id}`) ?? null,
           },
           detectedSkillIds,
           viewerProfile,
@@ -490,10 +568,19 @@ export async function listJobFeed(
     ...(entry.relevance?.matchedSkillIds ?? []),
   ]);
   const resolvedSkillById = await resolveSkillsById(allSkillIds);
+  const pageDescriptions = viewerProfile
+    ? scoringDescriptions
+    : await fetchJobDescriptions(page.map((entry) => entry.row));
 
   return {
     items: page.map((entry) =>
-      toJobFeedItemDTO(entry.row, now, entry.detectedSkillIds, resolvedSkillById, entry.relevance),
+      toJobFeedItemDTO(
+        withDescription(entry.row, pageDescriptions),
+        now,
+        entry.detectedSkillIds,
+        resolvedSkillById,
+        entry.relevance,
+      ),
     ),
     page: query.page,
     pageSize: query.pageSize,

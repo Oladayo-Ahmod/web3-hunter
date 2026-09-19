@@ -1,7 +1,7 @@
 import { getDb } from "@web3-hunter/db";
 import { sql } from "drizzle-orm";
-import { checkApplyEligibility } from "./apply-eligibility";
 import type { TodayApplyJobDTO, TodayDigestDTO } from "./dto";
+import { ensureJobEligibility, jobEligibilityIsCurrent } from "./job-eligibility-service";
 import { computeJobFreshness, type JobFreshness } from "./job-freshness";
 import { computeJobRelevance, type JobRelevanceProfile } from "./job-relevance";
 import { getViewerRelevanceProfile } from "./job-query-service";
@@ -34,6 +34,9 @@ type ApplyCandidateRow = {
   company_name: string;
   company_priority: TodayApplyJobDTO["companyPriority"];
   absolute_url: string;
+  /** The stored `job_eligibility` verdict for this posting's current state; `false` when none is current yet. */
+  eligible: boolean;
+  /** Only populated for eligible postings — an ineligible one is never scored or shown, so its description is never transferred. */
   description: string | null;
 };
 
@@ -47,17 +50,20 @@ type ApplyCandidateRow = {
  * caller once it knows whether there's a viewer Profile.
  */
 async function fetchApplyCandidates(): Promise<ApplyCandidateRow[]> {
+  await ensureJobEligibility();
+
   const db = getDb();
   return db.execute<ApplyCandidateRow>(sql`
     WITH latest_state AS (
       SELECT DISTINCT ON (related_entity_id, metadata->>'externalId')
+        id AS state_event_id,
         related_entity_id AS company_id,
         metadata->>'externalId' AS external_id,
         metadata,
         occurred_at AS state_at
       FROM event
       WHERE type IN ('JobPosted', 'JobUpdated') AND related_entity_type = 'company'
-      ORDER BY related_entity_id, metadata->>'externalId', occurred_at DESC
+      ORDER BY related_entity_id, metadata->>'externalId', occurred_at DESC, id DESC
     ),
     posted AS (
       SELECT related_entity_id AS company_id, metadata->>'externalId' AS external_id, MIN(occurred_at) AS posted_at
@@ -79,10 +85,15 @@ async function fetchApplyCandidates(): Promise<ApplyCandidateRow[]> {
       p.posted_at, ls.state_at,
       c.slug AS company_slug, c.name AS company_name, c.priority AS company_priority,
       ls.metadata->>'absoluteUrl' AS absolute_url,
-      ls.metadata->>'description' AS description
+      COALESCE(je.eligible, false) AS eligible,
+      CASE WHEN je.eligible THEN ls.metadata->>'description' END AS description
     FROM latest_state ls
     JOIN posted p ON p.company_id = ls.company_id AND p.external_id = ls.external_id
     LEFT JOIN closures cl ON cl.company_id = ls.company_id AND cl.external_id = ls.external_id
+    LEFT JOIN job_eligibility je
+      ON je.company_id = ls.company_id
+      AND je.external_id = ls.external_id
+      AND ${jobEligibilityIsCurrent("ls")}
     JOIN company c ON c.id = ls.company_id
       AND c.discovery_status != 'rejected'
       AND c.priority IS NOT NULL
@@ -121,19 +132,19 @@ const FRESHNESS_RANK: Record<JobFreshness, number> = { fresh: 0, recent: 1, agin
  * "newest." Without one, freshness is the only signal available, so it
  * sorts by that instead of pretending to rank by fit.
  *
- * Milestone 20: `checkApplyEligibility` runs first and unconditionally
+ * Milestone 20: the eligibility gate applies first and unconditionally
  * — independent of whether there's a viewer Profile at all, unlike
  * relevance scoring. A pre-Milestone-20 anonymous `/today` visit got
  * *zero* role filtering (no Profile means no score, and no score meant
  * every candidate sorted by freshness alone); this gate closes that
  * gap too, not just the "generic keyword scored too high" one.
- * Eligible candidates that don't clear the bar are dropped entirely,
- * not ranked low — see that module's own doc comment for why.
+ * Candidates that don't clear the bar are dropped entirely, not ranked
+ * low — see that module's own doc comment for why. The verdict is the
+ * stored `job_eligibility` one (`fetchApplyCandidates`), not recomputed
+ * here from the description.
  */
 async function rankApplyJobs(viewerId: string | undefined): Promise<TodayApplyJobDTO[]> {
-  const rows = (await fetchApplyCandidates()).filter(
-    (row) => checkApplyEligibility(row.title, row.description).eligible,
-  );
+  const rows = (await fetchApplyCandidates()).filter((row) => row.eligible);
   const now = new Date();
   const viewerProfile: JobRelevanceProfile | null = viewerId
     ? await getViewerRelevanceProfile(viewerId)

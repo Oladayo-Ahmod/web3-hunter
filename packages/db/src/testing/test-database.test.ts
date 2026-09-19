@@ -42,6 +42,7 @@ describe("createTestDatabase", () => {
       "event",
       "event_provenance",
       "job_classification_ledger",
+      "job_eligibility",
       "job_skill",
       "match",
       "opportunity",
