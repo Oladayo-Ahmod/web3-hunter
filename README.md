@@ -168,9 +168,11 @@ Running the commands above by hand every time isn't required. There is still no 
 
 **Recommended (production): two scheduled GitHub Actions workflows**, split by how freshness-critical each stage is — not one workflow running everything on one schedule. This split (Milestone 24) replaced an earlier single-workflow design after production evidence showed why: real GitHub Actions runs found Greenhouse completing while Lever/Ashby sat stale for days despite all three being `continue-on-error: true` *steps* in the same job — step-level isolation wasn't enough to survive a runner-level hang. Splitting each Collector into its own **job** (a separate runner each) is the fix; see each workflow file's own comments for the full reasoning.
 
-**[`.github/workflows/job-ingestion.yml`](.github/workflows/job-ingestion.yml) — the CORE path, every 6 hours.** The only thing that makes `/jobs` fresh: the three ATS Collectors plus Job classification, each its own job so one crashing or hanging never blocks the others:
+**[`.github/workflows/job-ingestion.yml`](.github/workflows/job-ingestion.yml) — the CORE path, every 12 hours.** The only thing that makes `/jobs` fresh: the three ATS Collectors plus Job classification, each its own job so one crashing or hanging never blocks the others:
 
 `collect-greenhouse` + `collect-lever` + `collect-ashby` (parallel, independent runners) → `classify-jobs` (runs regardless of which Collectors above succeeded, via `needs` + `if: always()`)
+
+`classify-jobs` also stores each new or changed job's **eligibility verdict** (`job_eligibility`, computed by the same `checkApplyEligibility` gate). `/jobs`, `/today` and `/outreach` read that verdict instead of downloading every job's description to re-run the gate on each request — the change that cut those pages' database reads by roughly 70–99% after the Supabase egress quota was exhausted (12.35 GB used against 5 GB in about three weeks). The pages also refresh any missing verdict themselves, so a failed `classify-jobs` run never hides new jobs. **Apply migration `0022` (`pnpm db:migrate`) before deploying this code**: those three pages query the new `job_eligibility` table.
 
 Real measured durations, each job's `timeout-minutes` set with headroom above them: Lever 5m31s, Greenhouse 24m35s, Ashby 23m40s, Job classification 11m46s over ~1,500 open postings against the current curated directory (~500 companies) — all well past any Vercel serverless function's execution ceiling (Hobby: 60s hard cap; Pro: 300s standard), which is why GitHub Actions (no such ceiling; up to 6h on the free tier) remains the recommendation over the `/api/cron/*` routes below for the recurring schedule.
 
@@ -220,7 +222,7 @@ curl -i -X POST "https://<your-deployment>/api/cron/collect-greenhouse" \
 - URL: `https://<your-deployment>/api/cron/<stage>`
 - Method: `GET` or `POST` — both work
 - Header: `Authorization: Bearer <your CRON_SECRET>`
-- Schedule: mirror the two-workflow split above — `collect-greenhouse`/`collect-lever`/`collect-ashby` then `job-classification` every 6h (the CORE, freshness-critical path); `collect-github` → `scoring` → `classification`/`technology` → `matching` → `decision` once daily (the SECONDARY path — none of it affects job freshness). Job data volume at this scale is trivial for GitHub's API either way, but `collect-github` still needs a valid `GITHUB_TOKEN` — an invalid or missing one fails every run outright, not just faster rate-limiting.
+- Schedule: mirror the two-workflow split above — `collect-greenhouse`/`collect-lever`/`collect-ashby` then `job-classification` every 12h (the CORE, freshness-critical path); `collect-github` → `scoring` → `classification`/`technology` → `matching` → `decision` once daily (the SECONDARY path — none of it affects job freshness). Job data volume at this scale is trivial for GitHub's API either way, but `collect-github` still needs a valid `GITHUB_TOKEN` — an invalid or missing one fails every run outright, not just faster rate-limiting.
 
 **Company/contact/funding research is intentionally not part of this recurring pipeline.** The curated company directory (`apps/web/data/companies/`) is hand-verified data, updated by editing/adding JSON files and re-running `seed:companies` as a deliberate, one-time action — never a scheduled job. See "Tracked companies" above.
 

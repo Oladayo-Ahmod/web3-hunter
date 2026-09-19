@@ -1,6 +1,6 @@
 import { getDb } from "@web3-hunter/db";
 import { sql } from "drizzle-orm";
-import { checkApplyEligibility } from "./apply-eligibility";
+import { ensureJobEligibility, jobEligibilityIsCurrent } from "./job-eligibility-service";
 import type {
   CompanyContactDTO,
   CompanyPriorityDTO,
@@ -37,9 +37,18 @@ import type {
  * instruction). Company relevance is untouched: every curated Company
  * still appears here regardless of whether it has any eligible role —
  * it just falls through to DM/Research instead of Apply (Part 6).
+ *
+ * Reads the *stored* eligibility verdict (`job_eligibility`) instead of
+ * running the gate here: doing so meant downloading every open job's
+ * full description on every request just to decide, which was a large
+ * share of the Supabase egress that exhausted the project's quota. The
+ * verdict comes from the same `checkApplyEligibility`, computed once per
+ * job version by `refreshJobEligibility`.
  */
 export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
   const db = getDb();
+
+  await ensureJobEligibility();
 
   const companyRows = await db.execute<{
     id: string;
@@ -103,32 +112,33 @@ export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
       c.name ASC
   `);
 
-  // Raw open-job rows across every curated/verified Company — title and
-  // description only, the two fields `checkApplyEligibility` needs.
-  // Filtered in JS (same reason `job-query-service.ts`'s default view
-  // is: the gate is a regex-over-title/description function, not a SQL
-  // expression), then aggregated per Company below.
-  const jobRows = await db.execute<{
-    company_id: string;
-    title: string;
-    description: string | null;
-  }>(sql`
+  // Titles of every open job with a current, eligible stored verdict, at
+  // every curated/verified Company. Only titles come back — never a
+  // description — because the eligibility decision was already made (and
+  // stored) by `refreshJobEligibility`. A job whose verdict is missing or
+  // stale (new or edited since the last refresh) simply doesn't join, i.e.
+  // it is not counted until it has been evaluated: the gate favors
+  // precision, so "not yet known" is treated as "not eligible".
+  const jobRows = await db.execute<{ company_id: string; title: string }>(sql`
     WITH latest_state AS (
       SELECT DISTINCT ON (related_entity_id, metadata->>'externalId')
+        id AS state_event_id,
         related_entity_id AS company_id,
         metadata->>'externalId' AS external_id,
-        metadata,
+        metadata->>'title' AS title,
         occurred_at AS state_at
       FROM event
       WHERE type IN ('JobPosted', 'JobUpdated') AND related_entity_type = 'company'
-      ORDER BY related_entity_id, metadata->>'externalId', occurred_at DESC
+      ORDER BY related_entity_id, metadata->>'externalId', occurred_at DESC, id DESC
     )
-    SELECT
-      ls.company_id,
-      ls.metadata->>'title' AS title,
-      ls.metadata->>'description' AS description
+    SELECT ls.company_id, ls.title
     FROM latest_state ls
     JOIN company c ON c.id = ls.company_id AND c.discovery_status IN ('curated', 'verified')
+    JOIN job_eligibility je
+      ON je.company_id = ls.company_id
+      AND je.external_id = ls.external_id
+      AND je.eligible
+      AND ${jobEligibilityIsCurrent("ls")}
     WHERE NOT EXISTS (
       SELECT 1 FROM event closed
       WHERE closed.type = 'JobClosed'
@@ -141,9 +151,6 @@ export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
 
   const eligibleByCompany = new Map<string, string[]>();
   for (const row of jobRows) {
-    if (!checkApplyEligibility(row.title, row.description).eligible) {
-      continue;
-    }
     const titles = eligibleByCompany.get(row.company_id) ?? [];
     titles.push(row.title);
     eligibleByCompany.set(row.company_id, titles);

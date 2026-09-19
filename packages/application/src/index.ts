@@ -45,6 +45,7 @@ export {
   type ApplyEligibilityReasonCode,
   type ApplyEligibilityResult,
 } from "./apply-eligibility";
+export { ensureJobEligibility, refreshJobEligibility } from "./job-eligibility-service";
 export { classifyOpportunityType, listOutreachTargets } from "./outreach-query-service";
 export {
   getOpportunityDetail,

@@ -485,3 +485,40 @@ export function checkApplyEligibility(
     reasonCode: "REJECT_NON_TECHNICAL",
   };
 }
+
+/**
+ * Bump when `checkApplyEligibility`'s *logic* changes in a way editing a
+ * phrase list would not already reveal (for example a new decision step).
+ * Phrase-list and reason-code edits change `ELIGIBILITY_GATE_FINGERPRINT`
+ * on their own.
+ */
+const GATE_LOGIC_REVISION = 1;
+
+function fnv1a32(input: string, seed: number): number {
+  let hash = seed >>> 0;
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash;
+}
+
+/**
+ * Identifies the gate's rules. Persisted alongside each stored verdict
+ * (`job_eligibility.gate_fingerprint`), so editing any phrase list or
+ * reason-code mapping makes every stored verdict stale and re-evaluated
+ * automatically — nothing to remember to bump. Not a security hash: two
+ * independent 32-bit FNV-1a passes are plenty to notice an edit.
+ */
+export const ELIGIBILITY_GATE_FINGERPRINT = (() => {
+  const rules = JSON.stringify([
+    GATE_LOGIC_REVISION,
+    HARD_NEGATIVE_TITLE_PHRASES,
+    STRONG_TITLE_PHRASES,
+    DESCRIPTION_CONFIRMATION_PHRASES,
+    NEGATIVE_PHRASE_REASON_CODES,
+    POSITIVE_PHRASE_REASON_CODES,
+  ]);
+  const hex = (value: number) => value.toString(16).padStart(8, "0");
+  return `${hex(fnv1a32(rules, 0x811c9dc5))}${hex(fnv1a32(rules, 0x9747b28c))}`;
+})();
