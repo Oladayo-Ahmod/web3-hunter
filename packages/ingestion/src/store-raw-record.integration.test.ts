@@ -259,6 +259,25 @@ describe("storeRawRecords (integration)", () => {
     expect(results[1]!.externalId).toBe("mix-2");
   });
 
+  it("returns identity-only references, never the stored payload — new and already-existing alike", async () => {
+    const input = [
+      {
+        collectorId,
+        payload: { id: "slim-1", description: "x".repeat(2000) },
+        externalId: "slim-1",
+        sourceIdentifier: "batch-source",
+      },
+    ];
+
+    const [inserted] = await storeRawRecords(input);
+    const [existing] = await storeRawRecords(input);
+
+    expect(inserted).not.toHaveProperty("payload");
+    expect(existing).not.toHaveProperty("payload");
+    expect(existing!.id).toBe(inserted!.id);
+    expect(existing).toMatchObject({ externalId: "slim-1", sourceIdentifier: "batch-source" });
+  });
+
   it("throws on a mixed-collectorId batch rather than silently misattributing rows", async () => {
     const [otherCollector] = await getDb()
       .insert(schema.collector)

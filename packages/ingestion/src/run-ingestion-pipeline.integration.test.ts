@@ -2,7 +2,7 @@ import { getDb, schema } from "@web3-hunter/db";
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { registerEventType, replayEvents } from "@web3-hunter/events";
 import { eq } from "drizzle-orm";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { deriveEventId } from "./deterministic-id";
 import type { Normalizer } from "./normalizer";
 import { reconcileMissingRecords, runIngestionPipeline } from "./run-ingestion-pipeline";
@@ -371,5 +371,134 @@ describe("runIngestionPipeline / reconcileMissingRecords (integration)", () => {
     expect(
       updatedEvents.some((event) => (event.metadata as { title: string }).title === "Y's role"),
     ).toBe(false);
+  });
+
+  // Supabase egress fix: reconciliation used to re-fetch every stored
+  // version of every already-closed job on every run, only to have
+  // `publishEvent` reject the duplicate close event. `normalizeMissing`
+  // is only ever called with a job's payload, so "was it called" is the
+  // observable proxy for "was that payload read".
+  describe("reconcileMissingRecords only reads jobs that still need a close event", () => {
+    const closeFromPayload = ({ lastKnownPayload }: { lastKnownPayload: unknown }) => ({
+      type: TestClosed.name,
+      metadata: lastKnownPayload as { title: string },
+      occurredAt: new Date(),
+      confidence: 1,
+    });
+
+    async function storeAndIngest(sourceIdentifier: string, externalId: string, title: string) {
+      await storeRawRecord({ collectorId, payload: { title }, externalId, sourceIdentifier });
+      await runIngestionPipeline({ collectorId, sourceIdentifier, normalize: testNormalizer });
+    }
+
+    it("does not re-normalize a job whose close event was already published", async () => {
+      const sourceIdentifier = "egress-already-closed";
+      await storeAndIngest(sourceIdentifier, "old-a", "Old job A");
+      await storeAndIngest(sourceIdentifier, "old-b", "Old job B");
+
+      const normalizeMissing = vi.fn(closeFromPayload);
+      const first = await reconcileMissingRecords({
+        collectorId,
+        sourceIdentifier,
+        currentExternalIds: [],
+        normalizeMissing,
+      });
+      expect(first.published).toBe(2);
+      expect(normalizeMissing).toHaveBeenCalledTimes(2);
+
+      normalizeMissing.mockClear();
+      const second = await reconcileMissingRecords({
+        collectorId,
+        sourceIdentifier,
+        currentExternalIds: [],
+        normalizeMissing,
+      });
+
+      expect(second.published).toBe(0);
+      expect(normalizeMissing).not.toHaveBeenCalled();
+    });
+
+    it("closes only the newly missing job when older jobs are already closed", async () => {
+      const sourceIdentifier = "egress-mixed";
+      await storeAndIngest(sourceIdentifier, "older-1", "Older 1");
+      await storeAndIngest(sourceIdentifier, "older-2", "Older 2");
+      await storeAndIngest(sourceIdentifier, "older-3", "Older 3");
+      await reconcileMissingRecords({
+        collectorId,
+        sourceIdentifier,
+        currentExternalIds: [],
+        normalizeMissing: closeFromPayload,
+      });
+
+      await storeAndIngest(sourceIdentifier, "newly-gone", "Newly gone");
+      const normalizeMissing = vi.fn(closeFromPayload);
+      const result = await reconcileMissingRecords({
+        collectorId,
+        sourceIdentifier,
+        currentExternalIds: [],
+        normalizeMissing,
+      });
+
+      expect(result).toEqual({ processed: 4, published: 1, skipped: 0 });
+      expect(normalizeMissing).toHaveBeenCalledTimes(1);
+      expect(normalizeMissing).toHaveBeenCalledWith(
+        expect.objectContaining({ externalId: "newly-gone" }),
+      );
+    });
+
+    it("closes using the latest stored version's payload when a job has several versions", async () => {
+      const sourceIdentifier = "egress-versions";
+      await storeAndIngest(sourceIdentifier, "multi", "Version 1");
+      await storeAndIngest(sourceIdentifier, "multi", "Version 2");
+      await storeAndIngest(sourceIdentifier, "multi", "Version 3");
+
+      const normalizeMissing = vi.fn(closeFromPayload);
+      await reconcileMissingRecords({
+        collectorId,
+        sourceIdentifier,
+        currentExternalIds: [],
+        normalizeMissing,
+      });
+
+      expect(normalizeMissing).toHaveBeenCalledTimes(1);
+      expect(normalizeMissing).toHaveBeenCalledWith({
+        externalId: "multi",
+        lastKnownPayload: { title: "Version 3" },
+      });
+    });
+
+    it("closes a job again when it reappears with changed content and then disappears", async () => {
+      const sourceIdentifier = "egress-reopen";
+      await storeAndIngest(sourceIdentifier, "flap", "First posting");
+      await reconcileMissingRecords({
+        collectorId,
+        sourceIdentifier,
+        currentExternalIds: [],
+        normalizeMissing: closeFromPayload,
+      });
+
+      await storeAndIngest(sourceIdentifier, "flap", "Second posting");
+      const whileOpen = await reconcileMissingRecords({
+        collectorId,
+        sourceIdentifier,
+        currentExternalIds: ["flap"],
+        normalizeMissing: closeFromPayload,
+      });
+      expect(whileOpen.published).toBe(0);
+
+      const gone = await reconcileMissingRecords({
+        collectorId,
+        sourceIdentifier,
+        currentExternalIds: [],
+        normalizeMissing: closeFromPayload,
+      });
+      expect(gone.published).toBe(1);
+
+      const closedTitles = (await replayEvents({ type: TestClosed.name, collectorId })).map(
+        (event) => (event.metadata as { title: string }).title,
+      );
+      expect(closedTitles).toContain("First posting");
+      expect(closedTitles).toContain("Second posting");
+    });
   });
 });

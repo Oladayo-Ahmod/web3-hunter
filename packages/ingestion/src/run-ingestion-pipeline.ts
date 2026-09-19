@@ -180,6 +180,26 @@ export interface ReconcileMissingRecordsInput {
  * that are missing from `currentExternalIds`, and publishes whatever event
  * the supplied `normalizeMissing` function says that represents. Like
  * `runIngestionPipeline`, contains no source-specific knowledge itself.
+ *
+ * Only reads what it needs (Supabase egress fix — the quota was exhausted
+ * at 12.35 GB in ~3 weeks). Every run used to re-download *every stored
+ * version* of *every job that had ever closed* at this source — payloads
+ * with full job descriptions — only to re-derive an already-published
+ * close event and have `publishEvent` reject it as a duplicate. That set
+ * only grows: a job stays "missing" forever once closed. Now:
+ *
+ * 1. One ids-only query returns the latest Raw Record ID per externalId.
+ * 2. The close event's ID is deterministic (`deriveEventId` of that Raw
+ *    Record's ID), so one ids-only `event` lookup shows which closes were
+ *    already published.
+ * 3. Payloads are fetched only for jobs that still need a close event.
+ *
+ * The events that end up published are identical to before — an
+ * already-published close was a no-op — so replay/idempotency are
+ * unchanged. Two visible differences: `published` now counts only newly
+ * closed jobs (it used to also count every re-attempted duplicate, which
+ * inflated the Collector's per-run `closed` figure), and a `normalizeMissing`
+ * that returns `null` for a job is retried on the next run, as before.
  */
 export async function reconcileMissingRecords(
   input: ReconcileMissingRecordsInput,
@@ -187,7 +207,10 @@ export async function reconcileMissingRecords(
   const db = getDb();
 
   const tracked = await db
-    .selectDistinct({ externalId: schema.rawRecord.externalId })
+    .selectDistinctOn([schema.rawRecord.externalId], {
+      id: schema.rawRecord.id,
+      externalId: schema.rawRecord.externalId,
+    })
     .from(schema.rawRecord)
     .where(
       and(
@@ -195,73 +218,81 @@ export async function reconcileMissingRecords(
         eq(schema.rawRecord.sourceIdentifier, input.sourceIdentifier),
         isNotNull(schema.rawRecord.externalId),
       ),
-    );
+    )
+    // UUIDv7 IDs are time-sortable, so the highest ID per externalId is its
+    // most recent capture — the same "latest" `findPreviousPayload` uses.
+    .orderBy(schema.rawRecord.externalId, desc(schema.rawRecord.id));
 
   const currentSet = new Set(input.currentExternalIds);
-  const missing = tracked
-    .map((row) => row.externalId)
-    .filter(
-      (externalId): externalId is string => externalId !== null && !currentSet.has(externalId),
+  const missing = tracked.flatMap((row) =>
+    row.externalId !== null && !currentSet.has(row.externalId)
+      ? [
+          {
+            externalId: row.externalId,
+            latestRawRecordId: row.id,
+            // Derived from the last-known Raw Record's ID, not a fresh random
+            // ID, so re-running reconciliation on a still-missing externalId
+            // recovers the same Event instead of publishing a new "closed"
+            // event on every poll.
+            eventId: deriveEventId(`${row.id}:missing`),
+          },
+        ]
+      : [],
+  );
+
+  if (missing.length === 0) {
+    return { processed: 0, published: 0, skipped: 0 };
+  }
+
+  const alreadyClosedEventIds = new Set(
+    (
+      await db
+        .select({ id: schema.event.id })
+        .from(schema.event)
+        .where(
+          inArray(
+            schema.event.id,
+            missing.map((item) => item.eventId),
+          ),
+        )
+    ).map((row) => row.id),
+  );
+  const needsCloseEvent = missing.filter((item) => !alreadyClosedEventIds.has(item.eventId));
+
+  if (needsCloseEvent.length === 0) {
+    return { processed: missing.length, published: 0, skipped: 0 };
+  }
+
+  const payloadRows = await db
+    .select({ id: schema.rawRecord.id, payload: schema.rawRecord.payload })
+    .from(schema.rawRecord)
+    .where(
+      inArray(
+        schema.rawRecord.id,
+        needsCloseEvent.map((item) => item.latestRawRecordId),
+      ),
     );
+  const payloadByRawRecordId = new Map(payloadRows.map((row) => [row.id, row.payload]));
 
   let published = 0;
   let skipped = 0;
 
-  // Milestone 26: one batched query for every missing externalId's most
-  // recent Raw Record, instead of one round trip per missing job — the
-  // same "batch the round trips, not the semantics" fix
-  // `storeRawRecords` already applies to the fetch/persist phase. Rows
-  // come back ordered newest-first per (collectorId, sourceIdentifier,
-  // externalId, id DESC), so the first row seen for a given externalId
-  // is always its latest — matching exactly what the old per-record
-  // `ORDER BY id DESC LIMIT 1` returned.
-  const latestByExternalId = new Map<string, { id: string; payload: unknown }>();
-  if (missing.length > 0) {
-    const candidates = await db
-      .select({
-        id: schema.rawRecord.id,
-        externalId: schema.rawRecord.externalId,
-        payload: schema.rawRecord.payload,
-      })
-      .from(schema.rawRecord)
-      .where(
-        and(
-          eq(schema.rawRecord.collectorId, input.collectorId),
-          eq(schema.rawRecord.sourceIdentifier, input.sourceIdentifier),
-          inArray(schema.rawRecord.externalId, missing),
-        ),
-      )
-      .orderBy(desc(schema.rawRecord.id));
-
-    for (const row of candidates) {
-      // externalId is guaranteed non-null here (missing[] was already
-      // filtered to non-null externalIds above).
-      if (row.externalId !== null && !latestByExternalId.has(row.externalId)) {
-        latestByExternalId.set(row.externalId, { id: row.id, payload: row.payload });
-      }
-    }
-  }
-
-  for (const externalId of missing) {
-    const latest = latestByExternalId.get(externalId);
-
-    if (!latest) {
+  for (const item of needsCloseEvent) {
+    if (!payloadByRawRecordId.has(item.latestRawRecordId)) {
       continue;
     }
 
-    const normalized = input.normalizeMissing({ externalId, lastKnownPayload: latest.payload });
+    const normalized = input.normalizeMissing({
+      externalId: item.externalId,
+      lastKnownPayload: payloadByRawRecordId.get(item.latestRawRecordId),
+    });
 
     if (!normalized) {
       skipped += 1;
       continue;
     }
 
-    // Derived from the last-known Raw Record's ID, not a fresh random ID,
-    // so re-running reconciliation on a still-missing externalId recovers
-    // the same Event via publishEvent's duplicate rejection instead of
-    // publishing a new "closed" event on every poll.
-    const eventId = deriveEventId(`${latest.id}:missing`);
-    await publishNormalizedEvent(eventId, input.collectorId, normalized);
+    await publishNormalizedEvent(item.eventId, input.collectorId, normalized);
     published += 1;
   }
 

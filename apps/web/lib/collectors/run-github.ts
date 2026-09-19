@@ -1,6 +1,6 @@
 import { github } from "@web3-hunter/collectors";
 import { getDb, resolveOrCreateCollector, schema } from "@web3-hunter/db";
-import { runIngestionPipeline, storeRawRecord } from "@web3-hunter/ingestion";
+import { runIngestionPipeline, storeRawRecords } from "@web3-hunter/ingestion";
 import { and, eq } from "drizzle-orm";
 
 export interface TrackedGithubOrg {
@@ -87,14 +87,17 @@ async function runForOrg(
   const companyId = await resolveCompany(collectorId, trackedOrg);
   const repos = await github.fetchGithubOrgRepos(trackedOrg.org);
 
-  for (const repo of repos) {
-    await storeRawRecord({
+  // Same batched, payload-free write `run-collector.ts` uses for the ATS
+  // Collectors — the per-repo `storeRawRecord` loop re-downloaded every
+  // unchanged repository's stored payload on every run just to discard it.
+  await storeRawRecords(
+    repos.map((repo) => ({
       collectorId,
       payload: repo,
       externalId: String(repo.id),
       sourceIdentifier: trackedOrg.org,
-    });
-  }
+    })),
+  );
 
   const pipelineResult = await runIngestionPipeline({
     collectorId,
