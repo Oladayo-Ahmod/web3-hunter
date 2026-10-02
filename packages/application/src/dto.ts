@@ -387,6 +387,8 @@ export interface OutreachTargetDTO {
   openJobCount: number;
   /** Up to 3 currently-open job titles at this Company — Milestone 18 §9's "role if available," so an Outreach card doesn't require a click-through just to see what's open. */
   openJobTitles: string[];
+  /** When a real hiring Signal (`company_intelligence.lastSignalAt`) was last detected for this Company — `null` if none ever has been. The freshness signal DM/Research ranking sorts by, since `priority`/funding alone are static, curator-set facts that would otherwise never change. */
+  lastSignalAt: string | null;
   /** A short, deterministic (never AI-generated) sentence explaining why this Company is on the list today — derived from `opportunityType`/`priority`/funding, not a new scoring input. */
   reasonToContact: string;
   contacts: CompanyContactDTO[];
@@ -394,7 +396,9 @@ export interface OutreachTargetDTO {
 
 /**
  * One row of the "Apply" section of the Today Digest (Milestone 19 §6) —
- * a real, clickable job at a `priority`-tagged (startup-biased) Company.
+ * a real, clickable, eligible blockchain/Web3 engineering role, at any
+ * Company (no longer gated on a curated `priority` tag — see
+ * `daily-digest-service.ts`'s `fetchApplyCandidates` doc comment).
  * Deliberately smaller than `JobFeedItemDTO`: this view only needs enough
  * to decide "should I click apply," not the full Job Detail page's
  * skill/relevance breakdown.

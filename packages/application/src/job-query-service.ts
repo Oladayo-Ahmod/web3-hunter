@@ -590,20 +590,26 @@ export async function listJobFeed(
 }
 
 /**
- * A single open Job by its `JobFeedItemDTO.id` (`${companyId}:${externalId}`,
- * see that DTO's doc comment) — the Job Detail read model for
- * `/jobs/[id]` (Milestone 13 Phase 2). Returns `null` for an unknown or
- * no-longer-open id, the same "not found is an expected outcome, not an
- * error" convention `getOpportunityDetail` uses.
+ * A single open Job, identified by its Company and its source's own
+ * `externalId` — the Job Detail read model for `/jobs/[companyId]/[externalId]`
+ * (Milestone 13 Phase 2). Returns `null` for an unknown or no-longer-open
+ * pair, the same "not found is an expected outcome, not an error"
+ * convention `getOpportunityDetail` uses.
+ *
+ * Takes the two parts separately rather than the combined
+ * `JobFeedItemDTO.id` (`${companyId}:${externalId}`) string: that combined
+ * form is fine as a React list `key` or an internal identifier, but a
+ * colon inside one URL path segment is not something every proxy/CDN in
+ * front of the app is guaranteed to pass through byte-for-byte — a real
+ * production symptom was every `/jobs/[id]` detail page 404ing despite
+ * the exact same lookup succeeding when called directly, consistent with
+ * exactly that. Two plain path segments sidesteps the question entirely.
  */
-export async function getJobDetail(id: string, viewerId?: string): Promise<JobFeedItemDTO | null> {
-  const separatorIndex = id.indexOf(":");
-  if (separatorIndex === -1) {
-    return null;
-  }
-  const companyId = id.slice(0, separatorIndex);
-  const externalId = id.slice(separatorIndex + 1);
-
+export async function getJobDetail(
+  companyId: string,
+  externalId: string,
+  viewerId?: string,
+): Promise<JobFeedItemDTO | null> {
   const db = getDb();
   const now = new Date();
 

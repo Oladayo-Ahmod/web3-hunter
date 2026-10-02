@@ -1,7 +1,12 @@
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { classifyOpportunityType, listOutreachTargets } from "./outreach-query-service";
-import { seedCompany, seedCompanyContact, seedJobPostedEvent } from "./test-support/seed";
+import {
+  seedCompany,
+  seedCompanyContact,
+  seedCompanyIntelligence,
+  seedJobPostedEvent,
+} from "./test-support/seed";
 
 describe("classifyOpportunityType", () => {
   it("prefers an open role over every other reason to reach out", () => {
@@ -164,5 +169,22 @@ describe("listOutreachTargets (integration)", () => {
     expect(target?.openJobCount).toBe(1);
     expect(target?.openJobTitles).toEqual(["Smart Contract Engineer"]);
     expect(target?.opportunityType).toBe("OPEN_ROLE");
+  });
+
+  it("carries a Company's lastSignalAt through, and ranks a recent real hiring Signal ahead of a higher static priority tier", async () => {
+    await seedCompany({ slug: "signal-quiet-high", priority: "high" });
+    const activeLowPriority = await seedCompany({ slug: "signal-active-low", priority: "low" });
+    await seedCompanyIntelligence({
+      companyId: activeLowPriority.id,
+      lastSignalAt: new Date(),
+    });
+
+    const targets = await listOutreachTargets();
+    const quiet = targets.find((entry) => entry.slug === "signal-quiet-high");
+    const active = targets.find((entry) => entry.slug === "signal-active-low");
+
+    expect(quiet?.lastSignalAt).toBeNull();
+    expect(active?.lastSignalAt).not.toBeNull();
+    expect(targets.indexOf(active!)).toBeLessThan(targets.indexOf(quiet!));
   });
 });
