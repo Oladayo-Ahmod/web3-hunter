@@ -10,12 +10,13 @@ import { listOutreachTargets } from "./outreach-query-service";
 /**
  * Bounded candidate pool scored/sorted in memory before slicing to
  * `APPLY_LIMIT` — mirrors `job-query-service.ts`'s own
- * `RELEVANCE_SORT_MAX_ROWS` reasoning, at a much smaller scale since
- * this is already filtered to `priority`-tagged Companies. Milestone 20:
- * widened from 150 to 400 now that `checkApplyEligibility` removes a
- * real fraction of this pool before ranking — the pool needs enough
- * headroom that filtering doesn't starve the list below `APPLY_LIMIT`
- * candidates on a normal day.
+ * `RELEVANCE_SORT_MAX_ROWS` reasoning. Milestone 20: widened from 150 to
+ * 400 now that the eligibility gate removes a real fraction of this pool
+ * before ranking — the pool needs enough headroom that filtering doesn't
+ * starve the list below `APPLY_LIMIT` candidates on a normal day. Still
+ * comfortably above real total open-Job volume at this scale (currently
+ * under 100 open Jobs system-wide), now that the pool is every open Job,
+ * not just ones at `priority`-tagged Companies.
  */
 const APPLY_CANDIDATE_POOL = 400;
 const APPLY_LIMIT = 20;
@@ -41,13 +42,23 @@ type ApplyCandidateRow = {
 };
 
 /**
- * The "Apply" candidate pool — open Jobs at `priority`-tagged Companies
- * only (Milestone 19 §2/§8's startup bias: `priority` is only ever
- * hand-set for the outreach-focused curation pass, so this excludes the
- * large pre-existing incumbents — Coinbase, Kraken, OKX, etc. — by
- * construction, not a filter that has to name them). Bounded to the most
- * recently posted `APPLY_CANDIDATE_POOL` rows; scored/sorted by the
- * caller once it knows whether there's a viewer Profile.
+ * The "Apply" candidate pool — every open Job, gated on role eligibility
+ * (`checkApplyEligibility`, applied below once the stored verdict is
+ * read), not on the Company's curated `priority` tag.
+ *
+ * This used to also require `priority IS NOT NULL`, i.e. a Company the
+ * outreach-curation pass had specifically hand-flagged. The actual goal
+ * here is "fresh blockchain/web3 engineer roles," not "roles at
+ * hand-curated startups" — those are different questions, and gating on
+ * the second one as a hard filter meant a genuinely relevant role at any
+ * of the ~37 Companies without a `priority` set (including some real
+ * Web3 engineering employers, not just incumbents) could never appear
+ * here at all, no matter how good the role. `priority` still influences
+ * nothing here now; it's carried through to the DTO for display only.
+ *
+ * Bounded to the most recently posted `APPLY_CANDIDATE_POOL` rows;
+ * scored/sorted by the caller once it knows whether there's a viewer
+ * Profile.
  */
 async function fetchApplyCandidates(): Promise<ApplyCandidateRow[]> {
   await ensureJobEligibility();
@@ -94,9 +105,7 @@ async function fetchApplyCandidates(): Promise<ApplyCandidateRow[]> {
       ON je.company_id = ls.company_id
       AND je.external_id = ls.external_id
       AND ${jobEligibilityIsCurrent("ls")}
-    JOIN company c ON c.id = ls.company_id
-      AND c.discovery_status != 'rejected'
-      AND c.priority IS NOT NULL
+    JOIN company c ON c.id = ls.company_id AND c.discovery_status != 'rejected'
     WHERE cl.closed_at IS NULL OR cl.closed_at < ls.state_at
     ORDER BY ls.state_at DESC
     LIMIT ${APPLY_CANDIDATE_POOL}
@@ -196,8 +205,8 @@ const PRIORITY_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
  * `listOutreachTargets`/the Job Feed already compute. No new scoring
  * subsystem: Apply is real-job relevance/freshness (existing
  * `job-relevance.ts`); DM/Research are `listOutreachTargets`'s own
- * `priority`/`recentlyFunded`/contact-presence facts, just re-sorted for
- * this specific "what next" question.
+ * `priority`/`recentlyFunded`/`lastSignalAt`/contact-presence facts, just
+ * re-sorted for this specific "what next" question.
  */
 export async function getTodayDigest(viewerId?: string): Promise<TodayDigestDTO> {
   const [applyJobs, allTargets] = await Promise.all([
@@ -207,12 +216,21 @@ export async function getTodayDigest(viewerId?: string): Promise<TodayDigestDTO>
 
   const noOpenRole = allTargets.filter((target) => target.opportunityType !== "OPEN_ROLE");
 
-  // DM: ranked funded-first, then priority, then "has a contact" (so the
-  // first 20 are maximally actionable today, not just maximally
-  // interesting) — a fixed comparator, not a score.
+  // DM: ranked funded-first, then by how recently a real hiring Signal
+  // was detected, then priority, then "has a contact" (so the first 20
+  // are maximally actionable today, not just maximally interesting) — a
+  // fixed comparator, not a score. `lastSignalAt` is what keeps this
+  // list from reading as static week over week: `recentlyFunded` and
+  // `priority` are curator-set facts that rarely change, so without it
+  // the same Companies in the same order would come back indefinitely.
   const dmRanked = [...noOpenRole].sort((a, b) => {
     if (a.recentlyFunded !== b.recentlyFunded) {
       return a.recentlyFunded ? -1 : 1;
+    }
+    const aSignalAt = a.lastSignalAt ? new Date(a.lastSignalAt).getTime() : 0;
+    const bSignalAt = b.lastSignalAt ? new Date(b.lastSignalAt).getTime() : 0;
+    if (aSignalAt !== bSignalAt) {
+      return bSignalAt - aSignalAt;
     }
     const priorityDelta =
       (PRIORITY_RANK[a.priority ?? ""] ?? 3) - (PRIORITY_RANK[b.priority ?? ""] ?? 3);

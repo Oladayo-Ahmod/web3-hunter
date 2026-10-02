@@ -78,7 +78,10 @@ const PRIORITY_LABEL: Record<CompanyPriorityDTO, string> = {
  */
 export function JobCard({ job }: { job: JobFeedItemDTO }) {
   return (
-    <Link href={`/jobs/${job.id}`} className="group block focus-visible:outline-none">
+    <Link
+      href={`/jobs/${job.company.id}/${job.externalId}`}
+      className="group block focus-visible:outline-none"
+    >
       <Card className="h-full gap-4 py-5 transition-all hover:border-primary hover:shadow-md focus-visible:border-primary">
         <CardHeader className="gap-1.5 px-5">
           <CardTitle className="flex items-start justify-between gap-2 text-base leading-snug">

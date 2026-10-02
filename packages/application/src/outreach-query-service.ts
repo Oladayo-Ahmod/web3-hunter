@@ -38,6 +38,15 @@ import type {
  * still appears here regardless of whether it has any eligible role —
  * it just falls through to DM/Research instead of Apply (Part 6).
  *
+ * `lastSignalAt` (from `company_intelligence`, already computed by the
+ * scoring pipeline — no new table, no new computation here) is read and
+ * sorted on so the DM/Research buckets have a signal that moves over
+ * time. Without it, every ranking input here (`priority`, funding) is a
+ * static, curator-set fact, so the same ordering — and often near enough
+ * the same companies, since OPEN_ROLE membership is the only thing that
+ * ever changed it — would come back for weeks, which read as "outreach
+ * never updates" even while the underlying job pipeline was working.
+ *
  * Reads the *stored* eligibility verdict (`job_eligibility`) instead of
  * running the gate here: doing so meant downloading every open job's
  * full description on every request just to decide, which was a large
@@ -67,6 +76,7 @@ export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
     funding_date: string | null;
     funding_amount: string | null;
     funding_source: string | null;
+    last_signal_at: string | null;
     contacts: CompanyContactDTO[];
   }>(sql`
     WITH contacts_agg AS (
@@ -92,23 +102,31 @@ export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
       c.id, c.slug, c.name, c.website_url, c.careers_page_url, c.twitter_url, c.linkedin_url,
       c.description, c.category, c.tags, c.priority, c.funding_stage,
       c.recently_funded, c.funding_date, c.funding_amount, c.funding_source,
+      ci.last_signal_at,
       COALESCE(ca.contacts, '[]'::json) AS contacts
     FROM company c
     LEFT JOIN contacts_agg ca ON ca.company_id = c.id
+    LEFT JOIN company_intelligence ci ON ci.company_id = c.id
     WHERE c.discovery_status IN ('curated', 'verified')
     ORDER BY
-      -- Milestone 19 §2's "startup bias": a hand-curated 'high' priority
-      -- Company sorts before 'medium', before 'low', before an
-      -- unclassified one (most of the original, pre-Milestone-17
-      -- directory — large, well-known incumbents like Coinbase/Kraken
-      -- among them) — free, since priority already exists as exactly
-      -- this signal; no new column, no scoring formula.
+      -- A Company with a real, recently-detected hiring Signal (new
+      -- backend/infra roles, a posting surge — see the detectors in
+      -- packages/scoring) sorts first - this is the one input here that
+      -- actually changes as real activity happens, so it's what keeps
+      -- this list moving day to day rather than resorting to the same
+      -- static order every time.
+      CASE WHEN ci.last_signal_at >= now() - interval '30 days' THEN 0 ELSE 1 END,
+      -- Then Milestone 19 §2's "startup bias": a hand-curated 'high'
+      -- priority Company sorts before 'medium', before 'low', before an
+      -- unclassified one — free, since priority already exists as
+      -- exactly this signal; no new column, no scoring formula.
       CASE c.priority
         WHEN 'high' THEN 0
         WHEN 'medium' THEN 1
         WHEN 'low' THEN 2
         ELSE 3
       END,
+      ci.last_signal_at DESC NULLS LAST,
       c.name ASC
   `);
 
@@ -184,6 +202,7 @@ export async function listOutreachTargets(): Promise<OutreachTargetDTO[]> {
       opportunityType,
       openJobCount,
       openJobTitles: eligibleTitles.slice(0, 3),
+      lastSignalAt: row.last_signal_at,
       reasonToContact: buildReasonToContact(row.name, opportunityType, {
         openJobCount,
         fundingStage: row.funding_stage,
