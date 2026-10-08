@@ -30,6 +30,8 @@ describe("createTestDatabase", () => {
 
     expect(tables.map((row) => row.table_name)).toEqual([
       "account",
+      "audit_contest",
+      "bug_bounty",
       "classification_ledger",
       "collector",
       "company",
@@ -55,6 +57,11 @@ describe("createTestDatabase", () => {
       "raw_record_ingestion",
       "recommendation",
       "recommendation_explanation",
+      "security_opportunity",
+      "security_signal",
+      "security_signal_generation_ledger",
+      "security_target",
+      "security_target_intelligence",
       "session",
       "signal",
       "signal_generation_ledger",
