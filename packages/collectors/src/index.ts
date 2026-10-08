@@ -1,4 +1,5 @@
 export * as ashby from "./ashby";
+export * as defillama from "./defillama";
 export * as github from "./github";
 export * as greenhouse from "./greenhouse";
 export {
@@ -9,6 +10,12 @@ export {
   type JobFields,
 } from "./hiring-events";
 export * as lever from "./lever";
+export {
+  ProtocolSnapshotRecorded,
+  ProtocolSnapshotUpdated,
+  type CanonicalProtocol,
+  type ProtocolFields,
+} from "./protocol-events";
 export {
   RepositoryDiscovered,
   RepositoryUpdated,

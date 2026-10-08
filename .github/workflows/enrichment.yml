@@ -69,8 +69,16 @@ jobs:
         run: pnpm --filter @web3-hunter/web collect:github
         continue-on-error: true
 
+      - name: Collect - DefiLlama (security intelligence)
+        run: pnpm --filter @web3-hunter/web collect:defillama
+        continue-on-error: true
+
       - name: Score companies
         run: pnpm --filter @web3-hunter/web score:companies
+        continue-on-error: true
+
+      - name: Score security targets
+        run: pnpm --filter @web3-hunter/web score:security
         continue-on-error: true
 
       - name: Classify opportunities

@@ -71,6 +71,9 @@ importers:
       '@web3-hunter/scoring':
         specifier: workspace:*
         version: link:../../packages/scoring
+      '@web3-hunter/security':
+        specifier: workspace:*
+        version: link:../../packages/security
       '@web3-hunter/shared':
         specifier: workspace:*
         version: link:../../packages/shared

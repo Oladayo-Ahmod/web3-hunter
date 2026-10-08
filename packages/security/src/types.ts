@@ -53,3 +53,11 @@ export interface SecurityTargetIntelligenceState {
   signalCount: number;
   lastSignalAt: Date | null;
 }
+
+/** A persisted Security Signal's identity-relevant fields — mirrors `SignalSummary`. */
+export interface SecuritySignalSummary {
+  id: string;
+  signalType: string;
+  weight: number;
+  detectedAt: Date;
+}

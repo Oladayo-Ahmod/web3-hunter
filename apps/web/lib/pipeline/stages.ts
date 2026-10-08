@@ -6,6 +6,7 @@ import { getDb, schema } from "@web3-hunter/db";
 import { runDecisionPipeline } from "@web3-hunter/decision";
 import { runMatchingPipeline } from "@web3-hunter/matching";
 import { runScoringPipeline } from "@web3-hunter/scoring";
+import { runSecurityScoringPipeline } from "@web3-hunter/security";
 import { runTechnologyPipeline } from "@web3-hunter/technology";
 import { eq } from "drizzle-orm";
 import {
@@ -85,6 +86,21 @@ export async function scoreAllCompanies(
   return runForEachEntity(
     companies.map((c) => c.id),
     (id) => recordAndRun("scoring", "company", id, () => runScoringPipeline(id)),
+    progress,
+  );
+}
+
+/** Signal generation, Security Target Intelligence, and Opportunity detection for every Security Target. */
+export async function scoreAllSecurityTargets(
+  progress?: StageProgress<Awaited<ReturnType<typeof runSecurityScoringPipeline>>>,
+) {
+  const targets = await getDb()
+    .select({ id: schema.securityTarget.id })
+    .from(schema.securityTarget);
+  return runForEachEntity(
+    targets.map((t) => t.id),
+    (id) =>
+      recordAndRun("security-scoring", "security_target", id, () => runSecurityScoringPipeline(id)),
     progress,
   );
 }

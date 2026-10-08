@@ -1,5 +1,5 @@
 import { getDb, schema } from "@web3-hunter/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export interface CreateSecurityTargetInput {
   slug: string;
@@ -48,6 +48,53 @@ export async function createSecurityTarget(input: CreateSecurityTargetInput) {
     throw new Error(`Failed to resolve Security Target "${input.slug}".`);
   }
   return existing;
+}
+
+/**
+ * Resolves a Collector-tracked protocol's Security Target through the
+ * explicit `security_target_source_identity` mapping — mirrors
+ * `resolveCompany` (`apps/web/lib/collectors/run-collector.ts`) exactly:
+ * if this Collector has already declared `sourceIdentifier` to mean a
+ * particular Security Target, reuse it. Otherwise resolve/create the
+ * Security Target by its canonical `slug` via `createSecurityTarget` and
+ * record the mapping, so this run and every future one resolve to the
+ * identical Security Target deterministically, regardless of poll order.
+ */
+export async function resolveSecurityTarget(
+  collectorId: string,
+  sourceIdentifier: string,
+  input: CreateSecurityTargetInput,
+): Promise<string> {
+  const db = getDb();
+
+  const [existingIdentity] = await db
+    .select()
+    .from(schema.securityTargetSourceIdentity)
+    .where(
+      and(
+        eq(schema.securityTargetSourceIdentity.collectorId, collectorId),
+        eq(schema.securityTargetSourceIdentity.sourceIdentifier, sourceIdentifier),
+      ),
+    )
+    .limit(1);
+
+  if (existingIdentity) {
+    return existingIdentity.securityTargetId;
+  }
+
+  const target = await createSecurityTarget(input);
+
+  await db
+    .insert(schema.securityTargetSourceIdentity)
+    .values({ collectorId, sourceIdentifier, securityTargetId: target.id })
+    .onConflictDoNothing({
+      target: [
+        schema.securityTargetSourceIdentity.collectorId,
+        schema.securityTargetSourceIdentity.sourceIdentifier,
+      ],
+    });
+
+  return target.id;
 }
 
 export async function getSecurityTargetBySlug(slug: string) {

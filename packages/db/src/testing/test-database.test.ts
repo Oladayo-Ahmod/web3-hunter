@@ -62,6 +62,7 @@ describe("createTestDatabase", () => {
       "security_signal_generation_ledger",
       "security_target",
       "security_target_intelligence",
+      "security_target_source_identity",
       "session",
       "signal",
       "signal_generation_ledger",

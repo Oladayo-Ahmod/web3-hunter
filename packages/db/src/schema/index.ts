@@ -21,6 +21,7 @@ export * from "./security-opportunity";
 export * from "./security-signal";
 export * from "./security-target";
 export * from "./security-target-intelligence";
+export * from "./security-target-source-identity";
 export * from "./signal";
 export * from "./skill";
 export * from "./system";
