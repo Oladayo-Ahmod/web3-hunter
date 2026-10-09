@@ -22,6 +22,14 @@ export const defiLlamaProtocolSchema = z
     audits: z.string().nullable().optional(),
     audit_links: z.array(z.string()).nullable().optional(),
     chains: z.array(z.string()).optional().default([]),
+    // GitHub organization/user names — verified live in DefiLlama's bulk
+    // `/protocols` response (present for ~18% of protocols; absent, not
+    // null, otherwise). This is the *only* cross-source identity evidence
+    // DefiLlama's own data supplies, and it's already part of the same
+    // response this Collector fetches — no separate detail endpoint is
+    // needed. Array elements are owner/org names only, never a full repo
+    // path — see `security-target-store.ts`'s `extractGithubOwner`.
+    github: z.array(z.string()).optional(),
   })
   .passthrough();
 

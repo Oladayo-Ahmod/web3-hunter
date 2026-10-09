@@ -67,10 +67,12 @@ export {
 export {
   SecurityTargetIdentityCollisionError,
   createSecurityTarget,
+  getRawPayloadFromCollector,
   getSecurityTargetById,
   getSecurityTargetBySlug,
   resolveSecurityTarget,
   resolveSecurityTargetWithCollisionCheck,
+  updateSecurityTargetRepositoryUrlIfMissing,
   type CreateSecurityTargetInput,
 } from "./security-target-store";
 export {

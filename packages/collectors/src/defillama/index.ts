@@ -1,5 +1,8 @@
 export { fetchDefiLlamaProtocols } from "./fetch";
-export { createDefiLlamaProtocolNormalizer } from "./normalize";
+export {
+  createDefiLlamaProtocolNormalizer,
+  deriveRepositoryUrlFromDefiLlamaPayload,
+} from "./normalize";
 export {
   defiLlamaProtocolSchema,
   defiLlamaProtocolsResponseSchema,

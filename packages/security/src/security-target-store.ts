@@ -1,5 +1,5 @@
 import { getDb, schema } from "@web3-hunter/db";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 
 export interface CreateSecurityTargetInput {
   slug: string;
@@ -130,6 +130,38 @@ function normalizeRepositoryUrl(url: string): string {
 }
 
 /**
+ * The GitHub organization/user segment of a `github.com/...` URL
+ * (case-insensitive), or `null` if the URL isn't a recognizable GitHub
+ * URL at all. This is the coarsest, most generic level two
+ * `repositoryUrl` values can be compared at — some sources (DefiLlama)
+ * only ever supply an organization, never a specific repository, so a
+ * full-path comparison (`normalizeRepositoryUrl`) would never match even
+ * for the exact same real-world project. Same organization is still
+ * meaningfully strong identity evidence (far stronger than a bare slug
+ * string), just coarser than a full matching repo path.
+ */
+function extractGithubOwner(url: string): string | null {
+  const match = /github\.com\/([^/\s]+)/i.exec(url);
+  return match ? match[1]!.toLowerCase() : null;
+}
+
+/**
+ * Whether two `repositoryUrl` values refer to the same real-world
+ * identity evidence: if both are GitHub URLs, compared by organization
+ * (the finest granularity some sources can ever supply); otherwise,
+ * compared as full normalized strings (`normalizeRepositoryUrl`'s
+ * existing, unchanged behavior) — e.g. for a future non-GitHub source.
+ */
+function repositoryUrlsMatch(a: string, b: string): boolean {
+  const ownerA = extractGithubOwner(a);
+  const ownerB = extractGithubOwner(b);
+  if (ownerA && ownerB) {
+    return ownerA === ownerB;
+  }
+  return normalizeRepositoryUrl(a) === normalizeRepositoryUrl(b);
+}
+
+/**
  * The same resolution `resolveSecurityTarget` performs, except when a
  * *different* Collector already created a Security Target under this
  * exact `slug`: rather than silently reusing it (an unrelated project
@@ -195,7 +227,7 @@ export async function resolveSecurityTargetWithCollisionCheck(
     );
   }
 
-  if (normalizeRepositoryUrl(existingUrl) !== normalizeRepositoryUrl(incomingUrl)) {
+  if (!repositoryUrlsMatch(existingUrl, incomingUrl)) {
     throw new SecurityTargetIdentityCollisionError(
       input.slug,
       existingTargetBySlug.id,
@@ -222,6 +254,88 @@ async function recordSecurityTargetIdentity(
         schema.securityTargetSourceIdentity.sourceIdentifier,
       ],
     });
+}
+
+/**
+ * Reads back the most recent stored Raw Record payload a *named*
+ * Collector captured for a given Security Target, via its existing
+ * `security_target_source_identity` mapping — e.g. so a later Collector
+ * hitting an identity collision can look for repair evidence an earlier
+ * Collector already fetched and stored, without a fresh live request.
+ * Returns `null` if that Collector never resolved this Security Target
+ * at all (no mapping exists) or has no stored payload for it.
+ *
+ * Deliberately generic: this function has no knowledge of any one
+ * Collector's payload shape — interpreting the returned `unknown` is the
+ * caller's job (e.g. `@web3-hunter/collectors`'
+ * `deriveRepositoryUrlFromDefiLlamaPayload`), consistent with
+ * `packages/security` never depending on `packages/collectors`.
+ */
+export async function getRawPayloadFromCollector(
+  securityTargetId: string,
+  collectorSlug: string,
+): Promise<unknown | null> {
+  const db = getDb();
+
+  const [identity] = await db
+    .select({ sourceIdentifier: schema.securityTargetSourceIdentity.sourceIdentifier })
+    .from(schema.securityTargetSourceIdentity)
+    .innerJoin(
+      schema.collector,
+      eq(schema.collector.id, schema.securityTargetSourceIdentity.collectorId),
+    )
+    .where(
+      and(
+        eq(schema.securityTargetSourceIdentity.securityTargetId, securityTargetId),
+        eq(schema.collector.slug, collectorSlug),
+      ),
+    )
+    .limit(1);
+
+  if (!identity) {
+    return null;
+  }
+
+  const [rawRecord] = await db
+    .select({ payload: schema.rawRecord.payload })
+    .from(schema.rawRecord)
+    .innerJoin(schema.collector, eq(schema.collector.id, schema.rawRecord.collectorId))
+    .where(
+      and(
+        eq(schema.collector.slug, collectorSlug),
+        eq(schema.rawRecord.sourceIdentifier, identity.sourceIdentifier),
+      ),
+    )
+    // Raw Record ids are time-sortable (UUIDv7) — highest id is the most recent capture.
+    .orderBy(desc(schema.rawRecord.id))
+    .limit(1);
+
+  return rawRecord?.payload ?? null;
+}
+
+/**
+ * Attaches repository evidence to a Security Target **only** when it
+ * currently has none — a narrowly-scoped, conditional update that can
+ * never overwrite or clobber existing (possibly conflicting) evidence,
+ * enforced at the SQL level (`WHERE repository_url IS NULL`), not by an
+ * application-level check-then-act that a race could undermine.
+ */
+export async function updateSecurityTargetRepositoryUrlIfMissing(
+  securityTargetId: string,
+  repositoryUrl: string,
+): Promise<boolean> {
+  const updated = await getDb()
+    .update(schema.securityTarget)
+    .set({ repositoryUrl })
+    .where(
+      and(
+        eq(schema.securityTarget.id, securityTargetId),
+        isNull(schema.securityTarget.repositoryUrl),
+      ),
+    )
+    .returning({ id: schema.securityTarget.id });
+
+  return updated.length > 0;
 }
 
 export async function getSecurityTargetBySlug(slug: string) {

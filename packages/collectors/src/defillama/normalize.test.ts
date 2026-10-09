@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { ProtocolSnapshotRecorded, ProtocolSnapshotUpdated } from "../protocol-events";
-import { createDefiLlamaProtocolNormalizer } from "./normalize";
+import {
+  createDefiLlamaProtocolNormalizer,
+  deriveRepositoryUrlFromDefiLlamaPayload,
+} from "./normalize";
 
 const SECURITY_TARGET_ID = "019474b4-9a3e-7c3e-9c3e-9c3e9c3e9c3e";
 
@@ -97,5 +100,26 @@ describe("createDefiLlamaProtocolNormalizer", () => {
     });
 
     expect(result?.metadata).toMatchObject({ audits: null, auditLinks: [], listedAt: null });
+  });
+});
+
+describe("deriveRepositoryUrlFromDefiLlamaPayload", () => {
+  it("derives a GitHub organization URL from the first github entry", () => {
+    const url = deriveRepositoryUrlFromDefiLlamaPayload(protocol({ github: ["0xTwyne"] }));
+    expect(url).toBe("https://github.com/0xTwyne");
+  });
+
+  it("returns null when github is absent", () => {
+    expect(deriveRepositoryUrlFromDefiLlamaPayload(protocol())).toBeNull();
+  });
+
+  it("returns null when github is an empty array", () => {
+    expect(deriveRepositoryUrlFromDefiLlamaPayload(protocol({ github: [] }))).toBeNull();
+  });
+
+  it("returns null for a malformed/unparseable payload rather than throwing", () => {
+    expect(deriveRepositoryUrlFromDefiLlamaPayload({ not: "a protocol" })).toBeNull();
+    expect(deriveRepositoryUrlFromDefiLlamaPayload(null)).toBeNull();
+    expect(deriveRepositoryUrlFromDefiLlamaPayload("not even an object")).toBeNull();
   });
 });

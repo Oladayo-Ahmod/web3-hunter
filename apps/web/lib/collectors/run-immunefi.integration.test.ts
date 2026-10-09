@@ -1,8 +1,13 @@
-import { getDb, schema } from "@web3-hunter/db";
+import { getDb, resolveOrCreateCollector, schema } from "@web3-hunter/db";
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { runImmunefiCollector } from "./run-immunefi";
+
+/** Idempotently resolves the one real "defillama" Collector row every identity-repair test shares — `collector.slug` is unique, so these tests cannot each create their own. */
+async function defiLlamaCollectorId(): Promise<string> {
+  return resolveOrCreateCollector(getDb(), "defillama", "security-intelligence");
+}
 
 interface MockBounty {
   slug: string;
@@ -180,6 +185,183 @@ describe("runImmunefiCollector (integration)", () => {
       .from(schema.securityTarget)
       .where(eq(schema.securityTarget.slug, "second-protocol"));
     expect(secondTarget).toHaveLength(1);
+  });
+
+  it("reconciles a collision using DefiLlama's already-stored raw payload when the GitHub organizations match", async () => {
+    const defillamaCollectorId = await defiLlamaCollectorId();
+    const [existingTarget] = await getDb()
+      .insert(schema.securityTarget)
+      .values({ slug: "repairable-protocol", name: "Repairable Protocol" })
+      .returning();
+    await getDb().insert(schema.securityTargetSourceIdentity).values({
+      collectorId: defillamaCollectorId,
+      sourceIdentifier: "repairable-protocol",
+      securityTargetId: existingTarget!.id,
+    });
+    await getDb()
+      .insert(schema.rawRecord)
+      .values({
+        collectorId: defillamaCollectorId,
+        contentHash: "repairable-hash",
+        sourceIdentifier: "repairable-protocol",
+        payload: {
+          slug: "repairable-protocol",
+          name: "Repairable Protocol",
+          github: ["repair-org"],
+        },
+      });
+
+    bounties = [
+      bounty({
+        slug: "repairable-protocol",
+        project: "Repairable Protocol (Immunefi)",
+        githubUrl: "https://github.com/repair-org/repair-contracts",
+      }),
+    ];
+    stubFetch();
+
+    const result = await runImmunefiCollector();
+
+    expect(result.collisions).toHaveLength(0);
+    const [target] = await getDb()
+      .select()
+      .from(schema.securityTarget)
+      .where(eq(schema.securityTarget.id, existingTarget!.id));
+    expect(target?.repositoryUrl).toBe("https://github.com/repair-org");
+
+    const identities = await getDb()
+      .select()
+      .from(schema.securityTargetSourceIdentity)
+      .where(eq(schema.securityTargetSourceIdentity.securityTargetId, existingTarget!.id));
+    expect(identities).toHaveLength(2);
+  });
+
+  it("does not reconcile when DefiLlama's stored GitHub organization conflicts with Immunefi's", async () => {
+    const defillamaCollectorId = await defiLlamaCollectorId();
+    const [existingTarget] = await getDb()
+      .insert(schema.securityTarget)
+      .values({ slug: "conflicting-protocol", name: "Conflicting Protocol" })
+      .returning();
+    await getDb().insert(schema.securityTargetSourceIdentity).values({
+      collectorId: defillamaCollectorId,
+      sourceIdentifier: "conflicting-protocol",
+      securityTargetId: existingTarget!.id,
+    });
+    await getDb()
+      .insert(schema.rawRecord)
+      .values({
+        collectorId: defillamaCollectorId,
+        contentHash: "conflicting-hash",
+        sourceIdentifier: "conflicting-protocol",
+        payload: { slug: "conflicting-protocol", name: "Conflicting Protocol", github: ["org-a"] },
+      });
+
+    bounties = [
+      bounty({
+        slug: "conflicting-protocol",
+        project: "Conflicting Protocol (Immunefi)",
+        githubUrl: "https://github.com/org-b/some-repo",
+      }),
+    ];
+    stubFetch();
+
+    const result = await runImmunefiCollector();
+
+    expect(result.collisions).toHaveLength(1);
+    expect(result.collisions[0]?.slug).toBe("conflicting-protocol");
+  });
+
+  it("does not attempt reconciliation when Immunefi itself has no githubUrl to compare against", async () => {
+    const defillamaCollectorId = await defiLlamaCollectorId();
+    const [existingTarget] = await getDb()
+      .insert(schema.securityTarget)
+      .values({ slug: "no-evidence-protocol", name: "No Evidence Protocol" })
+      .returning();
+    await getDb().insert(schema.securityTargetSourceIdentity).values({
+      collectorId: defillamaCollectorId,
+      sourceIdentifier: "no-evidence-protocol",
+      securityTargetId: existingTarget!.id,
+    });
+    await getDb()
+      .insert(schema.rawRecord)
+      .values({
+        collectorId: defillamaCollectorId,
+        contentHash: "no-evidence-hash",
+        sourceIdentifier: "no-evidence-protocol",
+        payload: {
+          slug: "no-evidence-protocol",
+          name: "No Evidence Protocol",
+          github: ["some-org"],
+        },
+      });
+
+    bounties = [
+      bounty({
+        slug: "no-evidence-protocol",
+        project: "No Evidence Protocol (Immunefi)",
+        githubUrl: null,
+      }),
+    ];
+    stubFetch();
+
+    const result = await runImmunefiCollector();
+
+    expect(result.collisions).toHaveLength(1);
+    // The backfill is never even attempted — the existing target's
+    // repositoryUrl stays null, since repairing it could never help
+    // without any evidence on Immunefi's own side to compare against.
+    const [target] = await getDb()
+      .select()
+      .from(schema.securityTarget)
+      .where(eq(schema.securityTarget.id, existingTarget!.id));
+    expect(target?.repositoryUrl).toBeNull();
+  });
+
+  it("is idempotent: re-running after a successful reconciliation creates no duplicate identities or events", async () => {
+    const defillamaCollectorId = await defiLlamaCollectorId();
+    const [existingTarget] = await getDb()
+      .insert(schema.securityTarget)
+      .values({ slug: "idempotent-repair-protocol", name: "Idempotent Repair Protocol" })
+      .returning();
+    await getDb().insert(schema.securityTargetSourceIdentity).values({
+      collectorId: defillamaCollectorId,
+      sourceIdentifier: "idempotent-repair-protocol",
+      securityTargetId: existingTarget!.id,
+    });
+    await getDb()
+      .insert(schema.rawRecord)
+      .values({
+        collectorId: defillamaCollectorId,
+        contentHash: "idempotent-repair-hash",
+        sourceIdentifier: "idempotent-repair-protocol",
+        payload: {
+          slug: "idempotent-repair-protocol",
+          name: "Idempotent Repair Protocol",
+          github: ["idempotent-org"],
+        },
+      });
+
+    bounties = [
+      bounty({
+        slug: "idempotent-repair-protocol",
+        project: "Idempotent Repair Protocol (Immunefi)",
+        githubUrl: "https://github.com/idempotent-org/contracts",
+      }),
+    ];
+    stubFetch();
+
+    const first = await runImmunefiCollector();
+    expect(first.collisions).toHaveLength(0);
+
+    const second = await runImmunefiCollector();
+    expect(second.collisions).toHaveLength(0);
+    expect(second.published).toBe(0);
+
+    const identities = await getDb()
+      .select()
+      .from(schema.securityTargetSourceIdentity)
+      .where(eq(schema.securityTargetSourceIdentity.securityTargetId, existingTarget!.id));
+    expect(identities).toHaveLength(2);
   });
 
   it("records a fetch failure as a degraded Collector without throwing an unhandled path", async () => {

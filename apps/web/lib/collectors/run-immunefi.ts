@@ -1,9 +1,12 @@
-import { immunefi } from "@web3-hunter/collectors";
+import { defillama, immunefi } from "@web3-hunter/collectors";
 import { getDb, resolveOrCreateCollector, schema } from "@web3-hunter/db";
 import { runIngestionPipeline, storeRawRecords } from "@web3-hunter/ingestion";
 import {
   SecurityTargetIdentityCollisionError,
+  getRawPayloadFromCollector,
+  getSecurityTargetBySlug,
   resolveSecurityTargetWithCollisionCheck,
+  updateSecurityTargetRepositoryUrlIfMissing,
   upsertBugBounty,
 } from "@web3-hunter/security";
 import { eq } from "drizzle-orm";
@@ -27,6 +30,95 @@ function immunefiProgramUrl(slug: string): string {
 export interface ImmunefiCollisionResult {
   slug: string;
   message: string;
+}
+
+const DEFILLAMA_COLLECTOR_SLUG = "defillama";
+
+/**
+ * On an identity collision, attempts exactly one narrowly-scoped repair
+ * before giving up: if (a) Immunefi itself supplies repository evidence
+ * for this program, and (b) the reason for the collision is specifically
+ * that the *existing* (DefiLlama-created) Security Target has no
+ * repository evidence at all — not a confirmed mismatch — look up
+ * DefiLlama's own already-stored Raw Record for that same slug (no live
+ * HTTP request) and, if it names a GitHub organization, attach it to
+ * the existing Target and retry once.
+ *
+ * Deliberately does nothing in every other case: a confirmed mismatch
+ * (both sides have evidence and it differs) is never retried — retrying
+ * would only ever reproduce the same mismatch, since this repair cannot
+ * change *Immunefi's* side of the comparison. A program with no
+ * `githubUrl` of its own is skipped for the same reason — there would be
+ * nothing to compare the repaired evidence against.
+ */
+async function resolveWithIdentityRepair(
+  collectorId: string,
+  bounty: { slug: string; project: string; githubUrl: string | null },
+): Promise<{ securityTargetId: string | null; collisionMessage: string | null }> {
+  try {
+    const securityTargetId = await resolveSecurityTargetWithCollisionCheck(
+      collectorId,
+      bounty.slug,
+      {
+        slug: bounty.slug,
+        name: bounty.project,
+        repositoryUrl: bounty.githubUrl,
+        discoverySource: "immunefi-bounties",
+        discoveredAt: new Date(),
+      },
+    );
+    return { securityTargetId, collisionMessage: null };
+  } catch (error) {
+    if (!(error instanceof SecurityTargetIdentityCollisionError)) {
+      throw error;
+    }
+
+    if (!bounty.githubUrl) {
+      return { securityTargetId: null, collisionMessage: error.message };
+    }
+
+    const existingTarget = await getSecurityTargetBySlug(bounty.slug);
+    if (!existingTarget || existingTarget.repositoryUrl !== null) {
+      // Either the collision already resolved itself concurrently, or
+      // the existing Target already has (conflicting) evidence — a
+      // confirmed mismatch, not a repairable gap. Never retry.
+      return { securityTargetId: null, collisionMessage: error.message };
+    }
+
+    const defiLlamaPayload = await getRawPayloadFromCollector(
+      existingTarget.id,
+      DEFILLAMA_COLLECTOR_SLUG,
+    );
+    const repairedUrl = defiLlamaPayload
+      ? defillama.deriveRepositoryUrlFromDefiLlamaPayload(defiLlamaPayload)
+      : null;
+
+    if (!repairedUrl) {
+      return { securityTargetId: null, collisionMessage: error.message };
+    }
+
+    await updateSecurityTargetRepositoryUrlIfMissing(existingTarget.id, repairedUrl);
+
+    try {
+      const securityTargetId = await resolveSecurityTargetWithCollisionCheck(
+        collectorId,
+        bounty.slug,
+        {
+          slug: bounty.slug,
+          name: bounty.project,
+          repositoryUrl: bounty.githubUrl,
+          discoverySource: "immunefi-bounties",
+          discoveredAt: new Date(),
+        },
+      );
+      return { securityTargetId, collisionMessage: null };
+    } catch (retryError) {
+      if (retryError instanceof SecurityTargetIdentityCollisionError) {
+        return { securityTargetId: null, collisionMessage: retryError.message };
+      }
+      throw retryError;
+    }
+  }
 }
 
 export interface RunImmunefiCollectorResult {
@@ -80,25 +172,12 @@ export async function runImmunefiCollector(): Promise<RunImmunefiCollectorResult
         collisionMessage: string | null;
       }[] = await Promise.all(
         batch.map(async (bounty) => {
-          try {
-            const securityTargetId = await resolveSecurityTargetWithCollisionCheck(
-              collectorId,
-              bounty.slug,
-              {
-                slug: bounty.slug,
-                name: bounty.project,
-                repositoryUrl: bounty.githubUrl ?? null,
-                discoverySource: "immunefi-bounties",
-                discoveredAt: new Date(),
-              },
-            );
-            return { slug: bounty.slug, securityTargetId, collisionMessage: null };
-          } catch (error) {
-            if (error instanceof SecurityTargetIdentityCollisionError) {
-              return { slug: bounty.slug, securityTargetId: null, collisionMessage: error.message };
-            }
-            throw error;
-          }
+          const outcome = await resolveWithIdentityRepair(collectorId, {
+            slug: bounty.slug,
+            project: bounty.project,
+            githubUrl: bounty.githubUrl ?? null,
+          });
+          return { slug: bounty.slug, ...outcome };
         }),
       );
 
