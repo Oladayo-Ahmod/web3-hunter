@@ -73,6 +73,10 @@ jobs:
         run: pnpm --filter @web3-hunter/web collect:defillama
         continue-on-error: true
 
+      - name: Collect - Immunefi (security intelligence)
+        run: pnpm --filter @web3-hunter/web collect:immunefi
+        continue-on-error: true
+
       - name: Score companies
         run: pnpm --filter @web3-hunter/web score:companies
         continue-on-error: true

@@ -3,7 +3,7 @@ import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createAuditContest, getAuditContestById } from "./audit-contest-store";
-import { createBugBounty, getBugBountyById } from "./bug-bounty-store";
+import { getBugBountyById, upsertBugBounty } from "./bug-bounty-store";
 import { AUDIT_CONTEST } from "./opportunity-id";
 import { createSecurityOpportunity, getSecurityOpportunity } from "./security-opportunity-store";
 import { listSecuritySignalsForTarget, persistSecuritySignal } from "./security-signal-store";
@@ -297,7 +297,7 @@ describe("Security domain foundation (integration)", () => {
         name: "Bounty Protocol",
       });
 
-      const bounty = await createBugBounty({
+      const bounty = await upsertBugBounty({
         securityTargetId: target.id,
         platform: "immunefi",
         maxRewardAmount: "$1,000,000",
@@ -312,8 +312,37 @@ describe("Security domain foundation (integration)", () => {
     });
 
     it("allows a bounty with no resolved Security Target yet", async () => {
-      const bounty = await createBugBounty({ platform: "hackenproof" });
+      const bounty = await upsertBugBounty({ platform: "hackenproof" });
       expect(bounty.securityTargetId).toBeNull();
+    });
+
+    it("is idempotent by (securityTargetId, platform): upserting again updates the existing row instead of duplicating it", async () => {
+      const target = await createSecurityTarget({
+        slug: "bounty-idempotent-protocol",
+        name: "Bounty Idempotent Protocol",
+      });
+
+      const first = await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+        maxRewardAmount: "$500,000",
+      });
+      const second = await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "paused",
+        maxRewardAmount: "$500,000",
+      });
+
+      expect(second.id).toBe(first.id);
+      expect(second.status).toBe("paused");
+
+      const rows = await getDb()
+        .select()
+        .from(schema.bugBounty)
+        .where(eq(schema.bugBounty.securityTargetId, target.id));
+      expect(rows).toHaveLength(1);
     });
   });
 });

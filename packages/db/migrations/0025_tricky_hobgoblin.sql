@@ -1,0 +1,1 @@
+ALTER TABLE "bug_bounty" ADD CONSTRAINT "bug_bounty_security_target_id_platform_key" UNIQUE("security_target_id","platform");

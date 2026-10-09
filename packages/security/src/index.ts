@@ -1,14 +1,20 @@
-// Importing this registers the DefiLlama Security Signal detectors (see
-// that module) as a load-time side effect — the same convention
-// packages/scoring uses for its Hiring Signal detectors.
+// Importing these registers the DefiLlama and Immunefi Security Signal
+// detectors (see those modules) as a load-time side effect — the same
+// convention packages/scoring uses for its Hiring Signal detectors.
 import "./detectors/defillama-detectors";
+import "./detectors/immunefi-detectors";
 
 export {
   createAuditContest,
   getAuditContestById,
   type CreateAuditContestInput,
 } from "./audit-contest-store";
-export { createBugBounty, getBugBountyById, type CreateBugBountyInput } from "./bug-bounty-store";
+export {
+  getBugBountyById,
+  getBugBountyByTargetAndPlatform,
+  upsertBugBounty,
+  type UpsertBugBountyInput,
+} from "./bug-bounty-store";
 export {
   SecurityIntelligenceUpdated,
   SecurityOpportunityDetected,
@@ -59,10 +65,12 @@ export {
   type PersistSecuritySignalInput,
 } from "./security-signal-store";
 export {
+  SecurityTargetIdentityCollisionError,
   createSecurityTarget,
   getSecurityTargetById,
   getSecurityTargetBySlug,
   resolveSecurityTarget,
+  resolveSecurityTargetWithCollisionCheck,
   type CreateSecurityTargetInput,
 } from "./security-target-store";
 export {
