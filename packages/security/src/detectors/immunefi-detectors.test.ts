@@ -20,6 +20,7 @@ function baseMetadata(overrides: Record<string, unknown> = {}) {
     project: "Enzyme Onyx",
     ecosystem: ["ETH"],
     launchDate: "2025-09-04T10:00:00.000Z",
+    endDate: null,
     isPaused: false,
     pausedAt: null,
     maxBounty: 200000,
@@ -241,5 +242,116 @@ describe("bountyScopeExpandedDetector", () => {
 
   it("does not fire on BountyProgramRecorded (no previous scope to compare against)", () => {
     expect(bountyScopeExpandedDetector(event(), context)).toHaveLength(0);
+  });
+});
+
+describe("expiration handling (endDate)", () => {
+  const resumeMetadata = (overrides: Record<string, unknown> = {}) =>
+    baseMetadata({ isPaused: false, changedFrom: { isPaused: true }, ...overrides });
+
+  const scopeExpansionMetadata = (overrides: Record<string, unknown> = {}) =>
+    baseMetadata({
+      smartContractAssetIds: ["asset-2", "asset-1"],
+      assets: [
+        { id: "asset-1", type: "smart_contract", description: "A", url: null },
+        { id: "asset-2", type: "smart_contract", description: "B", url: null },
+      ],
+      changedFrom: { smartContractAssetIds: ["asset-1"] },
+      ...overrides,
+    });
+
+  it("endDate: null — resume still qualifies (existing ongoing-program behavior)", () => {
+    const triggeringEvent = event({ type: "BountyProgramUpdated", metadata: resumeMetadata() });
+    expect(bountyProgramResumedDetector(triggeringEvent, context)).toHaveLength(1);
+  });
+
+  it("endDate: null — scope expansion still qualifies (existing ongoing-program behavior)", () => {
+    const triggeringEvent = event({
+      type: "BountyProgramUpdated",
+      metadata: scopeExpansionMetadata(),
+    });
+    expect(bountyScopeExpandedDetector(triggeringEvent, context)).toHaveLength(1);
+  });
+
+  it("active, unexpired program (endDate in the future) — resume still qualifies", () => {
+    const triggeringEvent = event({
+      type: "BountyProgramUpdated",
+      occurredAt: new Date("2026-10-09T00:00:00Z"),
+      metadata: resumeMetadata({ endDate: "2026-12-01T00:00:00.000Z" }),
+    });
+    expect(bountyProgramResumedDetector(triggeringEvent, context)).toHaveLength(1);
+  });
+
+  it("active, unexpired program (endDate in the future) — scope expansion still qualifies", () => {
+    const triggeringEvent = event({
+      type: "BountyProgramUpdated",
+      occurredAt: new Date("2026-10-09T00:00:00Z"),
+      metadata: scopeExpansionMetadata({ endDate: "2026-12-01T00:00:00.000Z" }),
+    });
+    expect(bountyScopeExpandedDetector(triggeringEvent, context)).toHaveLength(1);
+  });
+
+  it("expired program (endDate before the Event's occurredAt) — resume does not qualify", () => {
+    const triggeringEvent = event({
+      type: "BountyProgramUpdated",
+      occurredAt: new Date("2026-10-09T00:00:00Z"),
+      metadata: resumeMetadata({ endDate: "2026-09-01T00:00:00.000Z" }),
+    });
+    expect(bountyProgramResumedDetector(triggeringEvent, context)).toHaveLength(0);
+  });
+
+  it("expired program (endDate before the Event's occurredAt) — scope expansion does not qualify", () => {
+    const triggeringEvent = event({
+      type: "BountyProgramUpdated",
+      occurredAt: new Date("2026-10-09T00:00:00Z"),
+      metadata: scopeExpansionMetadata({ endDate: "2026-09-01T00:00:00.000Z" }),
+    });
+    expect(bountyScopeExpandedDetector(triggeringEvent, context)).toHaveLength(0);
+  });
+
+  it("Event occurring exactly at endDate is NOT expired (strict comparison)", () => {
+    const triggeringEvent = event({
+      type: "BountyProgramUpdated",
+      occurredAt: new Date("2026-10-09T00:00:00.000Z"),
+      metadata: resumeMetadata({ endDate: "2026-10-09T00:00:00.000Z" }),
+    });
+    expect(bountyProgramResumedDetector(triggeringEvent, context)).toHaveLength(1);
+  });
+
+  it("Event occurring after endDate is expired", () => {
+    const triggeringEvent = event({
+      type: "BountyProgramUpdated",
+      occurredAt: new Date("2026-10-09T00:00:00.001Z"),
+      metadata: resumeMetadata({ endDate: "2026-10-09T00:00:00.000Z" }),
+    });
+    expect(bountyProgramResumedDetector(triggeringEvent, context)).toHaveLength(0);
+  });
+
+  it("missing endDate key entirely (legacy stored data) is treated the same as null, never invented as expired", () => {
+    const metadata = resumeMetadata() as Record<string, unknown>;
+    delete metadata.endDate;
+
+    const triggeringEvent = event({ type: "BountyProgramUpdated", metadata });
+    // Missing is treated identically to `endDate: null` — not expired —
+    // so the resume still qualifies, exactly as the "endDate: null" case
+    // above does.
+    expect(bountyProgramResumedDetector(triggeringEvent, context)).toHaveLength(1);
+  });
+
+  it("BOUNTY_PROGRAM_OBSERVED and BOUNTY_PROGRAM_PAUSED are unaffected by endDate", () => {
+    const expiredObserved = event({
+      metadata: baseMetadata({ endDate: "2020-01-01T00:00:00.000Z" }),
+    });
+    expect(bountyProgramObservedDetector(expiredObserved, context)).toHaveLength(1);
+
+    const expiredPaused = event({
+      type: "BountyProgramUpdated",
+      metadata: baseMetadata({
+        isPaused: true,
+        changedFrom: { isPaused: false },
+        endDate: "2020-01-01T00:00:00.000Z",
+      }),
+    });
+    expect(bountyProgramPausedDetector(expiredPaused, context)).toHaveLength(1);
   });
 });

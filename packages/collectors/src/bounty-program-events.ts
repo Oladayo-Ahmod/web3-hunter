@@ -31,6 +31,20 @@ const bountyProgramFieldsSchema = z.object({
   // Immunefi already supplies a parseable timestamp, so there is nothing
   // to gain from a lossy round-trip through integer seconds.
   launchDate: z.string(),
+  // ISO 8601, or `null` for an ongoing/perpetual program — verified live
+  // against the real feed: every non-null value seen is in the past, and
+  // it is the only field that reliably distinguishes a concluded,
+  // time-boxed competition from an ongoing bounty (`isPaused` is `false`
+  // for every concluded competition observed; `programType` and slug/
+  // project text are not reliable discriminators either — see
+  // `immunefi-detectors.ts`'s `isExpired` doc comment). `.optional()` as
+  // well as `.nullable()` for the same reason
+  // `packages/scoring/src/event-types.ts`'s `OpportunityScored.signalCount`
+  // is optional: historical Events published before this field existed
+  // don't have it, and `metadataSchema.parse()` runs against historical
+  // metadata too (replay) — a required field here would fail parsing
+  // every such Event.
+  endDate: z.string().nullable().optional(),
   isPaused: z.boolean(),
   pausedAt: z.string().nullable(),
   maxBounty: z.number(),

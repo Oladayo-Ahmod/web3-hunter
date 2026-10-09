@@ -29,6 +29,12 @@ export const immunefiBountySchema = z
     ecosystem: z.array(z.string()).optional().default([]),
     launchDate: z.string(),
     updatedDate: z.string(),
+    // ISO 8601 string, or `null`/absent for an ongoing program — see
+    // `../bounty-program-events.ts`'s `endDate` doc comment. `.optional()`
+    // as well as `.nullable()` so a raw payload captured before this
+    // field was tracked (missing the key entirely, not just `null`)
+    // normalizes identically to "no end date," never an invented one.
+    endDate: z.string().nullable().optional(),
     isPaused: z.boolean(),
     pausedAt: z.string().nullable().optional(),
     maxBounty: z.number(),

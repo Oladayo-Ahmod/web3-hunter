@@ -34,6 +34,7 @@ function toCanonicalBountyProgram(payload: unknown): CanonicalBountyProgram {
     project: bounty.project,
     ecosystem: bounty.ecosystem,
     launchDate: bounty.launchDate,
+    endDate: bounty.endDate ?? null,
     isPaused: bounty.isPaused,
     pausedAt: bounty.pausedAt ?? null,
     maxBounty: bounty.maxBounty,

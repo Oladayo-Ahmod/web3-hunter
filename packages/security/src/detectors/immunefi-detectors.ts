@@ -31,6 +31,12 @@ const bountyProgramMetadataSchema = z.object({
   project: z.string(),
   ecosystem: z.array(z.string()),
   launchDate: z.string(),
+  // `.optional()` as well as `.nullable()`: a snapshot captured before
+  // this field was tracked has no `endDate` key at all, and must parse
+  // successfully (treated as "no end date," never invented) rather than
+  // failing this whole snapshot's validation — see `isExpired`'s doc
+  // comment.
+  endDate: z.string().nullable().optional(),
   isPaused: z.boolean(),
   pausedAt: z.string().nullable(),
   maxBounty: z.number(),
@@ -58,6 +64,34 @@ function parseBountySnapshot(event: RecentSecurityTargetEvent): BountyProgramMet
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Whether a bounty program had already concluded as of `asOf` (the
+ * triggering Event's own `occurredAt` — never wall-clock time, for
+ * replay determinism). Verified live against the real feed: `endDate`
+ * is the only field that reliably distinguishes a concluded, time-boxed
+ * competition from an ongoing bounty — `isPaused` is `false` for every
+ * concluded competition observed (62/232 live programs had a non-null,
+ * always-past `endDate`), and neither `programType` nor slug/project
+ * text is a reliable discriminator (confirmed: both overlap completely
+ * between the two groups). A `null` `endDate` (or one missing from a
+ * payload captured before this field was tracked — see
+ * `../../collectors/src/immunefi/types.ts`) is never treated as expired;
+ * nothing is inferred that the source doesn't state.
+ *
+ * Strict comparison: an Event occurring *exactly at* `endDate` is not
+ * yet expired, only one occurring after it.
+ */
+function isExpired(endDate: string | null | undefined, asOf: Date): boolean {
+  if (endDate === null || endDate === undefined) {
+    return false;
+  }
+  const parsed = new Date(endDate);
+  if (Number.isNaN(parsed.getTime())) {
+    return false;
+  }
+  return parsed.getTime() < asOf.getTime();
+}
 
 // --- 1. Bounty program observed --------------------------------------------
 
@@ -121,11 +155,16 @@ const BOUNTY_PROGRAM_RESUMED_WEIGHT = 0.6;
  * Fires on a verified `isPaused: true -> false` transition. Gated on the
  * program currently carrying at least one `smart_contract` asset —
  * otherwise this is a resumed bounty with nothing a smart-contract
- * researcher could act on, and should not qualify an Opportunity. This
- * is a firing-time gate, not merely a qualification-time one: the
- * registry's `qualifiesForOpportunity` is a static per-type declaration,
- * so the "only when scope-relevant" nuance has to live in whether the
- * Signal is produced at all, not in a dynamic per-instance override.
+ * researcher could act on, and should not qualify an Opportunity. Also
+ * gated on the program not having already concluded (`isExpired`) as of
+ * this Event — a historical, time-boxed competition being "unpaused"
+ * (every one observed live already has `isPaused: false` permanently)
+ * must never qualify an actionable Opportunity merely because it's
+ * unpaused. Both are firing-time gates, not merely qualification-time
+ * ones: the registry's `qualifiesForOpportunity` is a static per-type
+ * declaration, so nuances like "only when scope-relevant" and "only
+ * when not concluded" have to live in whether the Signal is produced at
+ * all, not in a dynamic per-instance override.
  */
 export const bountyProgramResumedDetector: SecuritySignalDetector = (triggeringEvent) => {
   if (triggeringEvent.type !== BOUNTY_PROGRAM_UPDATED) {
@@ -138,6 +177,10 @@ export const bountyProgramResumedDetector: SecuritySignalDetector = (triggeringE
   }
 
   if (snapshot.smartContractAssetIds.length === 0) {
+    return [];
+  }
+
+  if (isExpired(snapshot.endDate, triggeringEvent.occurredAt)) {
     return [];
   }
 
@@ -211,12 +254,14 @@ const BOUNTY_SCOPE_EXPANDED_MAX_WEIGHT = 0.8;
  * different), so this correctly declines to fire for purely cosmetic
  * asset edits.
  *
- * Gated on the program currently being active: scope changes recorded
- * while paused must never retroactively become an actionable
- * Opportunity once the registry's static `qualifiesForOpportunity: true`
- * is in play — the only way to guarantee that is to never produce the
- * Signal in the first place while paused (see
- * `bountyProgramResumedDetector`'s doc comment for the same reasoning).
+ * Gated on the program currently being active and not having already
+ * concluded (`isExpired`): scope changes recorded while paused, or
+ * observed on a historical, time-boxed competition that has ended, must
+ * never retroactively become an actionable Opportunity once the
+ * registry's static `qualifiesForOpportunity: true` is in play — the
+ * only way to guarantee that is to never produce the Signal in the
+ * first place (see `bountyProgramResumedDetector`'s doc comment for the
+ * same reasoning).
  */
 export const bountyScopeExpandedDetector: SecuritySignalDetector = (triggeringEvent) => {
   if (triggeringEvent.type !== BOUNTY_PROGRAM_UPDATED) {
@@ -225,6 +270,10 @@ export const bountyScopeExpandedDetector: SecuritySignalDetector = (triggeringEv
 
   const snapshot = parseBountySnapshot(triggeringEvent);
   if (!snapshot || snapshot.isPaused) {
+    return [];
+  }
+
+  if (isExpired(snapshot.endDate, triggeringEvent.occurredAt)) {
     return [];
   }
 

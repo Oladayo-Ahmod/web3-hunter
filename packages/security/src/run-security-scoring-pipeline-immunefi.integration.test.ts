@@ -23,6 +23,7 @@ const bountyFieldsSchema = z.object({
   project: z.string(),
   ecosystem: z.array(z.string()),
   launchDate: z.string(),
+  endDate: z.string().nullable().optional(),
   isPaused: z.boolean(),
   pausedAt: z.string().nullable(),
   maxBounty: z.number(),
@@ -365,5 +366,104 @@ describe("runSecurityScoringPipeline — Immunefi signals (integration)", () => 
       .from(schema.securityOpportunity)
       .where(eq(schema.securityOpportunity.securityTargetId, securityTargetId));
     expect(opportunities).toHaveLength(1);
+  });
+
+  it("an expired (concluded) competition cannot qualify an Opportunity by resuming", async () => {
+    const { collectorId, securityTargetId } = await seedCollectorAndTarget("bounty-expired-resume");
+
+    await publishRecorded({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(0),
+      fields: {
+        isPaused: true,
+        pausedAt: daysAfter(0).toISOString(),
+        endDate: daysAfter(-5).toISOString(), // already concluded before this program was even first observed
+      },
+    });
+    await runSecurityScoringPipeline(securityTargetId);
+
+    await publishUpdated({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(1),
+      fields: { isPaused: false, pausedAt: null, endDate: daysAfter(-5).toISOString() },
+      changedFrom: { isPaused: true, pausedAt: daysAfter(0).toISOString() },
+    });
+    const result = await runSecurityScoringPipeline(securityTargetId);
+
+    expect(result.opportunitiesDetected).toBe(0);
+    const signals = await getDb()
+      .select()
+      .from(schema.securitySignal)
+      .where(eq(schema.securitySignal.securityTargetId, securityTargetId));
+    expect(signals.some((s) => s.signalType === "bounty-program-resumed")).toBe(false);
+  });
+
+  it("an expired (concluded) competition cannot qualify an Opportunity through newly-observed scope", async () => {
+    const { collectorId, securityTargetId } = await seedCollectorAndTarget("bounty-expired-scope");
+
+    await publishRecorded({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(0),
+      fields: { endDate: daysAfter(-5).toISOString() },
+    });
+    await runSecurityScoringPipeline(securityTargetId);
+
+    await publishUpdated({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(1),
+      fields: {
+        endDate: daysAfter(-5).toISOString(),
+        smartContractAssetIds: ["asset-1", "asset-2"],
+        assets: [
+          { id: "asset-1", type: "smart_contract", description: "A", url: null },
+          { id: "asset-2", type: "smart_contract", description: "B", url: null },
+        ],
+      },
+      changedFrom: { smartContractAssetIds: ["asset-1"] },
+    });
+    const result = await runSecurityScoringPipeline(securityTargetId);
+
+    expect(result.opportunitiesDetected).toBe(0);
+    const signals = await getDb()
+      .select()
+      .from(schema.securitySignal)
+      .where(eq(schema.securitySignal.securityTargetId, securityTargetId));
+    expect(signals.some((s) => s.signalType === "bounty-scope-expanded")).toBe(false);
+  });
+
+  it("legacy metadata with no endDate key at all is processed identically to endDate: null, and replaying it is idempotent", async () => {
+    const { collectorId, securityTargetId } = await seedCollectorAndTarget(
+      "bounty-legacy-no-enddate",
+    );
+
+    // publishEvent's own metadataSchema.parse() requires the exact shape
+    // it's given; simulate "legacy" by simply never setting endDate
+    // (the schema's `.optional()` means omitting it is itself the
+    // legacy-compatible case — see `bounty-program-events.ts`).
+    await publishRecorded({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(0),
+      fields: { isPaused: true, pausedAt: daysAfter(0).toISOString() },
+    });
+    await runSecurityScoringPipeline(securityTargetId);
+
+    await publishUpdated({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(1),
+      fields: { isPaused: false, pausedAt: null },
+      changedFrom: { isPaused: true, pausedAt: daysAfter(0).toISOString() },
+    });
+    const first = await runSecurityScoringPipeline(securityTargetId);
+    expect(first.opportunitiesDetected).toBe(1);
+
+    const second = await runSecurityScoringPipeline(securityTargetId);
+    expect(second.eventsProcessed).toBe(0);
+    expect(second.signalsProduced).toBe(0);
   });
 });
