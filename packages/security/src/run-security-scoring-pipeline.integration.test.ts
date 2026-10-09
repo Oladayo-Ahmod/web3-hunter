@@ -120,7 +120,7 @@ describe("runSecurityScoringPipeline (integration)", () => {
     await testDb.stop();
   });
 
-  it("produces a NEW_PROTOCOL Signal for a first-seen protocol and detects an (unscored) Opportunity", async () => {
+  it("produces a NEW_PROTOCOL Signal for a first-seen protocol, but does NOT qualify a Security Opportunity on its own", async () => {
     const { collectorId, securityTargetId } = await seedCollectorAndTarget("acme-protocol");
 
     const published = await publishRecorded({
@@ -144,6 +144,28 @@ describe("runSecurityScoringPipeline (integration)", () => {
     expect(newProtocolSignal).toBeDefined();
     expect(newProtocolSignal?.sourceEventIds).toEqual([published.id]);
 
+    // Phase 2B Step 1 correction: NEW_PROTOCOL alone no longer qualifies
+    // a Security Opportunity — see security-opportunity-detection.ts.
+    expect(result.opportunitiesDetected).toBe(0);
+    const opportunities = await getDb()
+      .select()
+      .from(schema.securityOpportunity)
+      .where(eq(schema.securityOpportunity.securityTargetId, securityTargetId));
+    expect(opportunities).toHaveLength(0);
+  });
+
+  it("qualifies a Security Opportunity from AUDIT_COVERAGE_GAP alone, even with no NEW_PROTOCOL co-occurring", async () => {
+    const { collectorId, securityTargetId } = await seedCollectorAndTarget("acme-gap-qualifies");
+
+    await publishRecorded({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(0),
+      fields: { audits: "0", tvl: 5_000_000 },
+    });
+
+    const result = await runSecurityScoringPipeline(securityTargetId);
+
     expect(result.opportunitiesDetected).toBe(1);
     const detectionWindow = "2026-W01";
     const expectedOpportunityId = deriveSecurityOpportunityId({
@@ -158,6 +180,118 @@ describe("runSecurityScoringPipeline (integration)", () => {
     expect(opportunity).toBeDefined();
     expect(opportunity?.status).toBe("detected");
     expect(opportunity?.score).toBeNull();
+    expect(opportunity?.reasoning).toMatch(/audit-coverage-gap/);
+  });
+
+  it("qualifies a Security Opportunity from TVL_GROWTH alone", async () => {
+    const { collectorId, securityTargetId } = await seedCollectorAndTarget("acme-growth-qualifies");
+
+    await publishRecorded({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(0),
+      fields: { audits: "2", tvl: 7_000_000 },
+    });
+    await runSecurityScoringPipeline(securityTargetId);
+
+    await publishUpdated({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(1),
+      fields: { audits: "2", tvl: 10_000_000 },
+      changedFrom: { tvl: 7_000_000 },
+    });
+    const result = await runSecurityScoringPipeline(securityTargetId);
+
+    expect(result.opportunitiesDetected).toBe(1);
+  });
+
+  it("qualifies deterministically from a mix of a non-qualifying and a qualifying signal (NEW_PROTOCOL + AUDIT_COVERAGE_GAP)", async () => {
+    const { collectorId, securityTargetId } = await seedCollectorAndTarget("acme-mixed");
+
+    await publishRecorded({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(0),
+      fields: { audits: "0", tvl: 5_000_000 },
+    });
+
+    const result = await runSecurityScoringPipeline(securityTargetId);
+
+    const signals = await getDb()
+      .select()
+      .from(schema.securitySignal)
+      .where(eq(schema.securitySignal.securityTargetId, securityTargetId));
+    expect(signals.map((s) => s.signalType).sort()).toEqual(["audit-coverage-gap", "new-protocol"]);
+    expect(result.opportunitiesDetected).toBe(1);
+  });
+
+  it("does not emit AUDIT_COVERAGE_GAP for a CEX, and therefore does not qualify an Opportunity from CEX status alone", async () => {
+    const { collectorId, securityTargetId } = await seedCollectorAndTarget("acme-cex");
+
+    await publishRecorded({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(0),
+      fields: { category: "CEX", audits: "0", tvl: 50_000_000_000 },
+    });
+
+    const result = await runSecurityScoringPipeline(securityTargetId);
+
+    const signals = await getDb()
+      .select()
+      .from(schema.securitySignal)
+      .where(eq(schema.securitySignal.securityTargetId, securityTargetId));
+    expect(signals.map((s) => s.signalType)).toEqual(["new-protocol"]);
+    expect(result.opportunitiesDetected).toBe(0);
+  });
+
+  it("reconciliation: a Security Opportunity already created under the old (NEW_PROTOCOL-qualifies) policy is left untouched by a re-run under the new policy", async () => {
+    const { collectorId, securityTargetId } =
+      await seedCollectorAndTarget("acme-legacy-opportunity");
+
+    // Simulate a row created before this correction: a SecurityOpportunity
+    // that exists with no qualifying Signal behind it at all (exactly what
+    // the old "any signal" gate would have produced from NEW_PROTOCOL
+    // alone). This is a direct store write, not a pipeline run — it stands
+    // in for state already persisted by an earlier version of this code.
+    const detectionWindow = "2026-W01";
+    const legacyOpportunityId = deriveSecurityOpportunityId({
+      securityTargetId,
+      opportunityType: ACTIVE_PROTOCOL,
+      detectionWindow,
+    });
+    await getDb()
+      .insert(schema.securityOpportunity)
+      .values({
+        id: legacyOpportunityId,
+        securityTargetId,
+        opportunityType: ACTIVE_PROTOCOL,
+        detectionWindow,
+        reasoning: "Detected under the pre-correction any-signal policy.",
+        detectedAt: daysAfter(0),
+      });
+
+    // A later, genuinely new source Event for the same target, in the
+    // same detection window (same ISO week) — under the new policy this
+    // still doesn't qualify on its own (non-zero audits, no TVL change
+    // recorded), so the pipeline must neither delete nor rewrite the
+    // pre-existing row.
+    await publishRecorded({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(1),
+      fields: { audits: "2", tvl: 10_000_000 },
+    });
+    await runSecurityScoringPipeline(securityTargetId);
+
+    const [stillThere] = await getDb()
+      .select()
+      .from(schema.securityOpportunity)
+      .where(eq(schema.securityOpportunity.id, legacyOpportunityId));
+    expect(stillThere).toBeDefined();
+    expect(stillThere?.reasoning).toBe("Detected under the pre-correction any-signal policy.");
+    expect(stillThere?.status).toBe("detected");
   });
 
   it("produces an AUDIT_COVERAGE_GAP Signal using the exact required phrasing, as a weak negative signal only", async () => {

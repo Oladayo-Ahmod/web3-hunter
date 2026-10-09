@@ -4,18 +4,20 @@ import { deriveDeterministicId } from "@web3-hunter/shared";
 import { asc, eq } from "drizzle-orm";
 import { SecurityOpportunityDetected } from "./event-types";
 import { ACTIVE_PROTOCOL, deriveSecurityOpportunityId } from "./opportunity-id";
+import { doesSignalTypeQualifyForOpportunity } from "./registry";
 import { computeSecurityDetectionWindow } from "./security-detection-window";
 import { meetsSecurityOpportunityThreshold } from "./security-opportunity-detection";
 import { createSecurityOpportunity } from "./security-opportunity-store";
 import type { SecurityTargetIntelligenceState } from "./types";
 
-async function getSecurityTargetSignalIds(securityTargetId: string): Promise<string[]> {
-  const rows = await getDb()
-    .select({ id: schema.securitySignal.id })
+async function getSecurityTargetSignals(
+  securityTargetId: string,
+): Promise<{ id: string; signalType: string }[]> {
+  return getDb()
+    .select({ id: schema.securitySignal.id, signalType: schema.securitySignal.signalType })
     .from(schema.securitySignal)
     .where(eq(schema.securitySignal.securityTargetId, securityTargetId))
     .orderBy(asc(schema.securitySignal.detectedAt), asc(schema.securitySignal.id));
-  return rows.map((row) => row.id);
 }
 
 export interface SecurityOpportunityEvaluationResult {
@@ -42,7 +44,9 @@ export async function evaluateSecurityOpportunity(
   intelligence: SecurityTargetIntelligenceState,
   asOf: Date,
 ): Promise<SecurityOpportunityEvaluationResult | null> {
-  if (!meetsSecurityOpportunityThreshold(intelligence)) {
+  const signals = await getSecurityTargetSignals(securityTargetId);
+
+  if (!meetsSecurityOpportunityThreshold(signals.map((signal) => signal.signalType))) {
     return null;
   }
 
@@ -65,9 +69,17 @@ export async function evaluateSecurityOpportunity(
     return { securityOpportunityId: opportunityId, detected: false };
   }
 
-  const signalIds = await getSecurityTargetSignalIds(securityTargetId);
+  const signalIds = signals.map((signal) => signal.id);
+  const qualifyingTypes = [
+    ...new Set(
+      signals
+        .map((signal) => signal.signalType)
+        .filter((signalType) => doesSignalTypeQualifyForOpportunity(signalType)),
+    ),
+  ];
   const reasoning =
-    `Detected: ${intelligence.signalCount} signal(s), confidence ${intelligence.confidence.toFixed(2)}, ` +
+    `Detected: qualifying signal type(s) [${qualifyingTypes.join(", ")}], ` +
+    `${intelligence.signalCount} total signal(s), confidence ${intelligence.confidence.toFixed(2)}, ` +
     `trend ${intelligence.trend}, within window ${detectionWindow}. Unscored — see ` +
     "security-opportunity-detection.ts's doc comment.";
   const detectedEventId = deriveDeterministicId(

@@ -5,6 +5,7 @@ import type {
   SecuritySignalCandidate,
   SecuritySignalDetector,
 } from "../types";
+import { isCategoryEligibleForAuditCoverageGap } from "./audit-coverage-gap-eligibility";
 
 // Canonical Event Type names the DefiLlama Collector's normalizer
 // (`packages/collectors/src/protocol-events.ts`) registers and publishes.
@@ -46,7 +47,13 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 // --- 1. New protocol observed ----------------------------------------------
 
-export const NEW_PROTOCOL = registerSecuritySignalType("new-protocol");
+// NEW_PROTOCOL alone never qualifies a Security Opportunity: "we polled
+// this for the first time" is, by itself, the weakest possible signal —
+// see the Phase 2B Step 1 correction's provisional-qualification policy
+// in `security-opportunity-detection.ts`.
+export const NEW_PROTOCOL = registerSecuritySignalType("new-protocol", {
+  qualifiesForOpportunity: false,
+});
 
 const NEW_PROTOCOL_LISTED_AT_RECENCY_DAYS = 30;
 const NEW_PROTOCOL_WEIGHT_WITH_RECENT_LISTED_AT = 0.5;
@@ -102,7 +109,11 @@ export const newProtocolDetector: SecuritySignalDetector = (triggeringEvent) => 
 
 // --- 2. TVL growth -----------------------------------------------------------
 
-export const TVL_GROWTH = registerSecuritySignalType("tvl-growth");
+// A meaningful, floor-gated TVL increase is itself substantive enough to
+// qualify a Security Opportunity on its own.
+export const TVL_GROWTH = registerSecuritySignalType("tvl-growth", {
+  qualifiesForOpportunity: true,
+});
 
 const TVL_GROWTH_MIN_ABSOLUTE_TVL = 5_000_000;
 const TVL_GROWTH_MIN_PERCENT_INCREASE = 0.2;
@@ -161,7 +172,12 @@ export const tvlGrowthDetector: SecuritySignalDetector = (triggeringEvent) => {
 
 // --- 3. Audit coverage gap (weak negative signal) ---------------------------
 
-export const AUDIT_COVERAGE_GAP = registerSecuritySignalType("audit-coverage-gap");
+// A real (category-eligible) audit coverage gap on a protocol carrying
+// meaningful TVL is itself substantive enough to qualify a Security
+// Opportunity on its own.
+export const AUDIT_COVERAGE_GAP = registerSecuritySignalType("audit-coverage-gap", {
+  qualifiesForOpportunity: true,
+});
 
 const AUDIT_COVERAGE_GAP_MIN_TVL = 2_000_000;
 const AUDIT_COVERAGE_GAP_WEIGHT = 0.3;
@@ -175,6 +191,12 @@ const AUDIT_COVERAGE_GAP_WEIGHT = 0.3;
  * independent audit registry. The reasoning text below uses the exact
  * phrasing the brief specifies, and preserves `auditLinks` (even when
  * empty) so a future enrichment step can investigate further.
+ *
+ * Gated by `isCategoryEligibleForAuditCoverageGap` (see that module's doc
+ * comment) — Phase 2B Step 1's live verification found this detector's
+ * output dominated by centralized exchanges and risk-advisory firms,
+ * neither of which are smart-contract audit targets in the sense this
+ * detector means to flag.
  */
 export const auditCoverageGapDetector: SecuritySignalDetector = (triggeringEvent) => {
   if (
@@ -189,7 +211,11 @@ export const auditCoverageGapDetector: SecuritySignalDetector = (triggeringEvent
     return [];
   }
 
-  if (snapshot.audits !== "0" || snapshot.tvl < AUDIT_COVERAGE_GAP_MIN_TVL) {
+  if (
+    snapshot.audits !== "0" ||
+    snapshot.tvl < AUDIT_COVERAGE_GAP_MIN_TVL ||
+    !isCategoryEligibleForAuditCoverageGap(snapshot.category)
+  ) {
     return [];
   }
 

@@ -25,11 +25,13 @@ export {
   type SecurityOpportunityIdentity,
 } from "./opportunity-id";
 export {
+  doesSignalTypeQualifyForOpportunity,
   isRegisteredSecuritySignalType,
   listSecuritySignalDetectors,
   listSecuritySignalTypes,
   registerSecuritySignalDetector,
   registerSecuritySignalType,
+  type SecuritySignalTypeOptions,
 } from "./registry";
 export { computeSecurityDetectionWindow } from "./security-detection-window";
 export {

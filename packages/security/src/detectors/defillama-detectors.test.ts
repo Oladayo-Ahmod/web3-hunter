@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { doesSignalTypeQualifyForOpportunity } from "../registry";
 import type { RecentSecurityTargetEvent, SecuritySignalDetectionContext } from "../types";
 import {
   AUDIT_COVERAGE_GAP,
@@ -8,6 +9,17 @@ import {
   newProtocolDetector,
   tvlGrowthDetector,
 } from "./defillama-detectors";
+
+describe("opportunity-qualification declarations", () => {
+  it("NEW_PROTOCOL does not qualify a Security Opportunity on its own", () => {
+    expect(doesSignalTypeQualifyForOpportunity(NEW_PROTOCOL)).toBe(false);
+  });
+
+  it("TVL_GROWTH and AUDIT_COVERAGE_GAP each qualify a Security Opportunity on their own", () => {
+    expect(doesSignalTypeQualifyForOpportunity(TVL_GROWTH)).toBe(true);
+    expect(doesSignalTypeQualifyForOpportunity(AUDIT_COVERAGE_GAP)).toBe(true);
+  });
+});
 
 const SECURITY_TARGET_ID = "019474b4-9a3e-7c3e-9c3e-9c3e9c3e9c3e";
 
@@ -176,5 +188,58 @@ describe("auditCoverageGapDetector", () => {
     });
 
     expect(auditCoverageGapDetector(triggeringEvent, context)).toHaveLength(0);
+  });
+
+  it("does not fire for a CEX, even with audits '0' and high TVL", () => {
+    const triggeringEvent = event({
+      metadata: {
+        ...(event().metadata as Record<string, unknown>),
+        category: "CEX",
+        audits: "0",
+        tvl: 10_000_000_000,
+      },
+    });
+
+    expect(auditCoverageGapDetector(triggeringEvent, context)).toHaveLength(0);
+  });
+
+  it("does not fire for a Risk Curator, even with audits '0' and high TVL", () => {
+    const triggeringEvent = event({
+      metadata: {
+        ...(event().metadata as Record<string, unknown>),
+        category: "Risk Curators",
+        audits: "0",
+        tvl: 2_500_000_000,
+      },
+    });
+
+    expect(auditCoverageGapDetector(triggeringEvent, context)).toHaveLength(0);
+  });
+
+  it("still fires for an on-chain bridge — bridge categories are not blanket-excluded", () => {
+    const triggeringEvent = event({
+      metadata: {
+        ...(event().metadata as Record<string, unknown>),
+        category: "Canonical Bridge",
+        audits: "0",
+        tvl: 3_000_000_000,
+      },
+    });
+
+    expect(auditCoverageGapDetector(triggeringEvent, context)).toHaveLength(1);
+  });
+
+  it("still fires for eligible smart-contract categories (Dexs, Lending, Liquid Staking)", () => {
+    for (const category of ["Dexs", "Lending", "Liquid Staking"]) {
+      const triggeringEvent = event({
+        metadata: {
+          ...(event().metadata as Record<string, unknown>),
+          category,
+          audits: "0",
+          tvl: 5_000_000,
+        },
+      });
+      expect(auditCoverageGapDetector(triggeringEvent, context)).toHaveLength(1);
+    }
   });
 });
