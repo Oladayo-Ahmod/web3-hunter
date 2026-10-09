@@ -97,6 +97,7 @@ function isExpired(endDate: string | null | undefined, asOf: Date): boolean {
 
 export const BOUNTY_PROGRAM_OBSERVED = registerSecuritySignalType("bounty-program-observed", {
   qualifiesForOpportunity: false,
+  namesSpecificArtifact: false,
 });
 
 const BOUNTY_OBSERVED_LAUNCH_RECENCY_DAYS = 30;
@@ -147,6 +148,9 @@ export const bountyProgramObservedDetector: SecuritySignalDetector = (triggering
 
 export const BOUNTY_PROGRAM_RESUMED = registerSecuritySignalType("bounty-program-resumed", {
   qualifiesForOpportunity: true,
+  // Reasoning cites only a count of assets, never a named one — see
+  // `SecuritySignalTypeOptions.namesSpecificArtifact`'s doc comment.
+  namesSpecificArtifact: false,
 });
 
 const BOUNTY_PROGRAM_RESUMED_WEIGHT = 0.6;
@@ -199,6 +203,7 @@ export const bountyProgramResumedDetector: SecuritySignalDetector = (triggeringE
 
 export const BOUNTY_PROGRAM_PAUSED = registerSecuritySignalType("bounty-program-paused", {
   qualifiesForOpportunity: false,
+  namesSpecificArtifact: false,
 });
 
 const BOUNTY_PROGRAM_PAUSED_WEIGHT = 0.2;
@@ -235,6 +240,10 @@ export const bountyProgramPausedDetector: SecuritySignalDetector = (triggeringEv
 
 export const BOUNTY_SCOPE_EXPANDED = registerSecuritySignalType("bounty-scope-expanded", {
   qualifiesForOpportunity: true,
+  // The only qualifying signal type whose reasoning names a specific
+  // added asset (via `describeAsset`) — see
+  // `SecuritySignalTypeOptions.namesSpecificArtifact`'s doc comment.
+  namesSpecificArtifact: true,
 });
 
 const BOUNTY_SCOPE_EXPANDED_BASE_WEIGHT = 0.4;

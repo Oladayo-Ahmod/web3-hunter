@@ -2,8 +2,14 @@ import { describe, expect, it } from "vitest";
 import { registerSecuritySignalType } from "./registry";
 import { meetsSecurityOpportunityThreshold } from "./security-opportunity-detection";
 
-registerSecuritySignalType("__test__qualifying-type", { qualifiesForOpportunity: true });
-registerSecuritySignalType("__test__non-qualifying-type", { qualifiesForOpportunity: false });
+registerSecuritySignalType("__test__qualifying-type", {
+  qualifiesForOpportunity: true,
+  namesSpecificArtifact: false,
+});
+registerSecuritySignalType("__test__non-qualifying-type", {
+  qualifiesForOpportunity: false,
+  namesSpecificArtifact: false,
+});
 
 describe("meetsSecurityOpportunityThreshold", () => {
   it("returns false for an empty signal list", () => {

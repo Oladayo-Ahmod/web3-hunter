@@ -22,6 +22,21 @@ export const immunefiAssetSchema = z
   })
   .passthrough();
 
+/**
+ * Immunefi's own audit-history entries — verified live (81/232 programs
+ * carry at least one). `.optional()` on every field but `id`: real
+ * entries vary in completeness (an auditor or date can be absent), and
+ * this must parse successfully rather than reject the whole program.
+ */
+export const immunefiAuditSchema = z
+  .object({
+    id: z.string(),
+    url: z.string().nullable().optional(),
+    auditor: z.string().nullable().optional(),
+    date: z.string().nullable().optional(),
+  })
+  .passthrough();
+
 export const immunefiBountySchema = z
   .object({
     slug: z.string(),
@@ -44,10 +59,16 @@ export const immunefiBountySchema = z
     kyc: z.boolean(),
     inviteOnly: z.boolean(),
     assets: z.array(immunefiAssetSchema).optional().default([]),
+    // Immunefi's own audit history — see `immunefiAuditSchema`'s doc
+    // comment. `.optional()` as well as defaulted to `[]`: absent for a
+    // payload captured before this field was tracked, same compatibility
+    // discipline as `endDate`.
+    audits: z.array(immunefiAuditSchema).optional().default([]),
   })
   .passthrough();
 
 export type ImmunefiAsset = z.infer<typeof immunefiAssetSchema>;
+export type ImmunefiAudit = z.infer<typeof immunefiAuditSchema>;
 export type ImmunefiBounty = z.infer<typeof immunefiBountySchema>;
 
 export const immunefiBountiesResponseSchema = z.array(immunefiBountySchema);

@@ -459,3 +459,100 @@ export interface TodayDigestDTO {
   dmTargets: OutreachTargetDTO[];
   researchTargets: OutreachTargetDTO[];
 }
+
+/** See `packages/application/src/security-priority.ts` for the tier rule. `"C"` is a real, legitimate result — a discovered Security Target with no qualifying Signal yet, not an omission. */
+export type SecurityTargetPriorityTierDTO = "A" | "B" | "C";
+
+/**
+ * Identity evidence for a Security Target, represented honestly: `null`
+ * means this target genuinely has no stored repository URL (either no
+ * source ever supplied one, or it was never backfilled — see
+ * `packages/security/src/security-target-store.ts`'s
+ * `updateSecurityTargetRepositoryUrlIfMissing`), never a guess.
+ */
+export interface SecurityTargetIdentityEvidenceDTO {
+  repositoryUrl: string | null;
+}
+
+/**
+ * One preserved Immunefi audit-history entry, exactly as the source
+ * supplied it (see `packages/collectors/src/bounty-program-events.ts`'s
+ * `BountyAuditFields`) — never interpreted. `auditor`/`url`/`date` are
+ * `null` when the source itself omitted them (a real, observed state —
+ * Immunefi's own audit entries vary in completeness), not when the whole
+ * audit record is missing.
+ */
+export interface SecurityTargetAuditEntryDTO {
+  id: string;
+  auditor: string | null;
+  url: string | null;
+  date: string | null;
+}
+
+/**
+ * Audit evidence for a Security Target, with its availability stated
+ * explicitly rather than collapsed into a count:
+ * - `"unavailable"`: no bounty-program source Event has ever been
+ *   recorded for this target — there is no Immunefi data to say anything
+ *   about audits one way or the other.
+ * - `"none"`: a bounty-program Event exists, and it recorded zero audits.
+ * - `"present"`: at least one audit entry is on record.
+ *
+ * `limitation` is carried on every result, including `"present"` — see
+ * `BountyAuditFields`' own doc comment: an audit record's existence never
+ * confirms it covers the currently deployed code, that it is recent, or
+ * that the target is otherwise secure. Nothing that reads this DTO should
+ * imply any of those.
+ */
+export interface SecurityTargetAuditEvidenceDTO {
+  status: "unavailable" | "none" | "present";
+  entries: SecurityTargetAuditEntryDTO[];
+  limitation: string;
+}
+
+/**
+ * Whether there is a concrete next step for a security researcher today —
+ * deliberately distinct from "this target has a bug bounty," which alone
+ * is not actionable (a bounty with an empty or out-of-scope asset list
+ * gives nothing specific to review). `true` only when an active bounty
+ * program currently lists at least one smart-contract asset in scope.
+ */
+export interface SecurityTargetActionabilityDTO {
+  isActionable: boolean;
+  reason: string;
+}
+
+/**
+ * One row of the Security Research Prioritization view (the approved
+ * design) — composed read-time from a Security Target's Signals,
+ * Intelligence projection, Opportunity existence, and preserved Immunefi
+ * audit/bounty evidence. No numeric score: `tier` is ordinal and
+ * explained by `tierReason`, per the design's explicit "do not introduce
+ * numeric weights without a validation basis."
+ *
+ * A target with `tier: "C"` and `hasOpportunity: false` is a real,
+ * expected result (a discovered target with no qualifying Signal yet),
+ * never filtered out — see `security-target-query-service.ts`'s
+ * `listSecurityTargetPriority`.
+ */
+export interface SecurityTargetPriorityDTO {
+  id: string;
+  slug: string;
+  name: string;
+  tier: SecurityTargetPriorityTierDTO;
+  tierReason: string;
+  /** Distinct, sorted Signal types observed for this target that qualify it for an Opportunity — empty for Tier C. */
+  qualifyingSignalTypes: string[];
+  /**
+   * The number of distinct triggering Events behind this target's
+   * Signals (never the number of Signal rows) — see
+   * `security-priority.ts`'s `countDistinctTriggeringEvents`.
+   */
+  distinctEvidenceEventCount: number;
+  /** Reused directly from `security_target_intelligence.lastSignalAt` — never recomputed. `null` if no Intelligence projection exists yet. */
+  lastSignalAt: string | null;
+  hasOpportunity: boolean;
+  identity: SecurityTargetIdentityEvidenceDTO;
+  audit: SecurityTargetAuditEvidenceDTO;
+  actionability: SecurityTargetActionabilityDTO;
+}

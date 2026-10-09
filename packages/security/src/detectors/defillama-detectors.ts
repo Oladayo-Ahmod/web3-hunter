@@ -53,6 +53,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // in `security-opportunity-detection.ts`.
 export const NEW_PROTOCOL = registerSecuritySignalType("new-protocol", {
   qualifiesForOpportunity: false,
+  namesSpecificArtifact: false,
 });
 
 const NEW_PROTOCOL_LISTED_AT_RECENCY_DAYS = 30;
@@ -113,6 +114,7 @@ export const newProtocolDetector: SecuritySignalDetector = (triggeringEvent) => 
 // qualify a Security Opportunity on its own.
 export const TVL_GROWTH = registerSecuritySignalType("tvl-growth", {
   qualifiesForOpportunity: true,
+  namesSpecificArtifact: false,
 });
 
 const TVL_GROWTH_MIN_ABSOLUTE_TVL = 5_000_000;
@@ -177,6 +179,7 @@ export const tvlGrowthDetector: SecuritySignalDetector = (triggeringEvent) => {
 // Opportunity on its own.
 export const AUDIT_COVERAGE_GAP = registerSecuritySignalType("audit-coverage-gap", {
   qualifiesForOpportunity: true,
+  namesSpecificArtifact: false,
 });
 
 const AUDIT_COVERAGE_GAP_MIN_TVL = 2_000_000;

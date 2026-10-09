@@ -32,6 +32,12 @@ export type {
   RecommendationStatusDTO,
   RecommendationSummaryDTO,
   SearchResultDTO,
+  SecurityTargetActionabilityDTO,
+  SecurityTargetAuditEntryDTO,
+  SecurityTargetAuditEvidenceDTO,
+  SecurityTargetIdentityEvidenceDTO,
+  SecurityTargetPriorityDTO,
+  SecurityTargetPriorityTierDTO,
   SkillDTO,
   SignalSummaryDTO,
   TargetRoleDTO,
@@ -87,3 +93,11 @@ export { getRecommendationDetail, listRecommendations } from "./recommendation-q
 export { search, searchQuerySchema, type SearchQuery } from "./search-service";
 export { listSkills } from "./skill-query-service";
 export { getUserProfileSummary } from "./user-profile-query-service";
+export {
+  countDistinctTriggeringEvents,
+  securityTargetPriorityTier,
+  SECURITY_TARGET_PRIORITY_TIERS,
+  type SecurityTargetPriorityTier,
+  type SecurityTargetTierResult,
+} from "./security-priority";
+export { listSecurityTargetPriority } from "./security-target-query-service";

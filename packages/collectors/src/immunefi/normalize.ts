@@ -2,10 +2,11 @@ import type { Normalizer } from "@web3-hunter/ingestion";
 import {
   createBountyProgramNormalizer,
   type BountyAssetFields,
+  type BountyAuditFields,
   type BountyProgramFields,
   type CanonicalBountyProgram,
 } from "../bounty-program-events";
-import { immunefiBountySchema, type ImmunefiAsset } from "./types";
+import { immunefiBountySchema, type ImmunefiAsset, type ImmunefiAudit } from "./types";
 
 const SMART_CONTRACT_ASSET_TYPE = "smart_contract";
 
@@ -15,6 +16,15 @@ function toAssetFields(asset: ImmunefiAsset): BountyAssetFields {
     type: asset.type,
     description: asset.description ?? null,
     url: asset.url ?? null,
+  };
+}
+
+function toAuditFields(audit: ImmunefiAudit): BountyAuditFields {
+  return {
+    id: audit.id,
+    url: audit.url ?? null,
+    auditor: audit.auditor ?? null,
+    date: audit.date ?? null,
   };
 }
 
@@ -44,6 +54,7 @@ function toCanonicalBountyProgram(payload: unknown): CanonicalBountyProgram {
     kyc: bounty.kyc,
     inviteOnly: bounty.inviteOnly,
     assets,
+    audits: bounty.audits.map(toAuditFields),
     smartContractAssetIds: smartContractAssetIds(assets),
   };
 

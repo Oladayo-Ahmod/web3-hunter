@@ -31,6 +31,7 @@ export {
   type SecurityOpportunityIdentity,
 } from "./opportunity-id";
 export {
+  doesSignalTypeNameSpecificArtifact,
   doesSignalTypeQualifyForOpportunity,
   isRegisteredSecuritySignalType,
   listSecuritySignalDetectors,

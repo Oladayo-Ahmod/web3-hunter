@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  doesSignalTypeNameSpecificArtifact,
   doesSignalTypeQualifyForOpportunity,
   isRegisteredSecuritySignalType,
   listSecuritySignalDetectors,
@@ -17,17 +18,24 @@ describe("a fresh registry module instance", () => {
 
 describe("registerSecuritySignalType", () => {
   it("registers a new signal type with its declared opportunity-qualification stance", () => {
-    registerSecuritySignalType("__test__signal-type", { qualifiesForOpportunity: true });
+    registerSecuritySignalType("__test__signal-type", {
+      qualifiesForOpportunity: true,
+      namesSpecificArtifact: false,
+    });
     expect(isRegisteredSecuritySignalType("__test__signal-type")).toBe(true);
     expect(listSecuritySignalTypes()).toContain("__test__signal-type");
     expect(doesSignalTypeQualifyForOpportunity("__test__signal-type")).toBe(true);
   });
 
   it("rejects registering the same name twice", () => {
-    registerSecuritySignalType("__test__duplicate-signal-type", { qualifiesForOpportunity: false });
+    registerSecuritySignalType("__test__duplicate-signal-type", {
+      qualifiesForOpportunity: false,
+      namesSpecificArtifact: false,
+    });
     expect(() =>
       registerSecuritySignalType("__test__duplicate-signal-type", {
         qualifiesForOpportunity: false,
+        namesSpecificArtifact: false,
       }),
     ).toThrowError(/already registered/i);
   });
@@ -35,12 +43,37 @@ describe("registerSecuritySignalType", () => {
 
 describe("doesSignalTypeQualifyForOpportunity", () => {
   it("returns false for a type registered with qualifiesForOpportunity: false", () => {
-    registerSecuritySignalType("__test__non-qualifying", { qualifiesForOpportunity: false });
+    registerSecuritySignalType("__test__non-qualifying", {
+      qualifiesForOpportunity: false,
+      namesSpecificArtifact: false,
+    });
     expect(doesSignalTypeQualifyForOpportunity("__test__non-qualifying")).toBe(false);
   });
 
   it("returns false for a name that was never registered", () => {
     expect(doesSignalTypeQualifyForOpportunity("__test__never-registered")).toBe(false);
+  });
+});
+
+describe("doesSignalTypeNameSpecificArtifact", () => {
+  it("returns true for a type registered with namesSpecificArtifact: true", () => {
+    registerSecuritySignalType("__test__names-artifact", {
+      qualifiesForOpportunity: true,
+      namesSpecificArtifact: true,
+    });
+    expect(doesSignalTypeNameSpecificArtifact("__test__names-artifact")).toBe(true);
+  });
+
+  it("returns false for a type registered with namesSpecificArtifact: false", () => {
+    registerSecuritySignalType("__test__names-no-artifact", {
+      qualifiesForOpportunity: true,
+      namesSpecificArtifact: false,
+    });
+    expect(doesSignalTypeNameSpecificArtifact("__test__names-no-artifact")).toBe(false);
+  });
+
+  it("returns false for a name that was never registered", () => {
+    expect(doesSignalTypeNameSpecificArtifact("__test__never-registered")).toBe(false);
   });
 });
 

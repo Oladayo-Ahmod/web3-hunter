@@ -22,6 +22,23 @@ const bountyAssetFieldsSchema = z.object({
 });
 export type BountyAssetFields = z.infer<typeof bountyAssetFieldsSchema>;
 
+/**
+ * The source's own audit-history entry — preserved as-is, never
+ * interpreted. Recording that an audit entry exists is not the same as
+ * confirming it covers the currently deployed code, or that the
+ * protocol is safe; nothing in this canonical shape, or anything that
+ * reads it, should imply either. See
+ * `packages/application/src/dto.ts`'s `SecurityTargetAuditEvidenceDTO`
+ * doc comment for where this distinction matters most.
+ */
+const bountyAuditFieldsSchema = z.object({
+  id: z.string(),
+  url: z.string().nullable(),
+  auditor: z.string().nullable(),
+  date: z.string().nullable(),
+});
+export type BountyAuditFields = z.infer<typeof bountyAuditFieldsSchema>;
+
 const bountyProgramFieldsSchema = z.object({
   slug: z.string(),
   project: z.string(),
@@ -57,6 +74,11 @@ const bountyProgramFieldsSchema = z.object({
   // evidence (which specific asset was added/removed, with its
   // description/url), not itself the field a detector diffs against.
   assets: z.array(bountyAssetFieldsSchema),
+  // Immunefi's own audit history — see `bountyAuditFieldsSchema`'s doc
+  // comment. Diffable like every other field here: a genuinely new
+  // audit entry produces a `BountyProgramUpdated`, available as evidence
+  // for a future detector — no detector reacts to it in this phase.
+  audits: z.array(bountyAuditFieldsSchema),
   // A separate, sorted, `smart_contract`-only id list — the field a
   // scope-change detector actually diffs. Kept distinct from `assets` so
   // a revision bump or description edit on an *existing* asset (which

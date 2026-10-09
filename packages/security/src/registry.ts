@@ -13,9 +13,20 @@ import type { SecuritySignalDetector } from "./types";
  * pipeline) growing a conditional per signal type. A future signal type
  * (e.g. a bug-bounty-sourced one) adds a single line at its own
  * registration call — no other file changes.
+ *
+ * `namesSpecificArtifact` is the extensibility point the Security
+ * Research Prioritization design introduced: whether this signal type's
+ * reasoning names a specific artifact (e.g. a particular added scope
+ * asset) rather than a count or an aggregate figure — see
+ * `packages/application/src/security-priority.ts`'s tier derivation,
+ * which uses it to distinguish Tier A from Tier B. Decided once, at the
+ * same registration call as `qualifiesForOpportunity`, by whichever
+ * module registers the signal type — never inferred elsewhere from a
+ * signal's reasoning text.
  */
 export interface SecuritySignalTypeOptions {
   qualifiesForOpportunity: boolean;
+  namesSpecificArtifact: boolean;
 }
 
 /**
@@ -52,6 +63,11 @@ export function listSecuritySignalTypes(): readonly string[] {
 /** Whether a Signal of this type alone is enough to qualify its Security Target for a (placeholder) Opportunity — see `SecuritySignalTypeOptions`. Unregistered names never qualify. */
 export function doesSignalTypeQualifyForOpportunity(name: string): boolean {
   return securitySignalTypes.get(name)?.qualifiesForOpportunity ?? false;
+}
+
+/** Whether this signal type's reasoning names a specific artifact — see `SecuritySignalTypeOptions`. Unregistered names never do. */
+export function doesSignalTypeNameSpecificArtifact(name: string): boolean {
+  return securitySignalTypes.get(name)?.namesSpecificArtifact ?? false;
 }
 
 /**

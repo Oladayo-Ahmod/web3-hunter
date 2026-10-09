@@ -3,6 +3,7 @@ export {
   BountyProgramRecorded,
   BountyProgramUpdated,
   type BountyAssetFields,
+  type BountyAuditFields,
   type CanonicalBountyProgram,
   type BountyProgramFields,
 } from "./bounty-program-events";

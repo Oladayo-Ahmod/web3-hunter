@@ -160,9 +160,15 @@ importers:
 
   packages/application:
     dependencies:
+      '@web3-hunter/collectors':
+        specifier: workspace:*
+        version: link:../collectors
       '@web3-hunter/db':
         specifier: workspace:*
         version: link:../db
+      '@web3-hunter/security':
+        specifier: workspace:*
+        version: link:../security
       '@web3-hunter/shared':
         specifier: workspace:*
         version: link:../shared
