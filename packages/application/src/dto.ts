@@ -599,6 +599,28 @@ export interface SecurityTargetPriorityDTO {
   /** Distinct, sorted Signal types observed for this target that qualify it for an Opportunity — empty for Tier C. */
   qualifyingSignalTypes: string[];
   /**
+   * The `security_signal.id` of every Signal whose type qualifies for an
+   * Opportunity (`doesSignalTypeQualifyForOpportunity` — the same rule
+   * `qualifyingSignalTypes` is derived from), sorted by `(detectedAt,
+   * id)` for determinism. Empty for Tier C. Deliberately **not** derived
+   * from `event_provenance`: the `SecurityOpportunityDetected` Event's
+   * own provenance cites every Signal for the target, qualifying or not
+   * (see `security-opportunity-evaluation.ts`'s `evaluateSecurityOpportunity`)
+   * — using it here would leak non-qualifying Signal ids.
+   */
+  qualifyingSignalIds: string[];
+  /**
+   * The stored `security_opportunity.reasoning` for this target's most
+   * recently detected Opportunity, passed through verbatim — never
+   * rewritten or embellished. `null` whenever `hasOpportunity` is false.
+   * When multiple Opportunity rows exist for a target (one per detection
+   * window), the most recently detected one wins, deterministically —
+   * see `security-target-query-service.ts`'s opportunity query. Citing a
+   * qualifying Signal here is evidence a change was observed, never a
+   * claim that a vulnerability was found.
+   */
+  opportunityReasoning: string | null;
+  /**
    * The number of distinct triggering Events behind this target's
    * Signals (never the number of Signal rows) — see
    * `security-priority.ts`'s `countDistinctTriggeringEvents`.

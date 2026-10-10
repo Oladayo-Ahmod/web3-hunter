@@ -226,16 +226,36 @@ async function buildSecurityTargetPriority(
     listSecuritySignalsForTarget(target.id),
     getSecurityTargetIntelligence(target.id),
     getLatestBountyProgramFields(target.id),
+    // Most recently *detected* Opportunity wins when more than one row
+    // exists for this target (one per detection window) — deterministic,
+    // never an arbitrary `.limit(1)` pick.
     db
-      .select({ id: schema.securityOpportunity.id })
+      .select({
+        id: schema.securityOpportunity.id,
+        reasoning: schema.securityOpportunity.reasoning,
+      })
       .from(schema.securityOpportunity)
       .where(eq(schema.securityOpportunity.securityTargetId, target.id))
+      .orderBy(desc(schema.securityOpportunity.detectedAt), desc(schema.securityOpportunity.id))
       .limit(1),
   ]);
 
   const { tier, reason, qualifyingSignalTypes } = securityTargetPriorityTier(
     signals.map((signal) => signal.signalType),
   );
+
+  // The ids of Signals whose *type* qualifies for an Opportunity — the
+  // same registry-based rule `qualifyingSignalTypes` is already derived
+  // from. Deliberately not sourced from `event_provenance`: that
+  // relationship (for `SecurityOpportunityDetected`) cites every Signal
+  // for the target, qualifying or not — see
+  // `evaluateSecurityOpportunity`'s `signalIds` — so reading it here
+  // would leak non-qualifying Signal ids into this field.
+  const qualifyingSignalTypeSet = new Set(qualifyingSignalTypes);
+  const qualifyingSignalIds = signals
+    .filter((signal) => qualifyingSignalTypeSet.has(signal.signalType))
+    .sort((a, b) => a.detectedAt.getTime() - b.detectedAt.getTime() || (a.id < b.id ? -1 : 1))
+    .map((signal) => signal.id);
 
   const actionability = await deriveActionability(target.id, bountyFields);
   const researchReadiness = deriveResearchReadiness({
@@ -252,9 +272,11 @@ async function buildSecurityTargetPriority(
     tier,
     tierReason: reason,
     qualifyingSignalTypes,
+    qualifyingSignalIds,
     distinctEvidenceEventCount: countDistinctTriggeringEvents(signals),
     lastSignalAt: intelligence?.lastSignalAt?.toISOString() ?? null,
     hasOpportunity: opportunityRows.length > 0,
+    opportunityReasoning: opportunityRows[0]?.reasoning ?? null,
     identity: { repositoryUrl: target.repositoryUrl },
     audit: deriveAuditEvidence(bountyFields),
     actionability,

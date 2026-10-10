@@ -6,6 +6,7 @@ import {
   upsertBugBounty,
   upsertSecurityTargetIntelligence,
 } from "@web3-hunter/security";
+import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { listSecurityTargetPriority } from "./security-target-query-service";
@@ -941,6 +942,174 @@ describe("security-target-query-service (integration)", () => {
       // An Opportunity's existence is independent of tier — Tier B here is
       // still driven solely by the qualifying Signal, not by this flag.
       expect(row.tier).toBe("B");
+    });
+  });
+
+  describe("listSecurityTargetPriority — qualifyingSignalIds and opportunityReasoning", () => {
+    it("passes opportunityReasoning through exactly as stored, never rewritten", async () => {
+      const target = await createSecurityTarget({ slug: "test-reasoning-passthrough", name: "T" });
+      await seedSignal({ securityTargetId: target.id, signalType: "tvl-growth" });
+      const storedReasoning =
+        "Detected: qualifying signal type(s) [tvl-growth], 1 total signal(s), confidence 0.30, " +
+        "trend insufficient-data, within window 2026-W01. Unscored.";
+      await getDb().insert(schema.securityOpportunity).values({
+        id: randomUUID(),
+        securityTargetId: target.id,
+        opportunityType: "active-protocol",
+        detectionWindow: "2026-W01",
+        reasoning: storedReasoning,
+        detectedAt: BASE_DATE,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.opportunityReasoning).toBe(storedReasoning);
+    });
+
+    it("returns opportunityReasoning: null and an empty qualifyingSignalIds array when no Opportunity exists", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-reasoning-no-opportunity",
+        name: "T",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.hasOpportunity).toBe(false);
+      expect(row.opportunityReasoning).toBeNull();
+      expect(row.qualifyingSignalIds).toEqual([]);
+    });
+
+    it("exposes exactly the ids of the qualifying Signals, not every Signal for the target", async () => {
+      const target = await createSecurityTarget({ slug: "test-qualifying-ids-subset", name: "T" });
+      // Non-qualifying — must never appear in qualifyingSignalIds.
+      await seedSignal({ securityTargetId: target.id, signalType: "new-protocol" });
+      const qualifyingOne = await seedSignal({
+        securityTargetId: target.id,
+        signalType: "tvl-growth",
+      });
+      const qualifyingTwo = await seedSignal({
+        securityTargetId: target.id,
+        signalType: "audit-coverage-gap",
+      });
+      await getDb().insert(schema.securityOpportunity).values({
+        id: randomUUID(),
+        securityTargetId: target.id,
+        opportunityType: "active-protocol",
+        detectionWindow: "2026-W01",
+        reasoning: "test",
+        detectedAt: BASE_DATE,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(new Set(row.qualifyingSignalIds)).toEqual(
+        new Set([qualifyingOne.id, qualifyingTwo.id]),
+      );
+      expect(row.qualifyingSignalIds).toHaveLength(2);
+    });
+
+    it("every exposed id resolves to a real security_signal row for the correct target", async () => {
+      const target = await createSecurityTarget({ slug: "test-qualifying-ids-resolve", name: "T" });
+      const qualifying = await seedSignal({
+        securityTargetId: target.id,
+        signalType: "tvl-growth",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.qualifyingSignalIds).toEqual([qualifying.id]);
+
+      const [resolved] = await getDb()
+        .select()
+        .from(schema.securitySignal)
+        .where(eq(schema.securitySignal.id, row.qualifyingSignalIds[0]!));
+      expect(resolved?.securityTargetId).toBe(target.id);
+      expect(resolved?.signalType).toBe("tvl-growth");
+    });
+
+    it("never leaks a qualifying Signal belonging to a different target", async () => {
+      const targetA = await createSecurityTarget({
+        slug: "test-qualifying-ids-target-a",
+        name: "A",
+      });
+      const targetB = await createSecurityTarget({
+        slug: "test-qualifying-ids-target-b",
+        name: "B",
+      });
+      const signalA = await seedSignal({ securityTargetId: targetA.id, signalType: "tvl-growth" });
+      await seedSignal({ securityTargetId: targetB.id, signalType: "tvl-growth" });
+
+      const rows = await listSecurityTargetPriority();
+      const rowA = findBySlug(rows, targetA.slug);
+
+      expect(rowA.qualifyingSignalIds).toEqual([signalA.id]);
+    });
+
+    it("picks the most recently detected Opportunity's reasoning when multiple rows exist for one target", async () => {
+      const target = await createSecurityTarget({ slug: "test-multiple-opportunities", name: "T" });
+      await seedSignal({ securityTargetId: target.id, signalType: "tvl-growth" });
+      await getDb()
+        .insert(schema.securityOpportunity)
+        .values([
+          {
+            id: randomUUID(),
+            securityTargetId: target.id,
+            opportunityType: "active-protocol",
+            detectionWindow: "2026-W01",
+            reasoning: "older window reasoning",
+            detectedAt: new Date("2026-01-01T00:00:00Z"),
+          },
+          {
+            id: randomUUID(),
+            securityTargetId: target.id,
+            opportunityType: "active-protocol",
+            detectionWindow: "2026-W02",
+            reasoning: "newer window reasoning",
+            detectedAt: new Date("2026-01-08T00:00:00Z"),
+          },
+        ]);
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.opportunityReasoning).toBe("newer window reasoning");
+    });
+
+    it("leaves tier, actionability, and researchReadiness unchanged by these additions", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-reasoning-no-regression",
+        name: "T",
+      });
+      await seedSignal({ securityTargetId: target.id, signalType: "bounty-scope-expanded" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+      });
+      await getDb().insert(schema.securityOpportunity).values({
+        id: randomUUID(),
+        securityTargetId: target.id,
+        opportunityType: "active-protocol",
+        detectionWindow: "2026-W01",
+        reasoning: "test",
+        detectedAt: BASE_DATE,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.tier).toBe("A");
+      expect(row.actionability.isActionable).toBe(true);
+      expect(row.researchReadiness.status).toBe("ready");
     });
   });
 
