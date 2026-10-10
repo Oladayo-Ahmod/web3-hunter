@@ -1,10 +1,15 @@
 import {
+  getPipelineHealth,
   listSecurityTargetPriorityPage,
   securityTargetFeedQuerySchema,
 } from "@web3-hunter/application";
 import { PaginationControls } from "@/features/opportunities/components/pagination-controls";
+import { deriveSecurityCollectorFreshness } from "@/features/security/collector-freshness";
+import { CollectorFreshnessBanner } from "@/features/security/components/collector-freshness-banner";
 import { SecurityTargetCard } from "@/features/security/components/security-target-card";
 import { SecurityTargetFilters } from "@/features/security/components/security-target-filters";
+
+const SECURITY_COLLECTOR_SLUGS = ["defillama", "immunefi"] as const;
 
 // The feed reflects live Signal/Opportunity data; it must never be served
 // from a build-time snapshot.
@@ -21,7 +26,17 @@ export default async function SecurityPage({ searchParams }: SecurityPageProps) 
 
   // A Server Component calls the Application Layer directly — never
   // through a public API route — per docs/ARCHITECTURE.md §9.
-  const result = await listSecurityTargetPriorityPage(query);
+  const [result, pipelineHealth] = await Promise.all([
+    listSecurityTargetPriorityPage(query),
+    // Mirrors `/api/health`'s own precedent: a failed health lookup
+    // degrades to `null` rather than breaking the feed — `null` reads
+    // as "freshness unknown" for every collector below, never "fresh."
+    getPipelineHealth().catch(() => null),
+  ]);
+
+  const collectorFreshness = SECURITY_COLLECTOR_SLUGS.map((slug) =>
+    deriveSecurityCollectorFreshness(pipelineHealth, slug),
+  );
 
   const buildHref = (page: number) => {
     const params = new URLSearchParams();
@@ -47,6 +62,8 @@ export default async function SecurityPage({ searchParams }: SecurityPageProps) 
           today.
         </p>
       </div>
+
+      <CollectorFreshnessBanner collectors={collectorFreshness} />
 
       <SecurityTargetFilters
         defaultValues={{ tier: query.tier, readiness: query.readiness, sort: query.sort }}
