@@ -17,6 +17,7 @@ async function insertBountyProgramEvent(input: {
   occurredAt: Date;
   audits?: Array<{ id: string; url: string | null; auditor: string | null; date: string | null }>;
   smartContractAssetIds?: string[];
+  endDate?: string | null;
 }) {
   await getDb()
     .insert(schema.event)
@@ -32,6 +33,7 @@ async function insertBountyProgramEvent(input: {
       metadata: {
         audits: input.audits ?? [],
         smartContractAssetIds: input.smartContractAssetIds ?? [],
+        endDate: input.endDate ?? null,
       },
     });
 }
@@ -347,6 +349,79 @@ describe("security-target-query-service (integration)", () => {
 
       expect(row.actionability.isActionable).toBe(true);
       expect(row.actionability.reason).toMatch(/2 smart-contract asset/i);
+    });
+
+    it("is NOT actionable when the bounty is marked active but its endDate has already passed", async () => {
+      // Reproduces the real, measured gap (Phase 3 audit): Immunefi's own
+      // `isPaused` flag stays false for a concluded, time-boxed
+      // competition, so `bug_bounty.status` alone reads "active" forever
+      // — `endDate` is the only field that can tell the program has
+      // concluded. 62/196 live "active" bounty rows were found in this
+      // state during the Phase 3 audit.
+      const target = await createSecurityTarget({ slug: "test-action-expired", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      const pastEndDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        endDate: pastEndDate,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.isActionable).toBe(false);
+      expect(row.actionability.reason).toMatch(/already concluded/i);
+    });
+
+    it("is actionable when the bounty is active with a future endDate and in-scope assets", async () => {
+      const target = await createSecurityTarget({ slug: "test-action-future-end", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      const futureEndDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        endDate: futureEndDate,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.isActionable).toBe(true);
+    });
+
+    it("is still actionable when endDate is in the near future — not yet expired", async () => {
+      // Strict comparison (mirrors `isBountyProgramExpired`'s own doc
+      // comment): only an endDate that has actually passed counts as
+      // expired, never one merely approaching.
+      const target = await createSecurityTarget({ slug: "test-action-exact-enddate", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      const almostNow = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        endDate: almostNow,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.isActionable).toBe(true);
     });
   });
 

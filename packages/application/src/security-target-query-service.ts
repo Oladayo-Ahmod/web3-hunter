@@ -7,6 +7,7 @@ import { getDb, schema } from "@web3-hunter/db";
 import {
   getBugBountyByTargetAndPlatform,
   getSecurityTargetIntelligence,
+  isBountyProgramExpired,
   listSecuritySignalsForTarget,
 } from "@web3-hunter/security";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
@@ -42,6 +43,11 @@ const bountyEventMetadataSubsetSchema = z
       )
       .optional(),
     smartContractAssetIds: z.array(z.string()).optional(),
+    // See `isBountyProgramExpired`'s doc comment (`@web3-hunter/security`):
+    // the only field that reliably distinguishes a concluded, time-boxed
+    // competition from an ongoing one — `isPaused` stays `false` for a
+    // concluded competition, so `bug_bounty.status` alone cannot tell.
+    endDate: z.string().nullable().optional(),
   })
   .passthrough();
 
@@ -52,9 +58,15 @@ const AUDIT_EVIDENCE_LIMITATION =
   "it is recent, or that the target is otherwise secure.";
 
 /** Every bounty-program source Event for one Security Target, most recent first — the only ordering `listSecuritySignalsForTarget`-style store functions don't already provide. */
+interface LatestBountyProgramFields {
+  audits: BountyAuditFields[];
+  smartContractAssetIds: string[];
+  endDate: string | null;
+}
+
 async function getLatestBountyProgramFields(
   securityTargetId: string,
-): Promise<{ audits: BountyAuditFields[]; smartContractAssetIds: string[] } | null> {
+): Promise<LatestBountyProgramFields | null> {
   const db = getDb();
   const [latestEvent] = await db
     .select()
@@ -81,6 +93,7 @@ async function getLatestBountyProgramFields(
   return {
     audits: parsed.data.audits ?? [],
     smartContractAssetIds: parsed.data.smartContractAssetIds ?? [],
+    endDate: parsed.data.endDate ?? null,
   };
 }
 
@@ -107,7 +120,7 @@ function deriveAuditEvidence(
 
 async function deriveActionability(
   securityTargetId: string,
-  bountyFields: { smartContractAssetIds: string[] } | null,
+  bountyFields: LatestBountyProgramFields | null,
 ): Promise<SecurityTargetActionabilityDTO> {
   const bounty = await getBugBountyByTargetAndPlatform(securityTargetId, IMMUNEFI_PLATFORM);
 
@@ -117,6 +130,18 @@ async function deriveActionability(
       reason: bounty
         ? `The Immunefi bounty program is currently ${bounty.status}, not active.`
         : "No active bug bounty program is on record for this target.",
+    };
+  }
+
+  // `bug_bounty.status` reflects Immunefi's own `isPaused` flag alone,
+  // which stays `false` for a concluded, time-boxed competition (see
+  // `isBountyProgramExpired`'s doc comment) — so "active" here does not
+  // yet mean "not concluded." Checked independently, against the same
+  // `endDate` field and comparison rule every detector already applies.
+  if (isBountyProgramExpired(bountyFields?.endDate ?? null, new Date())) {
+    return {
+      isActionable: false,
+      reason: "The Immunefi bounty program has already concluded (its endDate has passed).",
     };
   }
 

@@ -54,7 +54,7 @@ const bountyProgramFieldsSchema = z.object({
   // time-boxed competition from an ongoing bounty (`isPaused` is `false`
   // for every concluded competition observed; `programType` and slug/
   // project text are not reliable discriminators either — see
-  // `immunefi-detectors.ts`'s `isExpired` doc comment). `.optional()` as
+  // `immunefi-detectors.ts`'s `isBountyProgramExpired` doc comment). `.optional()` as
   // well as `.nullable()` for the same reason
   // `packages/scoring/src/event-types.ts`'s `OpportunityScored.signalCount`
   // is optional: historical Events published before this field existed

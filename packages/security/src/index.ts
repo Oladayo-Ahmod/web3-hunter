@@ -4,6 +4,8 @@
 import "./detectors/defillama-detectors";
 import "./detectors/immunefi-detectors";
 
+export { isBountyProgramExpired } from "./detectors/immunefi-detectors";
+
 export {
   createAuditContest,
   getAuditContestById,

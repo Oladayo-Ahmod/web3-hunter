@@ -514,8 +514,12 @@ export interface SecurityTargetAuditEvidenceDTO {
  * Whether there is a concrete next step for a security researcher today —
  * deliberately distinct from "this target has a bug bounty," which alone
  * is not actionable (a bounty with an empty or out-of-scope asset list
- * gives nothing specific to review). `true` only when an active bounty
- * program currently lists at least one smart-contract asset in scope.
+ * gives nothing specific to review, and a concluded competition gives
+ * nothing current to review even if `bug_bounty.status` still reads
+ * "active" — see `isBountyProgramExpired`'s doc comment in
+ * `@web3-hunter/security` for why that status alone cannot tell). `true`
+ * only when an active, not-yet-concluded bounty program currently lists
+ * at least one smart-contract asset in scope.
  */
 export interface SecurityTargetActionabilityDTO {
   isActionable: boolean;

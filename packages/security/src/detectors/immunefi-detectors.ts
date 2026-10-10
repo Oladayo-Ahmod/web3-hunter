@@ -34,8 +34,8 @@ const bountyProgramMetadataSchema = z.object({
   // `.optional()` as well as `.nullable()`: a snapshot captured before
   // this field was tracked has no `endDate` key at all, and must parse
   // successfully (treated as "no end date," never invented) rather than
-  // failing this whole snapshot's validation — see `isExpired`'s doc
-  // comment.
+  // failing this whole snapshot's validation — see
+  // `isBountyProgramExpired`'s doc comment.
   endDate: z.string().nullable().optional(),
   isPaused: z.boolean(),
   pausedAt: z.string().nullable(),
@@ -81,8 +81,14 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  *
  * Strict comparison: an Event occurring *exactly at* `endDate` is not
  * yet expired, only one occurring after it.
+ *
+ * Exported (as `isBountyProgramExpired`) so any other reader of this
+ * same canonical `endDate` field — e.g.
+ * `packages/application/src/security-target-query-service.ts`'s
+ * actionability check — applies the identical rule rather than a
+ * second, possibly-drifting reimplementation.
  */
-function isExpired(endDate: string | null | undefined, asOf: Date): boolean {
+export function isBountyProgramExpired(endDate: string | null | undefined, asOf: Date): boolean {
   if (endDate === null || endDate === undefined) {
     return false;
   }
@@ -160,7 +166,7 @@ const BOUNTY_PROGRAM_RESUMED_WEIGHT = 0.6;
  * program currently carrying at least one `smart_contract` asset —
  * otherwise this is a resumed bounty with nothing a smart-contract
  * researcher could act on, and should not qualify an Opportunity. Also
- * gated on the program not having already concluded (`isExpired`) as of
+ * gated on the program not having already concluded (`isBountyProgramExpired`) as of
  * this Event — a historical, time-boxed competition being "unpaused"
  * (every one observed live already has `isPaused: false` permanently)
  * must never qualify an actionable Opportunity merely because it's
@@ -184,7 +190,7 @@ export const bountyProgramResumedDetector: SecuritySignalDetector = (triggeringE
     return [];
   }
 
-  if (isExpired(snapshot.endDate, triggeringEvent.occurredAt)) {
+  if (isBountyProgramExpired(snapshot.endDate, triggeringEvent.occurredAt)) {
     return [];
   }
 
@@ -264,7 +270,7 @@ const BOUNTY_SCOPE_EXPANDED_MAX_WEIGHT = 0.8;
  * asset edits.
  *
  * Gated on the program currently being active and not having already
- * concluded (`isExpired`): scope changes recorded while paused, or
+ * concluded (`isBountyProgramExpired`): scope changes recorded while paused, or
  * observed on a historical, time-boxed competition that has ended, must
  * never retroactively become an actionable Opportunity once the
  * registry's static `qualifiesForOpportunity: true` is in play — the
@@ -282,7 +288,7 @@ export const bountyScopeExpandedDetector: SecuritySignalDetector = (triggeringEv
     return [];
   }
 
-  if (isExpired(snapshot.endDate, triggeringEvent.occurredAt)) {
+  if (isBountyProgramExpired(snapshot.endDate, triggeringEvent.occurredAt)) {
     return [];
   }
 
