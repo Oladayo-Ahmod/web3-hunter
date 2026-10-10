@@ -3,6 +3,7 @@ import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import {
   createSecurityTarget,
   persistSecuritySignal,
+  runSecurityScoringPipeline,
   upsertBugBounty,
   upsertSecurityTargetIntelligence,
 } from "@web3-hunter/security";
@@ -39,6 +40,51 @@ async function insertBountyProgramEvent(input: {
         ...(input.assets ? { assets: input.assets } : {}),
         endDate: input.endDate ?? null,
       },
+    });
+}
+
+/**
+ * Inserts a real `ProtocolSnapshotRecorded`/`ProtocolSnapshotUpdated`
+ * canonical Event directly — mirrors `insertBountyProgramEvent`'s own
+ * convention for this file. Only the canonical Event is hand-inserted;
+ * every Signal and Opportunity produced from it comes from a real
+ * `runSecurityScoringPipeline` call, never from a hand-inserted row.
+ */
+async function insertProtocolSnapshotEvent(input: {
+  securityTargetId: string;
+  occurredAt: Date;
+  type?: "ProtocolSnapshotRecorded" | "ProtocolSnapshotUpdated";
+  tvl?: number | null;
+  audits?: string | null;
+  category?: string | null;
+  changedFrom?: Record<string, unknown>;
+}) {
+  const metadata: Record<string, unknown> = {
+    slug: "stage6-protocol",
+    name: "Stage 6 Protocol",
+    category: input.category ?? null,
+    tvl: input.tvl ?? 10_000_000,
+    change1d: null,
+    change7d: null,
+    listedAt: null,
+    audits: input.audits ?? "0",
+    auditLinks: [],
+    chains: ["Ethereum"],
+    ...(input.changedFrom ? { changedFrom: input.changedFrom } : {}),
+  };
+
+  await getDb()
+    .insert(schema.event)
+    .values({
+      type: input.type ?? "ProtocolSnapshotRecorded",
+      category: "source",
+      version: 1,
+      sourceLabel: "test",
+      occurredAt: input.occurredAt,
+      relatedEntityType: "security_target",
+      relatedEntityId: input.securityTargetId,
+      confidence: 1,
+      metadata,
     });
 }
 
@@ -1129,6 +1175,111 @@ describe("security-target-query-service (integration)", () => {
       const slugs = rows.map((r) => r.slug);
       const sorted = [...slugs].sort();
       expect(slugs).toEqual(sorted);
+    });
+  });
+
+  describe("listSecurityTargetPriority — multi-window, multi-poll lifecycle (real pipeline)", () => {
+    it("reflects a second real pipeline evaluation in a later detection window without duplicating the first Opportunity or its Signals", async () => {
+      const target = await createSecurityTarget({ slug: "test-lifecycle-multi-window", name: "T" });
+
+      // --- Poll 1: 2026-01-05 (a Monday, ISO week 2026-W02). TVL $10M,
+      // audits "0" — qualifies AUDIT_COVERAGE_GAP on its own.
+      const poll1At = new Date("2026-01-05T00:00:00Z");
+      await insertProtocolSnapshotEvent({
+        securityTargetId: target.id,
+        occurredAt: poll1At,
+        tvl: 10_000_000,
+      });
+
+      const run1 = await runSecurityScoringPipeline(target.id);
+      expect(run1.eventsProcessed).toBe(1);
+      expect(run1.opportunitiesDetected).toBe(1);
+
+      const signalsAfterPoll1 = await getDb()
+        .select()
+        .from(schema.securitySignal)
+        .where(eq(schema.securitySignal.securityTargetId, target.id));
+      // new-protocol (non-qualifying) + audit-coverage-gap (qualifying).
+      expect(signalsAfterPoll1.map((s) => s.signalType).sort()).toEqual([
+        "audit-coverage-gap",
+        "new-protocol",
+      ]);
+
+      const opportunitiesAfterPoll1 = await getDb()
+        .select()
+        .from(schema.securityOpportunity)
+        .where(eq(schema.securityOpportunity.securityTargetId, target.id));
+      expect(opportunitiesAfterPoll1).toHaveLength(1);
+      expect(opportunitiesAfterPoll1[0]?.detectionWindow).toBe("2026-W02");
+
+      // --- Poll 2: 2026-01-12 (a week later, ISO week 2026-W03). TVL
+      // grows meaningfully — qualifies TVL_GROWTH too, in a NEW window.
+      const poll2At = new Date("2026-01-12T00:00:00Z");
+      await insertProtocolSnapshotEvent({
+        securityTargetId: target.id,
+        occurredAt: poll2At,
+        type: "ProtocolSnapshotUpdated",
+        tvl: 15_000_000,
+        changedFrom: { tvl: 10_000_000 },
+      });
+
+      const run2 = await runSecurityScoringPipeline(target.id);
+      expect(run2.eventsProcessed).toBe(1);
+      expect(run2.opportunitiesDetected).toBe(1);
+
+      const opportunitiesAfterPoll2 = await getDb()
+        .select()
+        .from(schema.securityOpportunity)
+        .where(eq(schema.securityOpportunity.securityTargetId, target.id));
+      // A second, distinct Opportunity row for the new window — the
+      // first window's row is neither duplicated nor overwritten.
+      expect(opportunitiesAfterPoll2).toHaveLength(2);
+      expect(opportunitiesAfterPoll2.map((o) => o.detectionWindow).sort()).toEqual([
+        "2026-W02",
+        "2026-W03",
+      ]);
+      const firstWindowRow = opportunitiesAfterPoll2.find((o) => o.detectionWindow === "2026-W02");
+      expect(firstWindowRow?.id).toBe(opportunitiesAfterPoll1[0]?.id);
+
+      const signalsAfterPoll2 = await getDb()
+        .select()
+        .from(schema.securitySignal)
+        .where(eq(schema.securitySignal.securityTargetId, target.id));
+      // The original two Signal rows are untouched; two new ones appear
+      // (a second audit-coverage-gap on the Updated Event, plus tvl-growth).
+      expect(signalsAfterPoll2).toHaveLength(4);
+      expect(signalsAfterPoll1.every((s1) => signalsAfterPoll2.some((s2) => s2.id === s1.id))).toBe(
+        true,
+      );
+
+      // --- Real DTO call after the second evaluation ---
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.hasOpportunity).toBe(true);
+
+      const qualifyingSignalRows = signalsAfterPoll2.filter((s) =>
+        ["audit-coverage-gap", "tvl-growth"].includes(s.signalType),
+      );
+      expect(new Set(row.qualifyingSignalIds)).toEqual(
+        new Set(qualifyingSignalRows.map((s) => s.id)),
+      );
+      expect(row.qualifyingSignalIds).toHaveLength(3); // 2x audit-coverage-gap + 1x tvl-growth
+      // No duplicates, and no non-qualifying Signal id present.
+      expect(new Set(row.qualifyingSignalIds).size).toBe(row.qualifyingSignalIds.length);
+      const newProtocolSignal = signalsAfterPoll2.find((s) => s.signalType === "new-protocol");
+      expect(row.qualifyingSignalIds).not.toContain(newProtocolSignal?.id);
+
+      // opportunityReasoning must match the most recently detected row
+      // (2026-W03) exactly, not the first window's.
+      const mostRecentOpportunity = opportunitiesAfterPoll2.find(
+        (o) => o.detectionWindow === "2026-W03",
+      );
+      expect(row.opportunityReasoning).toBe(mostRecentOpportunity?.reasoning);
+
+      // Stable on a repeated DTO query with no intervening writes.
+      const rowsAgain = await listSecurityTargetPriority();
+      expect(findBySlug(rowsAgain, target.slug)).toEqual(row);
     });
   });
 });

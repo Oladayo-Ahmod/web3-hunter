@@ -1,7 +1,7 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { publishEvent, registerEventType } from "@web3-hunter/events";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { ACTIVE_PROTOCOL, deriveSecurityOpportunityId } from "./opportunity-id";
@@ -389,6 +389,71 @@ describe("runSecurityScoringPipeline (integration)", () => {
     expect(second.signalsProduced).toBe(0);
     expect(second.intelligenceUpdates).toBe(0);
     expect(first.signalsProduced).toBeGreaterThan(0);
+  });
+
+  it("provenance contract: SecurityOpportunityDetected cites every Signal's Event, including the non-qualifying one — not just the qualifying Signals exposed by the application DTO", async () => {
+    const { collectorId, securityTargetId } = await seedCollectorAndTarget("acme-provenance");
+
+    // Same fixture as "qualifies deterministically from a mix...": one
+    // triggering Event producing both a non-qualifying (new-protocol)
+    // and a qualifying (audit-coverage-gap) Signal.
+    await publishRecorded({
+      collectorId,
+      securityTargetId,
+      occurredAt: daysAfter(0),
+      fields: { audits: "0", tvl: 5_000_000 },
+    });
+    await runSecurityScoringPipeline(securityTargetId);
+
+    const db = getDb();
+    const signals = await db
+      .select()
+      .from(schema.securitySignal)
+      .where(eq(schema.securitySignal.securityTargetId, securityTargetId));
+    const nonQualifyingSignal = signals.find((s) => s.signalType === "new-protocol");
+    const qualifyingSignal = signals.find((s) => s.signalType === "audit-coverage-gap");
+    expect(nonQualifyingSignal).toBeDefined();
+    expect(qualifyingSignal).toBeDefined();
+
+    // `security_signal.id` doubles as its own `SecuritySignalDetected`
+    // Event id (see `security-signal-generation.ts`'s `recordSecuritySignal`)
+    // — there is no separate "Event id" to look up for a Signal.
+    const [opportunity] = await db
+      .select()
+      .from(schema.securityOpportunity)
+      .where(eq(schema.securityOpportunity.securityTargetId, securityTargetId));
+    expect(opportunity).toBeDefined();
+
+    const [detectedEvent] = await db
+      .select()
+      .from(schema.event)
+      .where(
+        and(
+          eq(schema.event.type, "SecurityOpportunityDetected"),
+          eq(schema.event.relatedEntityId, securityTargetId),
+        ),
+      );
+    expect(detectedEvent).toBeDefined();
+
+    const provenanceRows = await db
+      .select()
+      .from(schema.eventProvenance)
+      .where(eq(schema.eventProvenance.eventId, detectedEvent!.id));
+    const citedEventIds = provenanceRows.map((row) => row.causedByEventId);
+
+    // The persisted provenance relationship — not an intermediate array
+    // — includes the non-qualifying Signal's Event id. This does not
+    // mean the non-qualifying Signal caused qualification (the Signal
+    // *type* registry decides that, in `doesSignalTypeQualifyForOpportunity`
+    // — see `security-opportunity-detection.ts`); it means
+    // `evaluateSecurityOpportunity` cites every Signal for the target as
+    // supporting evidence for the Opportunity it detected, which is a
+    // deliberately broader set than `qualifyingSignalIds` on the
+    // application DTO (`packages/application`'s `SecurityTargetPriorityDTO`,
+    // scoped to qualifying Signal types only).
+    expect(citedEventIds).toContain(nonQualifyingSignal!.id);
+    expect(citedEventIds).toContain(qualifyingSignal!.id);
+    expect(citedEventIds).toHaveLength(2);
   });
 
   it("resolveSecurityTarget is idempotent across repeated polls under the same Collector + sourceIdentifier", async () => {
