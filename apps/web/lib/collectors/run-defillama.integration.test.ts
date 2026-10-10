@@ -1,6 +1,6 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { runDefiLlamaCollector } from "./run-defillama";
 
@@ -15,6 +15,7 @@ interface MockProtocol {
   audits?: string | null;
   audit_links?: string[] | null;
   chains?: string[];
+  github?: string[];
 }
 
 let protocols: MockProtocol[] | "error" = [];
@@ -81,6 +82,10 @@ describe("runDefiLlamaCollector (integration)", () => {
       .where(eq(schema.securityTarget.slug, "tiny-protocol"));
     expect(skippedTarget).toHaveLength(0);
 
+    // No `github` field on this fixture — repository evidence is
+    // genuinely unknown, never guessed from the slug.
+    expect(target[0]?.repositoryUrl).toBeNull();
+
     const collectorRow = await getDb()
       .select()
       .from(schema.collector)
@@ -101,6 +106,76 @@ describe("runDefiLlamaCollector (integration)", () => {
       .from(schema.securityTargetSourceIdentity)
       .where(eq(schema.securityTargetSourceIdentity.sourceIdentifier, "big-protocol"));
     expect(identities).toHaveLength(1);
+  });
+
+  it("persists repositoryUrl at creation when the payload names a GitHub organization", async () => {
+    protocols = [protocol({ slug: "repo-evidence-protocol", github: ["acme-org"] })];
+    stubFetch();
+
+    await runDefiLlamaCollector();
+
+    const [target] = await getDb()
+      .select()
+      .from(schema.securityTarget)
+      .where(eq(schema.securityTarget.slug, "repo-evidence-protocol"));
+    expect(target?.repositoryUrl).toBe("https://github.com/acme-org");
+  });
+
+  it("leaves repositoryUrl unset when the payload's github field is empty", async () => {
+    protocols = [protocol({ slug: "no-repo-evidence-protocol", github: [] })];
+    stubFetch();
+
+    await runDefiLlamaCollector();
+
+    const [target] = await getDb()
+      .select()
+      .from(schema.securityTarget)
+      .where(eq(schema.securityTarget.slug, "no-repo-evidence-protocol"));
+    expect(target?.repositoryUrl).toBeNull();
+  });
+
+  it("never overwrites an existing repositoryUrl on a re-poll, even if the incoming payload's github field changes", async () => {
+    protocols = [protocol({ slug: "stable-repo-protocol", github: ["original-org"] })];
+    stubFetch();
+    await runDefiLlamaCollector();
+
+    protocols = [
+      protocol({ slug: "stable-repo-protocol", github: ["different-org"], tvl: 20_000_000 }),
+    ];
+    stubFetch();
+    await runDefiLlamaCollector();
+
+    const [target] = await getDb()
+      .select()
+      .from(schema.securityTarget)
+      .where(eq(schema.securityTarget.slug, "stable-repo-protocol"));
+    expect(target?.repositoryUrl).toBe("https://github.com/original-org");
+  });
+
+  it("never merges two different DefiLlama protocols that happen to share the same GitHub organization", async () => {
+    protocols = [
+      protocol({ slug: "org-member-one", name: "Org Member One", github: ["shared-org"] }),
+      protocol({ slug: "org-member-two", name: "Org Member Two", github: ["shared-org"] }),
+    ];
+    stubFetch();
+
+    await runDefiLlamaCollector();
+
+    const targets = await getDb()
+      .select()
+      .from(schema.securityTarget)
+      .where(
+        or(
+          eq(schema.securityTarget.slug, "org-member-one"),
+          eq(schema.securityTarget.slug, "org-member-two"),
+        ),
+      );
+    expect(targets).toHaveLength(2);
+    expect(targets.map((t) => t.repositoryUrl)).toEqual([
+      "https://github.com/shared-org",
+      "https://github.com/shared-org",
+    ]);
+    expect(new Set(targets.map((t) => t.id)).size).toBe(2);
   });
 
   it("publishes ProtocolSnapshotUpdated when a tracked protocol's TVL changes", async () => {

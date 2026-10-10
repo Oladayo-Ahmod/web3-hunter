@@ -2,6 +2,7 @@ import { getDb, resolveOrCreateCollector, schema } from "@web3-hunter/db";
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { runDefiLlamaCollector } from "./run-defillama";
 import { runImmunefiCollector } from "./run-immunefi";
 
 /** Idempotently resolves the one real "defillama" Collector row every identity-repair test shares — `collector.slug` is unique, so these tests cannot each create their own. */
@@ -57,6 +58,19 @@ function stubFetch() {
       }
       return { ok: true, status: 200, statusText: "OK", json: async () => bounties } as Response;
     }),
+  );
+}
+
+/** Stubs `fetch` for one DefiLlama poll — mirrors `run-defillama.integration.test.ts`'s own stub, duplicated narrowly here since this file needs to interleave both Collectors' fetch shapes within a single test. */
+function stubDefiLlamaFetch(protocols: Array<{ slug: string; name: string; github?: string[] }>) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      json: async () => protocols.map((p) => ({ ...p, tvl: 10_000_000, chains: ["Ethereum"] })),
+    })) as unknown as typeof fetch,
   );
 }
 
@@ -185,6 +199,38 @@ describe("runImmunefiCollector (integration)", () => {
       .from(schema.securityTarget)
       .where(eq(schema.securityTarget.slug, "second-protocol"));
     expect(secondTarget).toHaveLength(1);
+  });
+
+  it("never collides at all when DefiLlama already persisted matching repositoryUrl evidence at creation time", async () => {
+    stubDefiLlamaFetch([
+      { slug: "preenriched-protocol", name: "Preenriched Protocol", github: ["preenriched-org"] },
+    ]);
+    await runDefiLlamaCollector();
+
+    bounties = [
+      bounty({
+        slug: "preenriched-protocol",
+        project: "Preenriched Protocol (Immunefi)",
+        githubUrl: "https://github.com/preenriched-org/contracts",
+      }),
+    ];
+    stubFetch();
+
+    const result = await runImmunefiCollector();
+
+    expect(result.collisions).toHaveLength(0);
+
+    const [target] = await getDb()
+      .select()
+      .from(schema.securityTarget)
+      .where(eq(schema.securityTarget.slug, "preenriched-protocol"));
+    expect(target?.repositoryUrl).toBe("https://github.com/preenriched-org");
+
+    const identities = await getDb()
+      .select()
+      .from(schema.securityTargetSourceIdentity)
+      .where(eq(schema.securityTargetSourceIdentity.securityTargetId, target!.id));
+    expect(identities).toHaveLength(2);
   });
 
   it("reconciles a collision using DefiLlama's already-stored raw payload when the GitHub organizations match", async () => {

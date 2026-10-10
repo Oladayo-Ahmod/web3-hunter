@@ -66,9 +66,17 @@ export async function runDefiLlamaCollector(): Promise<RunDefiLlamaCollectorResu
     for (const batch of chunk(tracked, RESOLVE_CONCURRENCY)) {
       const resolved = await Promise.all(
         batch.map(async (protocol) => {
+          // Populated at creation time whenever DefiLlama's own payload
+          // names a GitHub organization — the same derivation
+          // `run-immunefi.ts`'s post-collision repair already reuses.
+          // `createSecurityTarget`'s `onConflictDoNothing` on `slug`
+          // means this can never overwrite an existing Target's
+          // `repositoryUrl` on a re-poll; it only ever fills it in for a
+          // genuinely new row.
           const securityTargetId = await resolveSecurityTarget(collectorId, protocol.slug, {
             slug: protocol.slug,
             name: protocol.name,
+            repositoryUrl: defillama.deriveRepositoryUrlFromDefiLlamaPayload(protocol),
             discoverySource: "defillama-protocols",
             discoveredAt: new Date(),
           });
