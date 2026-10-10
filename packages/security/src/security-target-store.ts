@@ -120,8 +120,14 @@ export class SecurityTargetIdentityCollisionError extends Error {
   }
 }
 
-/** Case/trailing-slash/`.git`-suffix-insensitive equality for repository URLs — the only identity evidence currently available (see doc comment below). */
-function normalizeRepositoryUrl(url: string): string {
+/**
+ * Case/trailing-slash/`.git`-suffix-insensitive equality for repository
+ * URLs — the only identity evidence currently available (see doc
+ * comment below). Exported for reuse by
+ * `identity-candidate-discovery.ts`'s read-only cross-slug discovery
+ * tool, which needs this exact normalization without duplicating it.
+ */
+export function normalizeRepositoryUrl(url: string): string {
   return url
     .trim()
     .toLowerCase()
@@ -139,8 +145,14 @@ function normalizeRepositoryUrl(url: string): string {
  * for the exact same real-world project. Same organization is still
  * meaningfully strong identity evidence (far stronger than a bare slug
  * string), just coarser than a full matching repo path.
+ *
+ * Exported for reuse by `identity-candidate-discovery.ts` (see
+ * `normalizeRepositoryUrl`'s export comment above) — it needs this
+ * owner-only extraction *separately* from `repositoryUrlsMatch`'s
+ * combined rule, to distinguish an owner-only match from a full
+ * repository-path match for its finer-grained classification.
  */
-function extractGithubOwner(url: string): string | null {
+export function extractGithubOwner(url: string): string | null {
   const match = /github\.com\/([^/\s]+)/i.exec(url);
   return match ? match[1]!.toLowerCase() : null;
 }

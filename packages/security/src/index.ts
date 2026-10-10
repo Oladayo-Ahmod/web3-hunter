@@ -70,14 +70,23 @@ export {
 export {
   SecurityTargetIdentityCollisionError,
   createSecurityTarget,
+  extractGithubOwner,
   getRawPayloadFromCollector,
   getSecurityTargetById,
   getSecurityTargetBySlug,
+  normalizeRepositoryUrl,
   resolveSecurityTarget,
   resolveSecurityTargetWithCollisionCheck,
   updateSecurityTargetRepositoryUrlIfMissing,
   type CreateSecurityTargetInput,
 } from "./security-target-store";
+export {
+  classifySecurityTargetIdentityCandidates,
+  discoverSecurityTargetIdentityCandidates,
+  type SecurityTargetIdentityCandidate,
+  type SecurityTargetIdentityCandidateClassification,
+  type SecurityTargetIdentitySnapshot,
+} from "./identity-candidate-discovery";
 export {
   getSecurityTargetIntelligence,
   upsertSecurityTargetIntelligence,
