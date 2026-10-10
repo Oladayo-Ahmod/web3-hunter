@@ -89,14 +89,24 @@ const AUDIT_EVIDENCE_LIMITATION =
  * recently *captured* first — the only ordering `listSecuritySignalsForTarget`-style
  * store functions don't already provide.
  *
- * Ordered by `event.id` (time-sortable UUIDv7, generated at insertion —
- * see `packages/db/src/id.ts`), never by the Event's own `occurredAt`:
- * `occurredAt` is the *source's* self-reported timestamp, which
- * `bounty-program-events.ts`'s own doc comment explicitly does not
- * assume is monotonically increasing across polls. `event.id` reflects
- * when *we* actually captured it, which is what "current state" must be
- * computed from — the same convention `packages/ingestion`'s
- * `findPreviousPayload` already uses for "most recent capture."
+ * Ordered by `event.recordedAt` (server-assigned at insertion via
+ * `defaultNow()`/`publishEvent`'s own `recordedAt: new Date()` — see
+ * `packages/events/src/publish.ts`), with `event.id` only as a
+ * deterministic tiebreaker for same-instant inserts. Never by the
+ * Event's own `occurredAt`: for a bounty-program Event, `occurredAt` is
+ * the *source's* self-reported `updatedDate` (see
+ * `bounty-program-events.ts`'s `CanonicalBountyProgram.occurredAt` doc
+ * comment), which is explicitly not assumed to be monotonically
+ * increasing across polls — the same reason `packages/ingestion`'s
+ * `findPreviousPayload` avoids it too. And never by `event.id` alone:
+ * Events published through the ingestion pipeline (as every
+ * `BountyProgramRecorded`/`BountyProgramUpdated` Event is) get a
+ * deterministic, content-hash-derived id (`deriveEventId(rawRecordId)`),
+ * which carries no chronological relationship to capture order.
+ * `recordedAt` is the one column on this table that genuinely reflects
+ * "when we actually captured it" — the same convention already used by
+ * `packages/ai/src/provenance.ts`, `packages/decision/src/provenance.ts`,
+ * and `pipeline-run-query-service.ts`.
  */
 interface LatestBountyProgramFields {
   audits: BountyAuditFields[];
@@ -147,7 +157,7 @@ async function getLatestBountyProgramFields(
         inArray(schema.event.type, [BountyProgramRecorded.name, BountyProgramUpdated.name]),
       ),
     )
-    .orderBy(desc(schema.event.id))
+    .orderBy(desc(schema.event.recordedAt), desc(schema.event.id))
     .limit(1);
 
   if (!latestEvent) {
@@ -249,10 +259,23 @@ async function deriveActionability(
     };
   }
 
+  // `assetCount` (from `smartContractAssetIds`) and `assets.length` (from
+  // the separately-recorded, optional per-asset `assets` metadata) can
+  // legitimately differ — an older payload captured before per-asset
+  // detail was tracked lists ids with no accompanying detail. The
+  // `reason` text must never state a number that disagrees with
+  // `totalAssetCount`/`assets` below: when detail is incomplete, it
+  // names both counts explicitly rather than only the (larger,
+  // detail-less) id count — this is evidence that ids exist, never a
+  // claim that detailed records do.
   const assets = bountyFields?.smartContractAssets ?? [];
+  const reason =
+    assets.length === assetCount
+      ? `An active bounty program lists ${assetCount} smart-contract asset(s) in scope to review.`
+      : `An active bounty program lists ${assetCount} smart-contract asset(s) in scope; detailed records are available for ${assets.length} of them.`;
   return {
     isActionable: true,
-    reason: `An active bounty program lists ${assetCount} smart-contract asset(s) in scope to review.`,
+    reason,
     scopeUrl,
     assets,
     totalAssetCount: assets.length,
@@ -427,15 +450,17 @@ async function getBugBountyStatusByTarget(): Promise<Map<string, BugBountyStatus
 
 /**
  * The latest bounty-program Event per target, batched via `DISTINCT ON`
- * — the same "most recently captured wins, ordered by `event.id`"
- * semantics `getLatestBountyProgramFields` uses for one target, applied
- * across all of them in a single query (mirrors the `DISTINCT ON`
- * pattern `packages/ingestion`'s `reconcileMissingRecords` already uses
- * for "latest row per key"). `parseBountyEventMetadata` is reused
- * unmodified; only `endDate` and the smart-contract asset *count* are
- * kept in the returned map — the full `assets[]`/`audits[]` the parser
- * also produces are discarded immediately after this function reads the
- * two fields it needs, never retained in the classification map.
+ * — the same "most recently captured wins, ordered by `event.recordedAt`"
+ * semantics `getLatestBountyProgramFields` uses for one target (see its
+ * doc comment for why `recordedAt`, not `occurredAt` or `id`, is the
+ * correct column), applied across all of them in a single query (mirrors
+ * the `DISTINCT ON` pattern `packages/ingestion`'s
+ * `reconcileMissingRecords` already uses for "latest row per key").
+ * `parseBountyEventMetadata` is reused unmodified; only `endDate` and the
+ * smart-contract asset *count* are kept in the returned map — the full
+ * `assets[]`/`audits[]` the parser also produces are discarded
+ * immediately after this function reads the two fields it needs, never
+ * retained in the classification map.
  */
 async function getLatestBountyFieldsLightweightByTarget(): Promise<
   Map<string, LightweightBountyFields>
@@ -452,7 +477,7 @@ async function getLatestBountyFieldsLightweightByTarget(): Promise<
         inArray(schema.event.type, [BountyProgramRecorded.name, BountyProgramUpdated.name]),
       ),
     )
-    .orderBy(schema.event.relatedEntityId, desc(schema.event.id));
+    .orderBy(schema.event.relatedEntityId, desc(schema.event.recordedAt), desc(schema.event.id));
 
   const map = new Map<string, LightweightBountyFields>();
   for (const row of rows) {

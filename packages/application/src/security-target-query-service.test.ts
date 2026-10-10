@@ -7,6 +7,7 @@ import {
   upsertBugBounty,
   upsertSecurityTargetIntelligence,
 } from "@web3-hunter/security";
+import { deriveDeterministicId } from "@web3-hunter/shared";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -27,15 +28,29 @@ async function insertBountyProgramEvent(input: {
   /** Omitted entirely (not just `[]`) when not supplied — matches a real payload captured before per-asset detail was tracked. */
   assets?: Array<{ id: string; type: string; description: string | null; url: string | null }>;
   endDate?: string | null;
+  /**
+   * Overrides the Event's id. Production assigns
+   * `deriveEventId(rawRecordId)` (a deterministic, content-hash-derived
+   * id with no chronological relationship to capture order) for every
+   * `BountyProgramRecorded`/`BountyProgramUpdated` Event — pass a value
+   * produced the same way (`deriveDeterministicId('web3-hunter:ingestion:' + rawRecordId)`)
+   * to reproduce that non-chronological behavior faithfully in a test,
+   * instead of relying on the DB's own time-sortable default.
+   */
+  id?: string;
+  /** Overrides the server-assigned `recordedAt` default, to simulate "captured at a specific instant" rather than "captured right now." */
+  recordedAt?: Date;
 }) {
   await getDb()
     .insert(schema.event)
     .values({
+      ...(input.id ? { id: input.id } : {}),
       type: "BountyProgramRecorded",
       category: "source",
       version: 1,
       sourceLabel: "test",
       occurredAt: input.occurredAt,
+      ...(input.recordedAt ? { recordedAt: input.recordedAt } : {}),
       relatedEntityType: "security_target",
       relatedEntityId: input.securityTargetId,
       confidence: 1,
@@ -522,9 +537,14 @@ describe("security-target-query-service (integration)", () => {
         { id: "asset-3", description: "Router", url: "https://a/Router.sol" },
       ]);
       expect(row.actionability.totalAssetCount).toBe(2);
+      // Detail available for every id: the reason states the one,
+      // agreeing count.
+      expect(row.actionability.reason).toBe(
+        "An active bounty program lists 2 smart-contract asset(s) in scope to review.",
+      );
     });
 
-    it("leaves assets empty and totalAssetCount at 0 when assets metadata is entirely absent", async () => {
+    it("leaves assets empty and totalAssetCount at 0 when assets metadata is entirely absent, without the reason contradicting that count", async () => {
       const target = await createSecurityTarget({
         slug: "test-scope-no-assets-metadata",
         name: "T",
@@ -549,6 +569,37 @@ describe("security-target-query-service (integration)", () => {
       expect(row.actionability.isActionable).toBe(true);
       expect(row.actionability.assets).toEqual([]);
       expect(row.actionability.totalAssetCount).toBe(0);
+      // The reason must not claim "0 assets" (that would deny the known
+      // id evidence) and must not claim a bare count that disagrees with
+      // `totalAssetCount`/`assets` — it states both: the id-level
+      // evidence count, and how many of those have detail on record.
+      expect(row.actionability.reason).toBe(
+        "An active bounty program lists 1 smart-contract asset(s) in scope; detailed records are available for 0 of them.",
+      );
+    });
+
+    it("states both the id-level and detail-level counts when only some listed asset ids have detail on record", async () => {
+      const target = await createSecurityTarget({ slug: "test-scope-partial-detail", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1", "asset-2"],
+        assets: [{ id: "asset-1", type: "smart_contract", description: "Vault", url: "https://a" }],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.isActionable).toBe(true);
+      expect(row.actionability.totalAssetCount).toBe(1);
+      expect(row.actionability.reason).toBe(
+        "An active bounty program lists 2 smart-contract asset(s) in scope; detailed records are available for 1 of them.",
+      );
     });
 
     it("preserves null description/url exactly as the source supplied them, never fabricating a value", async () => {
@@ -892,25 +943,46 @@ describe("security-target-query-service (integration)", () => {
     });
   });
 
-  describe("listSecurityTargetPriority — latest-captured-Event ordering", () => {
-    it("uses the most recently CAPTURED bounty Event, not the one with the latest self-reported occurredAt", async () => {
-      const target = await createSecurityTarget({ slug: "test-ordering-out-of-order", name: "T" });
+  describe("listSecurityTargetPriority / listSecurityTargetPriorityPage — bounty Event capture-order selection", () => {
+    it("selects the Event with the latest recordedAt, even when its deterministic (hash-derived) id sorts lower than an older Event's id", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-ordering-recorded-at-wins",
+        name: "T",
+      });
 
-      // Inserted FIRST (lower id / earlier capture) but carries a LATER
-      // self-reported `occurredAt` — simulates a source whose own
-      // timestamp is not monotonic with capture order.
+      // Derived exactly the way production derives every
+      // BountyProgramRecorded/BountyProgramUpdated Event's id
+      // (`deriveEventId` = `deriveDeterministicId('web3-hunter:ingestion:' + rawRecordId)`)
+      // — a content hash with no chronological relationship to capture
+      // order. `staleId` sorts LEXICOGRAPHICALLY HIGHER than `freshId`,
+      // so an `ORDER BY event.id DESC` would incorrectly pick the stale
+      // Event; this guards that the fixture actually exercises that case
+      // rather than happening to land in convenient order.
+      const staleId = deriveDeterministicId("web3-hunter:ingestion:raw-record-stale-4");
+      const freshId = deriveDeterministicId("web3-hunter:ingestion:raw-record-fresh-4");
+      expect(staleId > freshId).toBe(true);
+
+      const recordedEarlier = new Date("2026-01-01T00:00:00Z");
+      const recordedLater = new Date("2026-01-02T00:00:00Z");
+
+      // Captured FIRST (earlier `recordedAt`), carries the
+      // lexicographically GREATER id.
       await insertBountyProgramEvent({
         securityTargetId: target.id,
-        occurredAt: new Date("2026-06-01T00:00:00Z"),
+        id: staleId,
+        recordedAt: recordedEarlier,
+        occurredAt: recordedEarlier,
         smartContractAssetIds: ["stale-asset"],
         endDate: null,
       });
 
-      // Inserted SECOND (higher id / later capture) but carries an
-      // EARLIER self-reported `occurredAt`.
+      // Captured SECOND (later `recordedAt`), carries the
+      // lexicographically SMALLER id — this is the Event that must win.
       await insertBountyProgramEvent({
         securityTargetId: target.id,
-        occurredAt: new Date("2026-01-01T00:00:00Z"),
+        id: freshId,
+        recordedAt: recordedLater,
+        occurredAt: recordedLater,
         smartContractAssetIds: ["current-asset"],
         endDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
       });
@@ -921,15 +993,62 @@ describe("security-target-query-service (integration)", () => {
         status: "active",
       });
 
+      // Per-target path (`getLatestBountyProgramFields`).
       const rows = await listSecurityTargetPriority();
       const row = findBySlug(rows, target.slug);
-
-      // The more recently *captured* Event (second insert) must win: its
-      // endDate is in the past, so the bounty must read as expired/not
-      // actionable, not as actionable via the first (stale) Event's
-      // null endDate.
       expect(row.actionability.isActionable).toBe(false);
       expect(row.actionability.reason).toMatch(/already concluded/i);
+
+      // Batched path (`getLatestBountyFieldsLightweightByTarget`).
+      const page = await listSecurityTargetPriorityPage({ page: 1, pageSize: 500, sort: "slug" });
+      const pageRow = page.items.find((item) => item.slug === target.slug);
+      expect(pageRow).toBeDefined();
+      expect(pageRow!.actionability.isActionable).toBe(false);
+      expect(pageRow!.actionability.reason).toMatch(/already concluded/i);
+    });
+
+    it("falls back to id DESC as a deterministic tiebreaker when two Events share the same recordedAt", async () => {
+      const target = await createSecurityTarget({ slug: "test-ordering-tiebreak", name: "T" });
+      const sameInstant = new Date("2026-03-01T00:00:00Z");
+
+      const lowerId = deriveDeterministicId("web3-hunter:ingestion:raw-record-tiebreak-low-100");
+      const higherId = deriveDeterministicId("web3-hunter:ingestion:raw-record-tiebreak-high-100");
+      expect(higherId > lowerId).toBe(true);
+
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        id: lowerId,
+        recordedAt: sameInstant,
+        occurredAt: sameInstant,
+        smartContractAssetIds: ["asset-from-lower-id"],
+        endDate: null,
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        id: higherId,
+        recordedAt: sameInstant,
+        occurredAt: sameInstant,
+        smartContractAssetIds: ["asset-from-higher-id"],
+        endDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      });
+
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+
+      // Same `recordedAt`: the `id DESC` tiebreaker must pick the
+      // higher-id Event, whose `endDate` is in the past.
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+      expect(row.actionability.isActionable).toBe(false);
+      expect(row.actionability.reason).toMatch(/already concluded/i);
+
+      const page = await listSecurityTargetPriorityPage({ page: 1, pageSize: 500, sort: "slug" });
+      const pageRow = page.items.find((item) => item.slug === target.slug);
+      expect(pageRow).toBeDefined();
+      expect(pageRow!.actionability.isActionable).toBe(false);
     });
   });
 
