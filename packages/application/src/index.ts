@@ -108,4 +108,12 @@ export {
   type SecurityTargetResearchReadinessStatus,
   type SecurityTargetTierResult,
 } from "./security-priority";
-export { listSecurityTargetPriority } from "./security-target-query-service";
+export {
+  getSecurityTargetPriorityBySlug,
+  listSecurityTargetPriority,
+  listSecurityTargetPriorityPage,
+  SECURITY_TARGET_SORT_FIELDS,
+  securityTargetFeedQuerySchema,
+  type SecurityTargetFeedQuery,
+  type SecurityTargetSortField,
+} from "./security-target-query-service";

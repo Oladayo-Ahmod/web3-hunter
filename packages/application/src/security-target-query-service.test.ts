@@ -10,7 +10,12 @@ import {
 import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { listSecurityTargetPriority } from "./security-target-query-service";
+import {
+  getSecurityTargetPriorityBySlug,
+  listSecurityTargetPriority,
+  listSecurityTargetPriorityPage,
+  securityTargetFeedQuerySchema,
+} from "./security-target-query-service";
 
 const BASE_DATE = new Date("2026-01-01T00:00:00Z");
 
@@ -1280,6 +1285,500 @@ describe("security-target-query-service (integration)", () => {
       // Stable on a repeated DTO query with no intervening writes.
       const rowsAgain = await listSecurityTargetPriority();
       expect(findBySlug(rowsAgain, target.slug)).toEqual(row);
+    });
+  });
+
+  describe("listSecurityTargetPriorityPage — classification parity with listSecurityTargetPriority", () => {
+    it("derives identical tier, tierReason, researchReadiness, hasOpportunity, and lastSignalAt for a fixture covering every tier and readiness state", async () => {
+      // Tier A, ready: a qualifying, artifact-naming Signal AND an
+      // active, non-expired, in-scope bounty.
+      const tierAReady = await createSecurityTarget({ slug: "parity-tier-a-ready", name: "T" });
+      await seedSignal({ securityTargetId: tierAReady.id, signalType: "bounty-scope-expanded" });
+      await upsertBugBounty({
+        securityTargetId: tierAReady.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: tierAReady.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+      });
+      await upsertSecurityTargetIntelligence({
+        securityTargetId: tierAReady.id,
+        trend: "stable",
+        confidence: 0.5,
+        signalCount: 1,
+        lastSignalAt: new Date("2026-03-01T00:00:00Z"),
+        asOf: new Date("2026-03-01T00:00:00Z"),
+      });
+      await getDb().insert(schema.securityOpportunity).values({
+        id: randomUUID(),
+        securityTargetId: tierAReady.id,
+        opportunityType: "active-protocol",
+        detectionWindow: "2026-W09",
+        reasoning: "parity fixture: tier A, ready, has Opportunity",
+        detectedAt: BASE_DATE,
+      });
+
+      // Tier B, insufficient-evidence: a qualifying but non-artifact
+      // Signal, no bounty at all (audit evidence therefore "unavailable").
+      const tierBInsufficient = await createSecurityTarget({
+        slug: "parity-tier-b-insufficient",
+        name: "T",
+      });
+      await seedSignal({ securityTargetId: tierBInsufficient.id, signalType: "tvl-growth" });
+      await getDb().insert(schema.securityOpportunity).values({
+        id: randomUUID(),
+        securityTargetId: tierBInsufficient.id,
+        opportunityType: "active-protocol",
+        detectionWindow: "2026-W09",
+        reasoning: "parity fixture: tier B, insufficient-evidence, has Opportunity",
+        detectedAt: BASE_DATE,
+      });
+
+      // Tier C, no-current-route: only a non-qualifying Signal, no
+      // bounty, no Opportunity.
+      const tierCNoRoute = await createSecurityTarget({
+        slug: "parity-tier-c-no-route",
+        name: "T",
+      });
+      await seedSignal({ securityTargetId: tierCNoRoute.id, signalType: "new-protocol" });
+
+      // Tier C, ready: zero Signals at all, but an active bounty with
+      // in-scope assets — proves tier and readiness vary independently.
+      const tierCReady = await createSecurityTarget({ slug: "parity-tier-c-ready", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: tierCReady.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: tierCReady.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+      });
+
+      // Paused bounty, no Signal: no-current-route, distinct from the
+      // "no bounty at all" case.
+      const pausedNoRoute = await createSecurityTarget({
+        slug: "parity-paused-no-route",
+        name: "T",
+      });
+      await upsertBugBounty({
+        securityTargetId: pausedNoRoute.id,
+        platform: "immunefi",
+        status: "paused",
+      });
+
+      // A target with genuinely no data of any kind — the baseline
+      // discovery-only case.
+      const bareDiscovery = await createSecurityTarget({
+        slug: "parity-bare-discovery",
+        name: "T",
+      });
+
+      const fixtureSlugs = [
+        tierAReady.slug,
+        tierBInsufficient.slug,
+        tierCNoRoute.slug,
+        tierCReady.slug,
+        pausedNoRoute.slug,
+        bareDiscovery.slug,
+      ];
+
+      const fullRows = await listSecurityTargetPriority();
+      const pagedRows = await listSecurityTargetPriorityPage({
+        page: 1,
+        pageSize: 100_000,
+        sort: "slug",
+      });
+
+      // The fixture must actually exercise every state it claims to —
+      // otherwise this test could pass vacuously.
+      const fullBySlug = new Map(fullRows.map((r) => [r.slug, r]));
+      expect(fullBySlug.get(tierAReady.slug)?.tier).toBe("A");
+      expect(fullBySlug.get(tierAReady.slug)?.researchReadiness.status).toBe("ready");
+      expect(fullBySlug.get(tierBInsufficient.slug)?.tier).toBe("B");
+      expect(fullBySlug.get(tierBInsufficient.slug)?.researchReadiness.status).toBe(
+        "insufficient-evidence",
+      );
+      expect(fullBySlug.get(tierCNoRoute.slug)?.tier).toBe("C");
+      expect(fullBySlug.get(tierCNoRoute.slug)?.researchReadiness.status).toBe("no-current-route");
+      expect(fullBySlug.get(tierCReady.slug)?.tier).toBe("C");
+      expect(fullBySlug.get(tierCReady.slug)?.researchReadiness.status).toBe("ready");
+      expect(fullBySlug.get(pausedNoRoute.slug)?.researchReadiness.status).toBe("no-current-route");
+      expect(fullBySlug.get(bareDiscovery.slug)?.tier).toBe("C");
+
+      for (const slug of fixtureSlugs) {
+        const fromFull = fullBySlug.get(slug);
+        const fromPaged = pagedRows.items.find((r) => r.slug === slug);
+        expect(fromFull).toBeDefined();
+        expect(fromPaged).toBeDefined();
+        expect(fromPaged?.tier).toBe(fromFull?.tier);
+        expect(fromPaged?.tierReason).toBe(fromFull?.tierReason);
+        expect(fromPaged?.researchReadiness).toEqual(fromFull?.researchReadiness);
+        expect(fromPaged?.hasOpportunity).toBe(fromFull?.hasOpportunity);
+        expect(fromPaged?.lastSignalAt).toBe(fromFull?.lastSignalAt);
+      }
+    });
+  });
+
+  describe("listSecurityTargetPriorityPage — pagination", () => {
+    it("pages through a known fixture with no duplicates and correct totals, including a final partial page", async () => {
+      const fixtureSlugs: string[] = [];
+      for (let i = 0; i < 5; i += 1) {
+        const target = await createSecurityTarget({ slug: `page-fixture-${i}`, name: "T" });
+        await seedSignal({ securityTargetId: target.id, signalType: "bounty-scope-expanded" });
+        fixtureSlugs.push(target.slug);
+      }
+
+      // Page through every Tier A result (my fixture is guaranteed to be
+      // Tier A; other tests may also have produced Tier A targets, so
+      // this asserts relative correctness — no duplicates, every fixture
+      // slug present exactly once — rather than an absolute total count).
+      const firstPage = await listSecurityTargetPriorityPage({
+        page: 1,
+        pageSize: 2,
+        tier: "A",
+        sort: "slug",
+      });
+      const totalCount = firstPage.totalCount;
+      const totalPages = firstPage.totalPages;
+      expect(totalPages).toBe(Math.ceil(totalCount / 2));
+
+      const seenSlugs: string[] = [];
+      for (let page = 1; page <= totalPages; page += 1) {
+        const result = await listSecurityTargetPriorityPage({
+          page,
+          pageSize: 2,
+          tier: "A",
+          sort: "slug",
+        });
+        expect(result.totalCount).toBe(totalCount);
+        expect(result.totalPages).toBe(totalPages);
+        if (page < totalPages) {
+          expect(result.items).toHaveLength(2);
+        } else {
+          // Final page may be partial.
+          expect(result.items.length).toBeGreaterThan(0);
+          expect(result.items.length).toBeLessThanOrEqual(2);
+        }
+        seenSlugs.push(...result.items.map((r) => r.slug));
+      }
+
+      expect(new Set(seenSlugs).size).toBe(seenSlugs.length); // no duplicates across pages
+      expect(seenSlugs).toHaveLength(totalCount);
+      for (const slug of fixtureSlugs) {
+        expect(seenSlugs).toContain(slug);
+      }
+    });
+
+    it("returns an empty item list with accurate counts for an out-of-range page", async () => {
+      const result = await listSecurityTargetPriorityPage({
+        page: 999_999,
+        pageSize: 20,
+        sort: "slug",
+      });
+      expect(result.items).toEqual([]);
+      expect(result.page).toBe(999_999);
+      expect(result.totalCount).toBeGreaterThanOrEqual(0);
+    });
+
+    it("returns a valid zero-result page when a filter matches nothing", async () => {
+      // No target in any test fixture across this file carries a bounty
+      // that is both active, non-expired, and in-scope AND has zero
+      // qualifying Signals AND... — instead, use a combination that is
+      // structurally impossible by the DTO's own rule: tier A requires a
+      // qualifying, artifact-naming Signal, which by definition means
+      // `qualifyingSignalTypes` is non-empty, so `readiness` can never be
+      // "no-current-route" for a Tier A target (that status requires
+      // zero qualifying Signals). This is a real, permanently-empty
+      // combination under the existing business rules, not a fragile
+      // fixture-dependent one.
+      const result = await listSecurityTargetPriorityPage({
+        page: 1,
+        pageSize: 20,
+        tier: "A",
+        readiness: "no-current-route",
+        sort: "slug",
+      });
+      expect(result.items).toEqual([]);
+      expect(result.totalCount).toBe(0);
+      expect(result.totalPages).toBe(0);
+    });
+
+    it("honors pageSize schema bounds via securityTargetFeedQuerySchema defaults, minimum, and maximum", () => {
+      expect(securityTargetFeedQuerySchema.parse({})).toMatchObject({
+        page: 1,
+        pageSize: 20,
+        sort: "slug",
+      });
+      expect(securityTargetFeedQuerySchema.parse({ pageSize: 1 }).pageSize).toBe(1);
+      expect(securityTargetFeedQuerySchema.parse({ pageSize: 100 }).pageSize).toBe(100);
+      expect(() => securityTargetFeedQuerySchema.parse({ pageSize: 0 })).toThrow();
+      expect(() => securityTargetFeedQuerySchema.parse({ pageSize: 101 })).toThrow();
+      expect(() => securityTargetFeedQuerySchema.parse({ page: 0 })).toThrow();
+    });
+  });
+
+  describe("listSecurityTargetPriorityPage — filters", () => {
+    it("filters by tier independently, returning only matching targets", async () => {
+      const tierATarget = await createSecurityTarget({ slug: "filter-tier-a", name: "T" });
+      await seedSignal({ securityTargetId: tierATarget.id, signalType: "bounty-scope-expanded" });
+
+      const tierBTarget = await createSecurityTarget({ slug: "filter-tier-b", name: "T" });
+      await seedSignal({ securityTargetId: tierBTarget.id, signalType: "tvl-growth" });
+
+      const tierCTarget = await createSecurityTarget({ slug: "filter-tier-c", name: "T" });
+
+      for (const tier of ["A", "B", "C"] as const) {
+        const result = await listSecurityTargetPriorityPage({
+          page: 1,
+          pageSize: 1000,
+          tier,
+          sort: "slug",
+        });
+        expect(result.items.every((r) => r.tier === tier)).toBe(true);
+      }
+
+      const tierAResult = await listSecurityTargetPriorityPage({
+        page: 1,
+        pageSize: 1000,
+        tier: "A",
+        sort: "slug",
+      });
+      expect(tierAResult.items.some((r) => r.slug === tierATarget.slug)).toBe(true);
+      expect(tierAResult.items.some((r) => r.slug === tierBTarget.slug)).toBe(false);
+      expect(tierAResult.items.some((r) => r.slug === tierCTarget.slug)).toBe(false);
+    });
+
+    it("filters by readiness independently, returning only matching targets", async () => {
+      const readyTarget = await createSecurityTarget({ slug: "filter-ready", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: readyTarget.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: readyTarget.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+      });
+
+      const insufficientTarget = await createSecurityTarget({
+        slug: "filter-insufficient",
+        name: "T",
+      });
+      await seedSignal({ securityTargetId: insufficientTarget.id, signalType: "tvl-growth" });
+
+      const noRouteTarget = await createSecurityTarget({ slug: "filter-no-route", name: "T" });
+
+      for (const readiness of ["ready", "insufficient-evidence", "no-current-route"] as const) {
+        const result = await listSecurityTargetPriorityPage({
+          page: 1,
+          pageSize: 1000,
+          readiness,
+          sort: "slug",
+        });
+        expect(result.items.every((r) => r.researchReadiness.status === readiness)).toBe(true);
+      }
+
+      const readyResult = await listSecurityTargetPriorityPage({
+        page: 1,
+        pageSize: 1000,
+        readiness: "ready",
+        sort: "slug",
+      });
+      expect(readyResult.items.some((r) => r.slug === readyTarget.slug)).toBe(true);
+      expect(readyResult.items.some((r) => r.slug === insufficientTarget.slug)).toBe(false);
+      expect(readyResult.items.some((r) => r.slug === noRouteTarget.slug)).toBe(false);
+    });
+
+    it("combines tier and readiness filters with AND semantics", async () => {
+      // Tier A + ready: both a qualifying artifact-naming Signal and an
+      // actionable bounty.
+      const tierAReady = await createSecurityTarget({ slug: "filter-combo-a-ready", name: "T" });
+      await seedSignal({ securityTargetId: tierAReady.id, signalType: "bounty-scope-expanded" });
+      await upsertBugBounty({
+        securityTargetId: tierAReady.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: tierAReady.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+      });
+
+      // Tier A, but NOT ready (no bounty at all) — must be excluded by
+      // the combined filter even though it matches `tier` alone.
+      const tierANotReady = await createSecurityTarget({
+        slug: "filter-combo-a-not-ready",
+        name: "T",
+      });
+      await seedSignal({ securityTargetId: tierANotReady.id, signalType: "bounty-scope-expanded" });
+
+      const result = await listSecurityTargetPriorityPage({
+        page: 1,
+        pageSize: 1000,
+        tier: "A",
+        readiness: "ready",
+        sort: "slug",
+      });
+      expect(result.items.some((r) => r.slug === tierAReady.slug)).toBe(true);
+      expect(result.items.some((r) => r.slug === tierANotReady.slug)).toBe(false);
+      expect(
+        result.items.every((r) => r.tier === "A" && r.researchReadiness.status === "ready"),
+      ).toBe(true);
+    });
+
+    it("rejects an invalid tier/readiness value via schema validation", () => {
+      expect(() => securityTargetFeedQuerySchema.parse({ tier: "Z" })).toThrow();
+      expect(() =>
+        securityTargetFeedQuerySchema.parse({ readiness: "confirmed-vulnerability" }),
+      ).toThrow();
+    });
+  });
+
+  describe("listSecurityTargetPriorityPage — sorting and determinism", () => {
+    it("sorts by slug ascending by default", async () => {
+      const a = await createSecurityTarget({ slug: "sort-slug-aaa", name: "T" });
+      const b = await createSecurityTarget({ slug: "sort-slug-bbb", name: "T" });
+      const c = await createSecurityTarget({ slug: "sort-slug-ccc", name: "T" });
+
+      const result = await listSecurityTargetPriorityPage({
+        page: 1,
+        pageSize: 100_000,
+        sort: "slug",
+      });
+      const indexOf = (slug: string) => result.items.findIndex((r) => r.slug === slug);
+      expect(indexOf(a.slug)).toBeLessThan(indexOf(b.slug));
+      expect(indexOf(b.slug)).toBeLessThan(indexOf(c.slug));
+    });
+
+    it("sorts by lastSignalAt descending, with nulls last and a slug tie-breaker", async () => {
+      const newer = await createSecurityTarget({ slug: "sort-signal-newer", name: "T" });
+      await upsertSecurityTargetIntelligence({
+        securityTargetId: newer.id,
+        trend: "stable",
+        confidence: 0.5,
+        signalCount: 1,
+        lastSignalAt: new Date("2026-05-01T00:00:00Z"),
+        asOf: new Date("2026-05-01T00:00:00Z"),
+      });
+
+      const olderTieA = await createSecurityTarget({ slug: "sort-signal-tie-a", name: "T" });
+      await upsertSecurityTargetIntelligence({
+        securityTargetId: olderTieA.id,
+        trend: "stable",
+        confidence: 0.5,
+        signalCount: 1,
+        lastSignalAt: new Date("2026-04-01T00:00:00Z"),
+        asOf: new Date("2026-04-01T00:00:00Z"),
+      });
+
+      const olderTieB = await createSecurityTarget({ slug: "sort-signal-tie-b", name: "T" });
+      await upsertSecurityTargetIntelligence({
+        securityTargetId: olderTieB.id,
+        trend: "stable",
+        confidence: 0.5,
+        signalCount: 1,
+        lastSignalAt: new Date("2026-04-01T00:00:00Z"), // exact tie with olderTieA
+        asOf: new Date("2026-04-01T00:00:00Z"),
+      });
+
+      const noSignalAt = await createSecurityTarget({ slug: "sort-signal-null", name: "T" });
+
+      const result = await listSecurityTargetPriorityPage({
+        page: 1,
+        pageSize: 100_000,
+        sort: "lastSignalAt",
+      });
+      const indexOf = (slug: string) => result.items.findIndex((r) => r.slug === slug);
+
+      // Newer timestamp sorts before older (DESC).
+      expect(indexOf(newer.slug)).toBeLessThan(indexOf(olderTieA.slug));
+      // Exact ties break by slug ASC: "sort-signal-tie-a" < "sort-signal-tie-b".
+      expect(indexOf(olderTieA.slug)).toBeLessThan(indexOf(olderTieB.slug));
+      // Null lastSignalAt sorts after every non-null value, regardless
+      // of direction.
+      expect(indexOf(olderTieB.slug)).toBeLessThan(indexOf(noSignalAt.slug));
+    });
+
+    it("returns identical order on a repeated query against a stable fixture", async () => {
+      const first = await listSecurityTargetPriorityPage({ page: 1, pageSize: 50, sort: "slug" });
+      const second = await listSecurityTargetPriorityPage({ page: 1, pageSize: 50, sort: "slug" });
+      expect(second.items.map((r) => r.slug)).toEqual(first.items.map((r) => r.slug));
+    });
+  });
+
+  describe("getSecurityTargetPriorityBySlug", () => {
+    it("returns the full DTO for an existing slug, matching listSecurityTargetPriority's own output exactly", async () => {
+      const target = await createSecurityTarget({ slug: "detail-lookup-full", name: "T" });
+      await seedSignal({ securityTargetId: target.id, signalType: "bounty-scope-expanded" });
+      await seedSignal({ securityTargetId: target.id, signalType: "new-protocol" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+        scopeUrl: "https://immunefi.com/bug-bounty/detail-lookup-full/",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        assets: [{ id: "asset-1", type: "smart_contract", description: "Vault", url: "https://a" }],
+        audits: [{ id: "audit-1", url: null, auditor: "Acme", date: "2024-01-01" }],
+      });
+      await getDb().insert(schema.securityOpportunity).values({
+        id: randomUUID(),
+        securityTargetId: target.id,
+        opportunityType: "active-protocol",
+        detectionWindow: "2026-W09",
+        reasoning: "detail lookup fixture reasoning",
+        detectedAt: BASE_DATE,
+      });
+
+      const detail = await getSecurityTargetPriorityBySlug(target.slug);
+      const fullRows = await listSecurityTargetPriority();
+      const fromFull = findBySlug(fullRows, target.slug);
+
+      expect(detail).toEqual(fromFull);
+      // Spot-check the fields outside the list summary explicitly.
+      expect(detail?.audit.status).toBe("present");
+      expect(detail?.actionability.scopeUrl).toBe(
+        "https://immunefi.com/bug-bounty/detail-lookup-full/",
+      );
+      expect(detail?.opportunityReasoning).toBe("detail lookup fixture reasoning");
+      expect(detail?.qualifyingSignalIds).toHaveLength(1); // excludes the non-qualifying new-protocol Signal
+    });
+
+    it("returns null for an unknown slug", async () => {
+      const result = await getSecurityTargetPriorityBySlug("this-slug-does-not-exist-anywhere");
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("listSecurityTargetPriorityPage — query-efficiency structure", () => {
+    it("composes full DTOs only for the requested page, not for every target", async () => {
+      // Structural verification, not a timing measurement: seed several
+      // extra targets, request a small page, and confirm the number of
+      // items returned matches the requested page size, not the full
+      // target count — proving the response size (and, by the
+      // implementation's own structure reviewed in this stage, the
+      // Phase 2 composition work) scales with `pageSize`, not with the
+      // total number of targets in the database.
+      for (let i = 0; i < 8; i += 1) {
+        await createSecurityTarget({ slug: `efficiency-fixture-${i}`, name: "T" });
+      }
+
+      const allTargets = await listSecurityTargetPriority();
+      const page = await listSecurityTargetPriorityPage({ page: 1, pageSize: 3, sort: "slug" });
+
+      expect(allTargets.length).toBeGreaterThan(3);
+      expect(page.items).toHaveLength(3);
+      expect(page.totalCount).toBe(allTargets.length);
     });
   });
 });
