@@ -425,6 +425,227 @@ describe("security-target-query-service (integration)", () => {
     });
   });
 
+  describe("listSecurityTargetPriority — research readiness", () => {
+    it("is ready for an actionable bounty with no qualifying signal at all", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-readiness-ready-no-signal",
+        name: "T",
+      });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1", "asset-2"],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.tier).toBe("C");
+      expect(row.researchReadiness.status).toBe("ready");
+      expect(row.researchReadiness.nextAction).toMatch(/2 smart-contract asset/i);
+    });
+
+    it("is ready for an actionable bounty even when a qualifying signal is also present", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-readiness-ready-with-signal",
+        name: "T",
+      });
+      await seedSignal({ securityTargetId: target.id, signalType: "bounty-scope-expanded" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.tier).toBe("A");
+      expect(row.researchReadiness.status).toBe("ready");
+    });
+
+    it("is insufficient-evidence, not ready, for a historical qualifying signal with no current bounty", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-readiness-signal-no-bounty",
+        name: "T",
+      });
+      await seedSignal({ securityTargetId: target.id, signalType: "tvl-growth" });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchReadiness.status).toBe("insufficient-evidence");
+      expect(row.researchReadiness.reason).toMatch(/tvl-growth/);
+      expect(row.researchReadiness.nextAction).toBeNull();
+    });
+
+    it("is no-current-route, not insufficient-evidence, when repository evidence exists alone", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-readiness-repo-alone",
+        name: "T",
+        repositoryUrl: "https://github.com/acme",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchReadiness.status).toBe("no-current-route");
+      expect(row.researchReadiness.nextAction).toBeNull();
+    });
+
+    it("is no-current-route, not insufficient-evidence, when audit evidence exists alone", async () => {
+      const target = await createSecurityTarget({ slug: "test-readiness-audit-alone", name: "T" });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        audits: [{ id: "audit-1", url: null, auditor: "Acme Audits", date: "2024-01-01" }],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.audit.status).toBe("present");
+      expect(row.researchReadiness.status).toBe("no-current-route");
+      expect(row.researchReadiness.nextAction).toBeNull();
+    });
+
+    it("is not actionable (and not ready) for an expired bounty, falling back to the signal/no-signal rule", async () => {
+      const target = await createSecurityTarget({ slug: "test-readiness-expired", name: "T" });
+      await seedSignal({ securityTargetId: target.id, signalType: "audit-coverage-gap" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      const pastEndDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        endDate: pastEndDate,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.isActionable).toBe(false);
+      expect(row.researchReadiness.status).toBe("insufficient-evidence");
+    });
+
+    it("is not actionable (and not ready) for a paused bounty, falling back to the signal/no-signal rule", async () => {
+      const target = await createSecurityTarget({ slug: "test-readiness-paused", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "paused",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.isActionable).toBe(false);
+      expect(row.researchReadiness.status).toBe("no-current-route");
+    });
+
+    it("never invents an asset-level nextAction when the known asset count is zero", async () => {
+      const target = await createSecurityTarget({ slug: "test-readiness-zero-assets", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: [],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.isActionable).toBe(false);
+      expect(row.researchReadiness.status).toBe("no-current-route");
+      expect(row.researchReadiness.nextAction).toBeNull();
+    });
+
+    it("is deterministic and stable across repeated reads with no intervening writes", async () => {
+      const target = await createSecurityTarget({ slug: "test-readiness-stable", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+      });
+
+      const first = await listSecurityTargetPriority();
+      const second = await listSecurityTargetPriority();
+
+      expect(findBySlug(first, target.slug).researchReadiness).toEqual(
+        findBySlug(second, target.slug).researchReadiness,
+      );
+    });
+  });
+
+  describe("listSecurityTargetPriority — latest-captured-Event ordering", () => {
+    it("uses the most recently CAPTURED bounty Event, not the one with the latest self-reported occurredAt", async () => {
+      const target = await createSecurityTarget({ slug: "test-ordering-out-of-order", name: "T" });
+
+      // Inserted FIRST (lower id / earlier capture) but carries a LATER
+      // self-reported `occurredAt` — simulates a source whose own
+      // timestamp is not monotonic with capture order.
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: new Date("2026-06-01T00:00:00Z"),
+        smartContractAssetIds: ["stale-asset"],
+        endDate: null,
+      });
+
+      // Inserted SECOND (higher id / later capture) but carries an
+      // EARLIER self-reported `occurredAt`.
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: new Date("2026-01-01T00:00:00Z"),
+        smartContractAssetIds: ["current-asset"],
+        endDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      });
+
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      // The more recently *captured* Event (second insert) must win: its
+      // endDate is in the past, so the bounty must read as expired/not
+      // actionable, not as actionable via the first (stale) Event's
+      // null endDate.
+      expect(row.actionability.isActionable).toBe(false);
+      expect(row.actionability.reason).toMatch(/already concluded/i);
+    });
+  });
+
   describe("listSecurityTargetPriority — identity evidence and Opportunity presence", () => {
     it("represents a missing repositoryUrl honestly as null, never fabricated", async () => {
       const target = await createSecurityTarget({ slug: "test-identity-missing", name: "T" });

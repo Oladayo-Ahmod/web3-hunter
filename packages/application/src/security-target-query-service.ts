@@ -17,7 +17,11 @@ import type {
   SecurityTargetAuditEvidenceDTO,
   SecurityTargetPriorityDTO,
 } from "./dto";
-import { countDistinctTriggeringEvents, securityTargetPriorityTier } from "./security-priority";
+import {
+  countDistinctTriggeringEvents,
+  deriveResearchReadiness,
+  securityTargetPriorityTier,
+} from "./security-priority";
 
 type SecurityTargetRow = typeof schema.securityTarget.$inferSelect;
 
@@ -57,7 +61,20 @@ const AUDIT_EVIDENCE_LIMITATION =
   "An audit record's existence does not confirm it covers the currently deployed code, that " +
   "it is recent, or that the target is otherwise secure.";
 
-/** Every bounty-program source Event for one Security Target, most recent first — the only ordering `listSecuritySignalsForTarget`-style store functions don't already provide. */
+/**
+ * Every bounty-program source Event for one Security Target, most
+ * recently *captured* first — the only ordering `listSecuritySignalsForTarget`-style
+ * store functions don't already provide.
+ *
+ * Ordered by `event.id` (time-sortable UUIDv7, generated at insertion —
+ * see `packages/db/src/id.ts`), never by the Event's own `occurredAt`:
+ * `occurredAt` is the *source's* self-reported timestamp, which
+ * `bounty-program-events.ts`'s own doc comment explicitly does not
+ * assume is monotonically increasing across polls. `event.id` reflects
+ * when *we* actually captured it, which is what "current state" must be
+ * computed from — the same convention `packages/ingestion`'s
+ * `findPreviousPayload` already uses for "most recent capture."
+ */
 interface LatestBountyProgramFields {
   audits: BountyAuditFields[];
   smartContractAssetIds: string[];
@@ -78,7 +95,7 @@ async function getLatestBountyProgramFields(
         inArray(schema.event.type, [BountyProgramRecorded.name, BountyProgramUpdated.name]),
       ),
     )
-    .orderBy(desc(schema.event.occurredAt), desc(schema.event.id))
+    .orderBy(desc(schema.event.id))
     .limit(1);
 
   if (!latestEvent) {
@@ -180,6 +197,11 @@ async function buildSecurityTargetPriority(
   );
 
   const actionability = await deriveActionability(target.id, bountyFields);
+  const researchReadiness = deriveResearchReadiness({
+    isActionable: actionability.isActionable,
+    actionableAssetCount: bountyFields?.smartContractAssetIds.length ?? 0,
+    qualifyingSignalTypes,
+  });
 
   return {
     id: target.id,
@@ -194,6 +216,7 @@ async function buildSecurityTargetPriority(
     identity: { repositoryUrl: target.repositoryUrl },
     audit: deriveAuditEvidence(bountyFields),
     actionability,
+    researchReadiness,
   };
 }
 

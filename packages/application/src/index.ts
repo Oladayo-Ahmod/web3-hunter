@@ -38,6 +38,8 @@ export type {
   SecurityTargetIdentityEvidenceDTO,
   SecurityTargetPriorityDTO,
   SecurityTargetPriorityTierDTO,
+  SecurityTargetResearchReadinessDTO,
+  SecurityTargetResearchReadinessStatusDTO,
   SkillDTO,
   SignalSummaryDTO,
   TargetRoleDTO,
@@ -95,9 +97,14 @@ export { listSkills } from "./skill-query-service";
 export { getUserProfileSummary } from "./user-profile-query-service";
 export {
   countDistinctTriggeringEvents,
+  deriveResearchReadiness,
   securityTargetPriorityTier,
   SECURITY_TARGET_PRIORITY_TIERS,
+  SECURITY_TARGET_RESEARCH_READINESS_STATUSES,
   type SecurityTargetPriorityTier,
+  type SecurityTargetResearchReadinessInput,
+  type SecurityTargetResearchReadinessResult,
+  type SecurityTargetResearchReadinessStatus,
   type SecurityTargetTierResult,
 } from "./security-priority";
 export { listSecurityTargetPriority } from "./security-target-query-service";

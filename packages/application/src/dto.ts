@@ -526,6 +526,25 @@ export interface SecurityTargetActionabilityDTO {
   reason: string;
 }
 
+/** See `packages/application/src/security-priority.ts`'s `deriveResearchReadiness` doc comment for the full rule and why each status means what it does. */
+export type SecurityTargetResearchReadinessStatusDTO =
+  "ready" | "insufficient-evidence" | "no-current-route";
+
+/**
+ * A third, independent dimension alongside `tier` (historical: what
+ * changed) and `actionability` (current: is there a verified live
+ * route) — whether available evidence currently supports a concrete
+ * research action. Deliberately not a score: `status` is explained by
+ * `reason`, and `nextAction` is populated only for `"ready"`, grounded
+ * strictly in already-known scope/asset counts — never a fabricated
+ * asset name, contract address, or audit conclusion.
+ */
+export interface SecurityTargetResearchReadinessDTO {
+  status: SecurityTargetResearchReadinessStatusDTO;
+  reason: string;
+  nextAction: string | null;
+}
+
 /**
  * One row of the Security Research Prioritization view (the approved
  * design) — composed read-time from a Security Target's Signals,
@@ -559,4 +578,5 @@ export interface SecurityTargetPriorityDTO {
   identity: SecurityTargetIdentityEvidenceDTO;
   audit: SecurityTargetAuditEvidenceDTO;
   actionability: SecurityTargetActionabilityDTO;
+  researchReadiness: SecurityTargetResearchReadinessDTO;
 }

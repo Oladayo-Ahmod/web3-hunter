@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { countDistinctTriggeringEvents, securityTargetPriorityTier } from "./security-priority";
+import {
+  countDistinctTriggeringEvents,
+  deriveResearchReadiness,
+  securityTargetPriorityTier,
+} from "./security-priority";
 
 describe("securityTargetPriorityTier", () => {
   it("returns Tier C for an empty signal-type list", () => {
@@ -75,5 +79,81 @@ describe("countDistinctTriggeringEvents", () => {
       { sourceEventIds: ["e2", "e3"] },
     ]);
     expect(count).toBe(3);
+  });
+});
+
+describe("deriveResearchReadiness", () => {
+  it("is ready when actionable, even with no qualifying signal at all", () => {
+    const result = deriveResearchReadiness({
+      isActionable: true,
+      actionableAssetCount: 2,
+      qualifyingSignalTypes: [],
+    });
+    expect(result.status).toBe("ready");
+    expect(result.nextAction).toMatch(/2 smart-contract asset/i);
+  });
+
+  it("is ready when actionable, regardless of a qualifying signal also being present", () => {
+    const result = deriveResearchReadiness({
+      isActionable: true,
+      actionableAssetCount: 1,
+      qualifyingSignalTypes: ["bounty-scope-expanded"],
+    });
+    expect(result.status).toBe("ready");
+    expect(result.nextAction).toMatch(/1 smart-contract asset/i);
+  });
+
+  it("is insufficient-evidence (not ready) for a qualifying signal with no currently actionable bounty", () => {
+    const result = deriveResearchReadiness({
+      isActionable: false,
+      actionableAssetCount: 0,
+      qualifyingSignalTypes: ["tvl-growth"],
+    });
+    expect(result.status).toBe("insufficient-evidence");
+    expect(result.reason).toMatch(/tvl-growth/);
+    expect(result.nextAction).toBeNull();
+  });
+
+  it("is no-current-route (not insufficient-evidence) when there is no qualifying signal at all", () => {
+    const result = deriveResearchReadiness({
+      isActionable: false,
+      actionableAssetCount: 0,
+      qualifyingSignalTypes: [],
+    });
+    expect(result.status).toBe("no-current-route");
+    expect(result.nextAction).toBeNull();
+    // Explicitly disclaims insecurity, per spec — never silent about it,
+    // and never a claim that research here is impossible.
+    expect(result.reason).toMatch(/does not mean.*insecure/i);
+  });
+
+  it("picks a deterministic signal type for the reason regardless of input order", () => {
+    const a = deriveResearchReadiness({
+      isActionable: false,
+      actionableAssetCount: 0,
+      qualifyingSignalTypes: ["tvl-growth", "audit-coverage-gap"],
+    });
+    const b = deriveResearchReadiness({
+      isActionable: false,
+      actionableAssetCount: 0,
+      qualifyingSignalTypes: ["audit-coverage-gap", "tvl-growth"],
+    });
+    expect(a).toEqual(b);
+    expect(a.reason).toMatch(/audit-coverage-gap/);
+  });
+
+  it("never populates nextAction outside of ready", () => {
+    const insufficient = deriveResearchReadiness({
+      isActionable: false,
+      actionableAssetCount: 0,
+      qualifyingSignalTypes: ["tvl-growth"],
+    });
+    const noRoute = deriveResearchReadiness({
+      isActionable: false,
+      actionableAssetCount: 0,
+      qualifyingSignalTypes: [],
+    });
+    expect(insufficient.nextAction).toBeNull();
+    expect(noRoute.nextAction).toBeNull();
   });
 });
