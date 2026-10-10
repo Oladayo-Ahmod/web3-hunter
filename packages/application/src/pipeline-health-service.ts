@@ -22,6 +22,14 @@ const STALENESS_THRESHOLD_HOURS: Partial<Record<string, number>> = {
   lever: 14,
   ashby: 14,
   github: 30,
+  // DefiLlama/Immunefi run once daily (enrichment.yml, `cron: "0 3 * * *"`)
+  // — the same "double the cadence plus slack" rule as every other entry
+  // here, applied to their real 24h schedule. Stage 7's release-readiness
+  // review found these two falling through to `DEFAULT_STALENESS_THRESHOLD_HOURS`
+  // (14h), which is shorter than their own cadence — every successful run
+  // was still being reported as stale.
+  defillama: 48,
+  immunefi: 48,
 };
 const DEFAULT_STALENESS_THRESHOLD_HOURS = 14;
 

@@ -63,17 +63,35 @@ jobs:
 
       # Each step isolated with continue-on-error - none of this is on
       # the freshness-critical path, so one failure should never block
-      # the rest, but a real failure should still be visible (per-step
-      # icons in the Actions log) rather than silently swallowed.
+      # a later, independent step from still getting a chance to run.
+      # `continue-on-error: true` forces every step's own *conclusion* to
+      # "success" regardless of what actually happened - GitHub Actions
+      # only exposes the real result via `steps.<id>.outcome` - which is
+      # why a dead collector used to produce a fully green run (Stage 7's
+      # release-readiness review). The three steps this pipeline's own
+      # product depends on for the security feed - DefiLlama, Immunefi,
+      # and security scoring - are each given an `id` and checked by name
+      # in "Fail if required security enrichment steps failed" below,
+      # which runs last (`if: always()`) specifically so every step above
+      # still gets to run for diagnostics before the job's own outcome is
+      # decided. Every other step here (GitHub, company scoring,
+      # classify/detect/match/decide, the prune step) stays genuinely
+      # optional by design, same as before this change: none of them feed
+      # /jobs, /today, or /outreach, and GitHub enrichment in particular is
+      # documented above as a routine no-op when disabled - gating the job
+      # on their success would be a new, unapproved behavior change, not
+      # a fix for the failure-visibility gap Stage 7 found.
       - name: Collect - GitHub
         run: pnpm --filter @web3-hunter/web collect:github
         continue-on-error: true
 
       - name: Collect - DefiLlama (security intelligence)
+        id: collect-defillama
         run: pnpm --filter @web3-hunter/web collect:defillama
         continue-on-error: true
 
       - name: Collect - Immunefi (security intelligence)
+        id: collect-immunefi
         run: pnpm --filter @web3-hunter/web collect:immunefi
         continue-on-error: true
 
@@ -82,6 +100,7 @@ jobs:
         continue-on-error: true
 
       - name: Score security targets
+        id: score-security
         run: pnpm --filter @web3-hunter/web score:security
         continue-on-error: true
 
@@ -109,3 +128,33 @@ jobs:
         # regardless of the stages above succeeding or not.
         run: pnpm --filter @web3-hunter/web maintenance:prune-pipeline-runs
         continue-on-error: true
+
+      - name: Fail if required security enrichment steps failed
+        # Stage 7's release-readiness review found this workflow could
+        # report a fully green run even if DefiLlama, Immunefi, and
+        # security scoring all failed outright - `continue-on-error`
+        # masks each step's real result in its `conclusion`, so this
+        # reads `outcome` instead, which still reflects what actually
+        # happened. `if: always()` makes this check run even when an
+        # earlier required step failed, so the job's final result is
+        # never decided before every step above has had its chance to
+        # run. Scoped to exactly the three steps above with an `id` -
+        # every other step in this job remains intentionally optional,
+        # per this file's existing documented design.
+        if: always()
+        run: |
+          failed=""
+          if [ "${{ steps.collect-defillama.outcome }}" = "failure" ]; then
+            failed="$failed collect-defillama"
+          fi
+          if [ "${{ steps.collect-immunefi.outcome }}" = "failure" ]; then
+            failed="$failed collect-immunefi"
+          fi
+          if [ "${{ steps.score-security.outcome }}" = "failure" ]; then
+            failed="$failed score-security"
+          fi
+          if [ -n "$failed" ]; then
+            echo "::error::Required security enrichment step(s) failed:$failed"
+            exit 1
+          fi
+          echo "All required security enrichment steps succeeded."

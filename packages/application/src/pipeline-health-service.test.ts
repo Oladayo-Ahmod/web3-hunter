@@ -1,5 +1,6 @@
 import { getDb, schema } from "@web3-hunter/db";
 import { createTestDatabase, type TestDatabase } from "@web3-hunter/db/testing";
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getPipelineHealth } from "./pipeline-health-service";
 import { seedCompany, seedJobPostedEvent } from "./test-support/seed";
@@ -77,5 +78,64 @@ describe("getPipelineHealth (integration)", () => {
     const ashby = health.collectors.find((c) => c.slug === "ashby");
 
     expect(ashby?.isStale).toBe(true);
+  });
+
+  it("reports a recently successful DefiLlama run as fresh, then flags it stale once past its 48h (once-daily x2) threshold", async () => {
+    const twentySevenHoursAgo = new Date(Date.now() - 27 * 60 * 60 * 1000); // one missed daily run, still within 48h
+    await seedCollector({
+      slug: "defillama",
+      sourceType: "security-intelligence",
+      lastRunAt: new Date(),
+    });
+
+    const freshHealth = await getPipelineHealth();
+    expect(freshHealth.collectors.find((c) => c.slug === "defillama")?.isStale).toBe(false);
+
+    // A single missed daily run (27h, more than 24h but well under the
+    // 48h threshold) must not false-alarm — exactly the gap Stage 7 found.
+    await getDb()
+      .update(schema.collector)
+      .set({ lastRunAt: twentySevenHoursAgo })
+      .where(eq(schema.collector.slug, "defillama"));
+    const oneMissedRunHealth = await getPipelineHealth();
+    expect(oneMissedRunHealth.collectors.find((c) => c.slug === "defillama")?.isStale).toBe(false);
+
+    const fortyNineHoursAgo = new Date(Date.now() - 49 * 60 * 60 * 1000); // past the 48h threshold
+    await getDb()
+      .update(schema.collector)
+      .set({ lastRunAt: fortyNineHoursAgo })
+      .where(eq(schema.collector.slug, "defillama"));
+    const staleHealth = await getPipelineHealth();
+    expect(staleHealth.collectors.find((c) => c.slug === "defillama")?.isStale).toBe(true);
+  });
+
+  it("reports a recently successful Immunefi run as fresh, then flags it stale once past its 48h (once-daily x2) threshold", async () => {
+    await seedCollector({
+      slug: "immunefi",
+      sourceType: "security-intelligence",
+      lastRunAt: new Date(),
+    });
+
+    const freshHealth = await getPipelineHealth();
+    expect(freshHealth.collectors.find((c) => c.slug === "immunefi")?.isStale).toBe(false);
+
+    const fiftyHoursAgo = new Date(Date.now() - 50 * 60 * 60 * 1000);
+    await getDb()
+      .update(schema.collector)
+      .set({ lastRunAt: fiftyHoursAgo })
+      .where(eq(schema.collector.slug, "immunefi"));
+    const staleHealth = await getPipelineHealth();
+    expect(staleHealth.collectors.find((c) => c.slug === "immunefi")?.isStale).toBe(true);
+  });
+
+  it("leaves the existing greenhouse/lever/ashby/github thresholds unchanged by the new defillama/immunefi entries", async () => {
+    const fifteenHoursAgo = new Date(Date.now() - 15 * 60 * 60 * 1000); // stale for a 14h threshold, fresh for 30h/48h
+    await seedCollector({ slug: "greenhouse-unchanged", lastRunAt: fifteenHoursAgo });
+
+    const health = await getPipelineHealth();
+    const greenhouse = health.collectors.find((c) => c.slug === "greenhouse-unchanged");
+
+    // Still gated by its own 14h threshold, not accidentally widened.
+    expect(greenhouse?.isStale).toBe(true);
   });
 });
