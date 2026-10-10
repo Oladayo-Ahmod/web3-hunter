@@ -156,4 +156,55 @@ describe("deriveResearchReadiness", () => {
     expect(insufficient.nextAction).toBeNull();
     expect(noRoute.nextAction).toBeNull();
   });
+
+  it("includes a concrete example asset in nextAction when one is supplied", () => {
+    const result = deriveResearchReadiness({
+      isActionable: true,
+      actionableAssetCount: 3,
+      qualifyingSignalTypes: [],
+      exampleAsset: { description: "Vault.sol", url: "https://github.com/acme/Vault.sol" },
+    });
+    expect(result.nextAction).toMatch(/3 smart-contract asset/i);
+    expect(result.nextAction).toContain('"Vault.sol"');
+    expect(result.nextAction).toContain("https://github.com/acme/Vault.sol");
+  });
+
+  it("omits the example clause entirely when no example asset is supplied", () => {
+    const withNull = deriveResearchReadiness({
+      isActionable: true,
+      actionableAssetCount: 3,
+      qualifyingSignalTypes: [],
+      exampleAsset: null,
+    });
+    const withoutField = deriveResearchReadiness({
+      isActionable: true,
+      actionableAssetCount: 3,
+      qualifyingSignalTypes: [],
+    });
+    expect(withNull.nextAction).not.toContain("for example");
+    expect(withoutField.nextAction).not.toContain("for example");
+    expect(withNull.nextAction).toBe(withoutField.nextAction);
+  });
+
+  it("omits the example clause when the example asset has neither description nor url", () => {
+    const result = deriveResearchReadiness({
+      isActionable: true,
+      actionableAssetCount: 1,
+      qualifyingSignalTypes: [],
+      exampleAsset: { description: null, url: null },
+    });
+    expect(result.nextAction).not.toContain("for example");
+  });
+
+  it("never fabricates a description, naming only the url when description is missing", () => {
+    const result = deriveResearchReadiness({
+      isActionable: true,
+      actionableAssetCount: 1,
+      qualifyingSignalTypes: [],
+      exampleAsset: { description: null, url: "https://github.com/acme/contracts" },
+    });
+    expect(result.nextAction).toContain("for example");
+    expect(result.nextAction).toContain("https://github.com/acme/contracts");
+    expect(result.nextAction).toContain("one of the listed assets");
+  });
 });

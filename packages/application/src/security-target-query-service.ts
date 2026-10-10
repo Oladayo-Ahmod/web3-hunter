@@ -16,6 +16,7 @@ import type {
   SecurityTargetActionabilityDTO,
   SecurityTargetAuditEvidenceDTO,
   SecurityTargetPriorityDTO,
+  SecurityTargetScopeAssetDTO,
 } from "./dto";
 import {
   countDistinctTriggeringEvents,
@@ -47,6 +48,23 @@ const bountyEventMetadataSubsetSchema = z
       )
       .optional(),
     smartContractAssetIds: z.array(z.string()).optional(),
+    // The full asset catalog (every type), in the source's own order —
+    // kept separate from `smartContractAssetIds` (which is sorted by id,
+    // not source order — see `bounty-program-events.ts`'s
+    // `smartContractAssetIds` derivation). Optional: a payload captured
+    // before per-asset detail was tracked has no `assets` key at all,
+    // which must degrade to "no detail available," never a parse
+    // failure or a fabricated record.
+    assets: z
+      .array(
+        z.object({
+          id: z.string(),
+          type: z.string(),
+          description: z.string().nullable(),
+          url: z.string().nullable(),
+        }),
+      )
+      .optional(),
     // See `isBountyProgramExpired`'s doc comment (`@web3-hunter/security`):
     // the only field that reliably distinguishes a concluded, time-boxed
     // competition from an ongoing one — `isPaused` stays `false` for a
@@ -78,6 +96,8 @@ const AUDIT_EVIDENCE_LIMITATION =
 interface LatestBountyProgramFields {
   audits: BountyAuditFields[];
   smartContractAssetIds: string[];
+  /** The `smart_contract`-typed subset of the latest Event's `assets`, in source order — `[]` whenever `assets` metadata is absent, never derived from `smartContractAssetIds` alone. */
+  smartContractAssets: SecurityTargetScopeAssetDTO[];
   endDate: string | null;
 }
 
@@ -107,9 +127,14 @@ async function getLatestBountyProgramFields(
     return null;
   }
 
+  const smartContractAssets = (parsed.data.assets ?? [])
+    .filter((asset) => asset.type === "smart_contract")
+    .map((asset) => ({ id: asset.id, description: asset.description, url: asset.url }));
+
   return {
     audits: parsed.data.audits ?? [],
     smartContractAssetIds: parsed.data.smartContractAssetIds ?? [],
+    smartContractAssets,
     endDate: parsed.data.endDate ?? null,
   };
 }
@@ -140,6 +165,9 @@ async function deriveActionability(
   bountyFields: LatestBountyProgramFields | null,
 ): Promise<SecurityTargetActionabilityDTO> {
   const bounty = await getBugBountyByTargetAndPlatform(securityTargetId, IMMUNEFI_PLATFORM);
+  // Read from the Bug Bounty row alone, regardless of status below — a
+  // link to the program's own page, not a claim about eligibility.
+  const scopeUrl = bounty?.scopeUrl ?? null;
 
   if (!bounty || bounty.status !== "active") {
     return {
@@ -147,6 +175,9 @@ async function deriveActionability(
       reason: bounty
         ? `The Immunefi bounty program is currently ${bounty.status}, not active.`
         : "No active bug bounty program is on record for this target.",
+      scopeUrl,
+      assets: [],
+      totalAssetCount: 0,
     };
   }
 
@@ -159,6 +190,9 @@ async function deriveActionability(
     return {
       isActionable: false,
       reason: "The Immunefi bounty program has already concluded (its endDate has passed).",
+      scopeUrl,
+      assets: [],
+      totalAssetCount: 0,
     };
   }
 
@@ -167,12 +201,19 @@ async function deriveActionability(
     return {
       isActionable: false,
       reason: "An active bounty program exists, but no smart-contract asset is currently in scope.",
+      scopeUrl,
+      assets: [],
+      totalAssetCount: 0,
     };
   }
 
+  const assets = bountyFields?.smartContractAssets ?? [];
   return {
     isActionable: true,
     reason: `An active bounty program lists ${assetCount} smart-contract asset(s) in scope to review.`,
+    scopeUrl,
+    assets,
+    totalAssetCount: assets.length,
   };
 }
 
@@ -201,6 +242,7 @@ async function buildSecurityTargetPriority(
     isActionable: actionability.isActionable,
     actionableAssetCount: bountyFields?.smartContractAssetIds.length ?? 0,
     qualifyingSignalTypes,
+    exampleAsset: actionability.assets[0] ?? null,
   });
 
   return {

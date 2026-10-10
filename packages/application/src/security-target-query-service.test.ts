@@ -17,6 +17,8 @@ async function insertBountyProgramEvent(input: {
   occurredAt: Date;
   audits?: Array<{ id: string; url: string | null; auditor: string | null; date: string | null }>;
   smartContractAssetIds?: string[];
+  /** Omitted entirely (not just `[]`) when not supplied — matches a real payload captured before per-asset detail was tracked. */
+  assets?: Array<{ id: string; type: string; description: string | null; url: string | null }>;
   endDate?: string | null;
 }) {
   await getDb()
@@ -33,6 +35,7 @@ async function insertBountyProgramEvent(input: {
       metadata: {
         audits: input.audits ?? [],
         smartContractAssetIds: input.smartContractAssetIds ?? [],
+        ...(input.assets ? { assets: input.assets } : {}),
         endDate: input.endDate ?? null,
       },
     });
@@ -422,6 +425,238 @@ describe("security-target-query-service (integration)", () => {
       const row = findBySlug(rows, target.slug);
 
       expect(row.actionability.isActionable).toBe(true);
+    });
+  });
+
+  describe("listSecurityTargetPriority — scope asset evidence and scopeUrl", () => {
+    it("surfaces only smart-contract-typed assets, in source order, filtering out other types", async () => {
+      const target = await createSecurityTarget({ slug: "test-scope-mixed-types", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1", "asset-3"],
+        assets: [
+          {
+            id: "asset-1",
+            type: "smart_contract",
+            description: "Vault",
+            url: "https://a/Vault.sol",
+          },
+          {
+            id: "asset-2",
+            type: "websites_and_applications",
+            description: "App",
+            url: "https://b",
+          },
+          {
+            id: "asset-3",
+            type: "smart_contract",
+            description: "Router",
+            url: "https://a/Router.sol",
+          },
+        ],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.assets).toEqual([
+        { id: "asset-1", description: "Vault", url: "https://a/Vault.sol" },
+        { id: "asset-3", description: "Router", url: "https://a/Router.sol" },
+      ]);
+      expect(row.actionability.totalAssetCount).toBe(2);
+    });
+
+    it("leaves assets empty and totalAssetCount at 0 when assets metadata is entirely absent", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-scope-no-assets-metadata",
+        name: "T",
+      });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        // No `assets` field at all — a payload captured before per-asset
+        // detail was tracked. `isActionable` must stay unaffected
+        // (unchanged source: `smartContractAssetIds`).
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.isActionable).toBe(true);
+      expect(row.actionability.assets).toEqual([]);
+      expect(row.actionability.totalAssetCount).toBe(0);
+    });
+
+    it("preserves null description/url exactly as the source supplied them, never fabricating a value", async () => {
+      const target = await createSecurityTarget({ slug: "test-scope-null-fields", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        assets: [{ id: "asset-1", type: "smart_contract", description: null, url: null }],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.assets).toEqual([{ id: "asset-1", description: null, url: null }]);
+    });
+
+    it("exposes scopeUrl from the stored bug_bounty row when actionable", async () => {
+      const target = await createSecurityTarget({ slug: "test-scope-url-actionable", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+        scopeUrl: "https://immunefi.com/bug-bounty/test-scope-url-actionable/",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        assets: [{ id: "asset-1", type: "smart_contract", description: "V", url: "https://a" }],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.scopeUrl).toBe(
+        "https://immunefi.com/bug-bounty/test-scope-url-actionable/",
+      );
+    });
+
+    it("exposes scopeUrl from the stored bug_bounty row even when not actionable (paused)", async () => {
+      const target = await createSecurityTarget({ slug: "test-scope-url-paused", name: "T" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "paused",
+        scopeUrl: "https://immunefi.com/bug-bounty/test-scope-url-paused/",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.isActionable).toBe(false);
+      expect(row.actionability.scopeUrl).toBe(
+        "https://immunefi.com/bug-bounty/test-scope-url-paused/",
+      );
+      expect(row.actionability.assets).toEqual([]);
+    });
+
+    it("has a null scopeUrl and empty assets when no bug_bounty row exists at all", async () => {
+      const target = await createSecurityTarget({ slug: "test-scope-url-none", name: "T" });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.actionability.scopeUrl).toBeNull();
+      expect(row.actionability.assets).toEqual([]);
+      expect(row.actionability.totalAssetCount).toBe(0);
+    });
+
+    it("includes a source-order example asset in nextAction when real detail is available", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-scope-next-action-example",
+        name: "T",
+      });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-2", "asset-1"],
+        assets: [
+          {
+            id: "asset-1",
+            type: "smart_contract",
+            description: "Second.sol",
+            url: "https://a/Second.sol",
+          },
+          {
+            id: "asset-2",
+            type: "smart_contract",
+            description: "First.sol",
+            url: "https://a/First.sol",
+          },
+        ],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      // Source order (as stored in `assets`), not the
+      // `smartContractAssetIds` order — `smartContractAssetIds` lists
+      // asset-2 first, but the first `assets` entry is "Second.sol"
+      // (asset-1), so that is the example that must be picked.
+      expect(row.researchReadiness.nextAction).toContain('"Second.sol"');
+      expect(row.researchReadiness.nextAction).toContain("https://a/Second.sol");
+    });
+
+    it("omits the example clause in nextAction when no asset detail is available", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-scope-next-action-no-example",
+        name: "T",
+      });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchReadiness.nextAction).not.toContain("for example");
+      expect(row.researchReadiness.nextAction).toMatch(/1 smart-contract asset/i);
+    });
+
+    it("never changes tier, isActionable, or researchReadiness.status as a result of exposing asset detail", async () => {
+      const target = await createSecurityTarget({ slug: "test-scope-no-regression", name: "T" });
+      await seedSignal({ securityTargetId: target.id, signalType: "bounty-scope-expanded" });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        assets: [{ id: "asset-1", type: "smart_contract", description: "V", url: "https://a" }],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.tier).toBe("A");
+      expect(row.actionability.isActionable).toBe(true);
+      expect(row.researchReadiness.status).toBe("ready");
     });
   });
 

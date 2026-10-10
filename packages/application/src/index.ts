@@ -40,6 +40,7 @@ export type {
   SecurityTargetPriorityTierDTO,
   SecurityTargetResearchReadinessDTO,
   SecurityTargetResearchReadinessStatusDTO,
+  SecurityTargetScopeAssetDTO,
   SkillDTO,
   SignalSummaryDTO,
   TargetRoleDTO,

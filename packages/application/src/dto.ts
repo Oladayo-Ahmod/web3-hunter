@@ -511,6 +511,18 @@ export interface SecurityTargetAuditEvidenceDTO {
 }
 
 /**
+ * One in-scope smart-contract asset, exactly as the source described it
+ * — never interpreted, never ranked. `description`/`url` are `null` only
+ * when the source itself omitted them, not when the whole asset record
+ * is missing.
+ */
+export interface SecurityTargetScopeAssetDTO {
+  id: string;
+  description: string | null;
+  url: string | null;
+}
+
+/**
  * Whether there is a concrete next step for a security researcher today —
  * deliberately distinct from "this target has a bug bounty," which alone
  * is not actionable (a bounty with an empty or out-of-scope asset list
@@ -524,6 +536,26 @@ export interface SecurityTargetAuditEvidenceDTO {
 export interface SecurityTargetActionabilityDTO {
   isActionable: boolean;
   reason: string;
+  /**
+   * The Immunefi bounty program's own page, read directly from the
+   * stored `bug_bounty.scopeUrl` — present whenever a Bug Bounty row
+   * exists for this target, regardless of current status, since it is a
+   * traceability link to the source, not a claim about eligibility.
+   * `null` only when no Bug Bounty row is on record at all.
+   */
+  scopeUrl: string | null;
+  /**
+   * Every currently in-scope smart-contract asset backing `isActionable`,
+   * in the source's own order — never sorted, never ranked, and never
+   * implying any one asset is more important or more likely vulnerable
+   * than another. Empty whenever `isActionable` is false, or when the
+   * triggering Event's `assets` metadata is missing (never fabricated
+   * from `smartContractAssetIds` alone — see
+   * `security-target-query-service.ts`'s `getLatestBountyProgramFields`).
+   */
+  assets: SecurityTargetScopeAssetDTO[];
+  /** Equals `assets.length` today — a separate field so a future cap on `assets` can stay honest about the real total. */
+  totalAssetCount: number;
 }
 
 /** See `packages/application/src/security-priority.ts`'s `deriveResearchReadiness` doc comment for the full rule and why each status means what it does. */

@@ -119,6 +119,14 @@ export interface SecurityTargetResearchReadinessInput {
   actionableAssetCount: number;
   /** The same qualifying Signal types `securityTargetPriorityTier` already derived — not re-filtered or reinterpreted. */
   qualifyingSignalTypes: readonly string[];
+  /**
+   * The first currently in-scope smart-contract asset, in the source's
+   * own order — used only to make `nextAction` concrete when real
+   * per-asset detail exists. Never chosen by any ranking, never implying
+   * priority. `null`/absent, or with both fields `null`, when no such
+   * detail is available; `nextAction` then falls back to the count alone.
+   */
+  exampleAsset?: { description: string | null; url: string | null } | null;
 }
 
 /**
@@ -150,13 +158,20 @@ export function deriveResearchReadiness(
   input: SecurityTargetResearchReadinessInput,
 ): SecurityTargetResearchReadinessResult {
   if (input.isActionable) {
+    const example = input.exampleAsset;
+    const hasExampleDetail = !!example && (example.description !== null || example.url !== null);
+    const exampleClause = hasExampleDetail
+      ? ` — for example, ${example!.description ? `"${example!.description}"` : "one of the listed assets"}` +
+        `${example!.url ? ` (${example!.url})` : ""}`
+      : "";
+
     return {
       status: "ready",
       reason:
         "An active, non-expired bounty program currently lists concrete smart-contract scope.",
       nextAction:
         `Review the ${input.actionableAssetCount} smart-contract asset(s) currently in scope ` +
-        "under the active bounty program.",
+        `under the active bounty program${exampleClause}.`,
     };
   }
 
