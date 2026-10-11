@@ -25,7 +25,8 @@
     "match:users": "tsx --env-file=.env scripts/run-matching.ts",
     "decide:recommendations": "tsx --env-file=.env scripts/run-decisions.ts",
     "detect:technology": "tsx --env-file=.env scripts/run-technology.ts",
-    "maintenance:prune-pipeline-runs": "tsx --env-file=.env scripts/prune-pipeline-runs.ts"
+    "maintenance:prune-pipeline-runs": "tsx --env-file=.env scripts/prune-pipeline-runs.ts",
+    "recover:defillama-ingestion": "tsx --env-file=.env scripts/resume-defillama-ingestion.ts"
   },
   "dependencies": {
     "@web3-hunter/ai": "workspace:*",
