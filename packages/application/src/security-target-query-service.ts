@@ -1,7 +1,10 @@
 import {
   BountyProgramRecorded,
   BountyProgramUpdated,
+  SecurityDisclosureRouteRecorded,
+  SecurityDisclosureRouteUpdated,
   type BountyAuditFields,
+  type SecurityDisclosureRouteFields,
 } from "@web3-hunter/collectors";
 import { getDb, schema } from "@web3-hunter/db";
 import {
@@ -18,6 +21,8 @@ import type {
   PaginatedResult,
   SecurityTargetActionabilityDTO,
   SecurityTargetAuditEvidenceDTO,
+  SecurityTargetDisclosureEvidenceDTO,
+  SecurityTargetDisclosureRouteDTO,
   SecurityTargetPriorityDTO,
   SecurityTargetScopeAssetDTO,
 } from "./dto";
@@ -241,6 +246,94 @@ async function getDefiLlamaIdentityEnrichment(
   };
 }
 
+const EMPTY_DISCLOSURE_EVIDENCE: SecurityTargetDisclosureEvidenceDTO = {
+  securityTxt: null,
+  githubSecurityPolicy: null,
+};
+
+/**
+ * Reads back every `SecurityDisclosureRouteRecorded`/`Updated` Event the
+ * Security Disclosure Collector has published for this target — both
+ * route types at once, one query, ordered so the first row per
+ * `routeType` is its `discoveredAt` and the last is its `lastChangedAt`.
+ * `null` per route type when that check has never run for this target —
+ * never confused with a checked-but-not-found result (see
+ * `SecurityTargetDisclosureRouteDTO`'s doc comment).
+ */
+async function getLatestSecurityDisclosureEvidence(
+  securityTargetId: string,
+): Promise<SecurityTargetDisclosureEvidenceDTO> {
+  const db = getDb();
+  const events = await db
+    .select({
+      type: schema.event.type,
+      metadata: schema.event.metadata,
+      recordedAt: schema.event.recordedAt,
+    })
+    .from(schema.event)
+    .where(
+      and(
+        eq(schema.event.relatedEntityType, "security_target"),
+        eq(schema.event.relatedEntityId, securityTargetId),
+        inArray(schema.event.type, [
+          SecurityDisclosureRouteRecorded.name,
+          SecurityDisclosureRouteUpdated.name,
+        ]),
+      ),
+    )
+    .orderBy(asc(schema.event.recordedAt), asc(schema.event.id));
+
+  if (events.length === 0) {
+    return EMPTY_DISCLOSURE_EVIDENCE;
+  }
+
+  const byRouteType = new Map<
+    string,
+    { fields: SecurityDisclosureRouteFields; discoveredAt: Date; lastChangedAt: Date }
+  >();
+
+  for (const event of events) {
+    const fields = event.metadata as SecurityDisclosureRouteFields;
+    const existing = byRouteType.get(fields.routeType);
+    if (!existing) {
+      byRouteType.set(fields.routeType, {
+        fields,
+        discoveredAt: event.recordedAt,
+        lastChangedAt: event.recordedAt,
+      });
+    } else {
+      existing.fields = fields;
+      existing.lastChangedAt = event.recordedAt;
+    }
+  }
+
+  function toRouteDTO(
+    routeType: "security-txt" | "github-security-policy",
+  ): SecurityTargetDisclosureRouteDTO | null {
+    const entry = byRouteType.get(routeType);
+    if (!entry) {
+      return null;
+    }
+    const isExpired = entry.fields.expires !== null && new Date(entry.fields.expires) < new Date();
+    return {
+      found: entry.fields.found,
+      sourceUrl: entry.fields.sourceUrl,
+      discoveredAt: entry.discoveredAt.toISOString(),
+      lastChangedAt: entry.lastChangedAt.toISOString(),
+      contacts: entry.fields.contacts,
+      policyUrl: entry.fields.policyUrl,
+      canonicalUrl: entry.fields.canonicalUrl,
+      expires: entry.fields.expires,
+      isExpired,
+    };
+  }
+
+  return {
+    securityTxt: toRouteDTO("security-txt"),
+    githubSecurityPolicy: toRouteDTO("github-security-policy"),
+  };
+}
+
 function deriveAuditEvidence(
   bountyFields: { audits: BountyAuditFields[] } | null,
   defiLlamaAuditLinks: string[],
@@ -373,7 +466,7 @@ async function buildSecurityTargetPriority(
 ): Promise<SecurityTargetPriorityDTO> {
   const db = getDb();
 
-  const [signals, intelligence, bountyFields, opportunityRows, defiLlamaEnrichment] =
+  const [signals, intelligence, bountyFields, opportunityRows, defiLlamaEnrichment, disclosure] =
     await Promise.all([
       listSecuritySignalsForTarget(target.id),
       getSecurityTargetIntelligence(target.id),
@@ -391,6 +484,7 @@ async function buildSecurityTargetPriority(
         .orderBy(desc(schema.securityOpportunity.detectedAt), desc(schema.securityOpportunity.id))
         .limit(1),
       getDefiLlamaIdentityEnrichment(target.id),
+      getLatestSecurityDisclosureEvidence(target.id),
     ]);
 
   const { tier, reason, qualifyingSignalTypes } = securityTargetPriorityTier(
@@ -418,11 +512,19 @@ async function buildSecurityTargetPriority(
     exampleAsset: actionability.assets[0] ?? null,
   });
   const websiteUrl = defiLlamaEnrichment.websiteUrl ?? bountyFields?.websiteUrl ?? null;
+  const disclosureRoute = disclosure.securityTxt?.found
+    ? disclosure.securityTxt
+    : disclosure.githubSecurityPolicy?.found
+      ? disclosure.githubSecurityPolicy
+      : null;
   const researchRoute = deriveResearchRoute({
     readinessStatus: researchReadiness.status,
     readinessNextAction: researchReadiness.nextAction,
     repositoryUrl: target.repositoryUrl,
     websiteUrl,
+    disclosureRoute: disclosureRoute
+      ? { contact: disclosureRoute.contacts[0] ?? null, policyUrl: disclosureRoute.policyUrl }
+      : null,
   });
 
   return {
@@ -448,6 +550,7 @@ async function buildSecurityTargetPriority(
     },
     audit: deriveAuditEvidence(bountyFields, defiLlamaEnrichment.auditLinks),
     actionability,
+    disclosure,
     researchReadiness,
     researchRoute,
   };
@@ -474,6 +577,32 @@ export async function listSecurityTargetPriority(): Promise<SecurityTargetPriori
     .orderBy(asc(schema.securityTarget.slug));
 
   return Promise.all(targets.map((target) => buildSecurityTargetPriority(target)));
+}
+
+export interface SecurityDisclosureDiscoveryCandidate {
+  securityTargetId: string;
+  websiteUrl: string | null;
+  repositoryUrl: string | null;
+}
+
+/**
+ * The input list for the Security Disclosure Collector (RFC 9116
+ * `security.txt` + GitHub Community Profile checks) — every target's
+ * already-resolved `identity.websiteUrl`/`repositoryUrl`, exactly as
+ * `listSecurityTargetPriority` itself computes them. Deliberately reuses
+ * that function rather than re-deriving the DefiLlama/Immunefi
+ * precedence rule a second time — see `getDefiLlamaIdentityEnrichment`'s
+ * doc comment for why DefiLlama's `url` is preferred.
+ */
+export async function listSecurityDisclosureDiscoveryCandidates(): Promise<
+  SecurityDisclosureDiscoveryCandidate[]
+> {
+  const targets = await listSecurityTargetPriority();
+  return targets.map((target) => ({
+    securityTargetId: target.id,
+    websiteUrl: target.identity.websiteUrl,
+    repositoryUrl: target.identity.repositoryUrl,
+  }));
 }
 
 // --- Paginated feed -----------------------------------------------------

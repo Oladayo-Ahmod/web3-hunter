@@ -31,3 +31,12 @@ export {
   type CanonicalRepository,
   type RepositoryFields,
 } from "./repository-events";
+export * as securityDisclosure from "./security-disclosure";
+export {
+  SECURITY_DISCLOSURE_ROUTE_TYPES,
+  SecurityDisclosureRouteRecorded,
+  SecurityDisclosureRouteUpdated,
+  type CanonicalSecurityDisclosureRoute,
+  type SecurityDisclosureRouteFields,
+  type SecurityDisclosureRouteType,
+} from "./security-disclosure-events";

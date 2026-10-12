@@ -200,6 +200,7 @@ export function deriveResearchReadiness(
 
 export const SECURITY_TARGET_RESEARCH_ROUTES = [
   "verified-bounty",
+  "disclosure-available",
   "repository-research",
   "needs-discovery",
 ] as const;
@@ -217,6 +218,14 @@ export interface SecurityTargetResearchRouteInput {
   readinessNextAction: string | null;
   repositoryUrl: string | null;
   websiteUrl: string | null;
+  /**
+   * A *found* (not merely checked) official disclosure route — either an
+   * RFC 9116 `security.txt` or a GitHub `SECURITY.md` — never recomputed
+   * here; the caller (`security-target-query-service.ts`) already knows
+   * which of the two, if any, was found. `null` whenever neither was
+   * found, including "never checked."
+   */
+  disclosureRoute: { contact: string | null; policyUrl: string | null } | null;
 }
 
 /**
@@ -232,12 +241,20 @@ export interface SecurityTargetResearchRouteInput {
  *
  * - `"verified-bounty"`: readiness is already `"ready"` — the bounty
  *   program itself is the route; its `nextAction` is reused verbatim.
- * - `"repository-research"`: no verified bounty route, but a public
- *   repository or official website is on record — independent code
- *   review is still a real, concrete option, even without a paid bounty.
- * - `"needs-discovery"`: neither — nothing stored yet points anywhere a
- *   researcher could start; the honest next action is to say so and
- *   suggest where to look, never to imply nothing exists.
+ * - `"disclosure-available"`: no verified bounty route, but an official
+ *   disclosure route (a published `security.txt` contact, or a GitHub
+ *   `SECURITY.md`) was found — a legitimate reporting channel exists even
+ *   without an active bounty. Ranked above `"repository-research"`:
+ *   a published disclosure policy is evidence the maintainers *expect*
+ *   reports, which a bare repository alone never establishes.
+ * - `"repository-research"`: no verified bounty route and no found
+ *   disclosure route, but a public repository or official website is on
+ *   record — independent code review is still a real, concrete option,
+ *   though this alone is never proof that security testing is
+ *   authorized or that any particular finding is in scope.
+ * - `"needs-discovery"`: none of the above — nothing stored yet points
+ *   anywhere a researcher could start; the honest next action is to say
+ *   so and suggest where to look, never to imply nothing exists.
  */
 export function deriveResearchRoute(
   input: SecurityTargetResearchRouteInput,
@@ -250,21 +267,34 @@ export function deriveResearchRoute(
     };
   }
 
+  if (input.disclosureRoute) {
+    const { contact, policyUrl } = input.disclosureRoute;
+    const where = contact ?? policyUrl ?? "the published disclosure route";
+    return {
+      route: "disclosure-available",
+      nextAction:
+        "No active, verified bounty program currently applies — an official vulnerability " +
+        `disclosure route is on record (${where}); report findings through it responsibly, ` +
+        "within whatever scope it states.",
+    };
+  }
+
   if (input.repositoryUrl || input.websiteUrl) {
     const where = input.repositoryUrl ?? input.websiteUrl!;
     return {
       route: "repository-research",
       nextAction:
-        "No active, verified bounty program currently applies — review the public repository " +
-        `or official site directly (${where}) as independent research.`,
+        "No active, verified bounty program and no official disclosure route are currently on " +
+        `record — review the public repository or official site directly (${where}) as ` +
+        "independent research; this alone does not authorize testing or establish scope.",
     };
   }
 
   return {
     route: "needs-discovery",
     nextAction:
-      "No repository, official website, or verified bounty route is on record for this " +
-      "target yet — search for its official documentation, GitHub organization, or disclosure " +
-      "page before starting research.",
+      "No repository, official website, disclosure route, or verified bounty route is on " +
+      "record for this target yet — search for its official documentation, GitHub " +
+      "organization, or disclosure page before starting research.",
   };
 }

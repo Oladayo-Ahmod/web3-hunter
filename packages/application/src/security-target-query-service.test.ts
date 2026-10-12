@@ -67,6 +67,47 @@ async function insertBountyProgramEvent(input: {
 }
 
 /**
+ * Inserts a real `SecurityDisclosureRouteRecorded`/`Updated` canonical
+ * Event directly — mirrors `insertBountyProgramEvent`'s own convention
+ * for this file.
+ */
+async function insertSecurityDisclosureEvent(input: {
+  securityTargetId: string;
+  routeType: "security-txt" | "github-security-policy";
+  found: boolean;
+  recordedAt: Date;
+  type?: "SecurityDisclosureRouteRecorded" | "SecurityDisclosureRouteUpdated";
+  contacts?: string[];
+  policyUrl?: string | null;
+  canonicalUrl?: string | null;
+  expires?: string | null;
+  sourceUrl?: string;
+}) {
+  await getDb()
+    .insert(schema.event)
+    .values({
+      type: input.type ?? "SecurityDisclosureRouteRecorded",
+      category: "source",
+      version: 1,
+      sourceLabel: "test",
+      occurredAt: input.recordedAt,
+      recordedAt: input.recordedAt,
+      relatedEntityType: "security_target",
+      relatedEntityId: input.securityTargetId,
+      confidence: 1,
+      metadata: {
+        routeType: input.routeType,
+        found: input.found,
+        sourceUrl: input.sourceUrl ?? `https://example.test/${input.routeType}`,
+        contacts: input.contacts ?? [],
+        policyUrl: input.policyUrl ?? null,
+        canonicalUrl: input.canonicalUrl ?? null,
+        expires: input.expires ?? null,
+      },
+    });
+}
+
+/**
  * Inserts a real `ProtocolSnapshotRecorded`/`ProtocolSnapshotUpdated`
  * canonical Event directly — mirrors `insertBountyProgramEvent`'s own
  * convention for this file. Only the canonical Event is hand-inserted;
@@ -1344,6 +1385,270 @@ describe("security-target-query-service (integration)", () => {
         nextAction: expect.stringContaining("https://github.com/acme/parity"),
       });
       expect(pageRow?.researchRoute).toEqual(bySlug?.researchRoute);
+    });
+  });
+
+  describe("listSecurityTargetPriority — security disclosure evidence", () => {
+    it("is null for both route types when no Security Disclosure Collector Event has ever been recorded", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-disclosure-never-checked",
+        name: "T",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.disclosure.securityTxt).toBeNull();
+      expect(row.disclosure.githubSecurityPolicy).toBeNull();
+    });
+
+    it("represents a checked-but-not-found security.txt honestly, distinct from never checked", async () => {
+      const target = await createSecurityTarget({ slug: "test-disclosure-not-found", name: "T" });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "security-txt",
+        found: false,
+        recordedAt: BASE_DATE,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.disclosure.securityTxt).not.toBeNull();
+      expect(row.disclosure.securityTxt?.found).toBe(false);
+      expect(row.disclosure.securityTxt?.contacts).toEqual([]);
+      expect(row.disclosure.githubSecurityPolicy).toBeNull();
+    });
+
+    it("surfaces a found security.txt's contacts, policyUrl, canonicalUrl, and sourceUrl", async () => {
+      const target = await createSecurityTarget({ slug: "test-disclosure-found", name: "T" });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "security-txt",
+        found: true,
+        recordedAt: BASE_DATE,
+        contacts: ["mailto:security@acme.xyz"],
+        policyUrl: "https://acme.xyz/security-policy",
+        canonicalUrl: "https://acme.xyz/.well-known/security.txt",
+        sourceUrl: "https://acme.xyz/.well-known/security.txt",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.disclosure.securityTxt).toMatchObject({
+        found: true,
+        sourceUrl: "https://acme.xyz/.well-known/security.txt",
+        contacts: ["mailto:security@acme.xyz"],
+        policyUrl: "https://acme.xyz/security-policy",
+        canonicalUrl: "https://acme.xyz/.well-known/security.txt",
+      });
+    });
+
+    it("tracks the GitHub security policy route independently of security.txt", async () => {
+      const target = await createSecurityTarget({ slug: "test-disclosure-github", name: "T" });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "github-security-policy",
+        found: true,
+        recordedAt: BASE_DATE,
+        policyUrl: "https://github.com/acme/contracts/blob/main/SECURITY.md",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.disclosure.githubSecurityPolicy).toMatchObject({
+        found: true,
+        policyUrl: "https://github.com/acme/contracts/blob/main/SECURITY.md",
+        contacts: [],
+      });
+      expect(row.disclosure.securityTxt).toBeNull();
+    });
+
+    it("computes isExpired: true for a past Expires date, and false for a future one", async () => {
+      const expiredTarget = await createSecurityTarget({
+        slug: "test-disclosure-expired",
+        name: "T",
+      });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: expiredTarget.id,
+        routeType: "security-txt",
+        found: true,
+        recordedAt: BASE_DATE,
+        expires: "2020-01-01T00:00:00.000Z",
+      });
+
+      const freshTarget = await createSecurityTarget({ slug: "test-disclosure-fresh", name: "T" });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: freshTarget.id,
+        routeType: "security-txt",
+        found: true,
+        recordedAt: BASE_DATE,
+        expires: "2099-01-01T00:00:00.000Z",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      expect(findBySlug(rows, expiredTarget.slug).disclosure.securityTxt?.isExpired).toBe(true);
+      expect(findBySlug(rows, freshTarget.slug).disclosure.securityTxt?.isExpired).toBe(false);
+    });
+
+    it("never claims isExpired when no Expires value was published", async () => {
+      const target = await createSecurityTarget({ slug: "test-disclosure-no-expires", name: "T" });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "security-txt",
+        found: true,
+        recordedAt: BASE_DATE,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.disclosure.securityTxt?.expires).toBeNull();
+      expect(row.disclosure.securityTxt?.isExpired).toBe(false);
+    });
+
+    it("sets discoveredAt to the first observation and lastChangedAt to the most recent one", async () => {
+      const target = await createSecurityTarget({ slug: "test-disclosure-timestamps", name: "T" });
+      const firstSeen = new Date("2026-01-01T00:00:00Z");
+      const changed = new Date("2026-03-01T00:00:00Z");
+
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "security-txt",
+        found: false,
+        recordedAt: firstSeen,
+      });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "security-txt",
+        found: true,
+        recordedAt: changed,
+        type: "SecurityDisclosureRouteUpdated",
+        contacts: ["mailto:security@acme.xyz"],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.disclosure.securityTxt?.discoveredAt).toBe(firstSeen.toISOString());
+      expect(row.disclosure.securityTxt?.lastChangedAt).toBe(changed.toISOString());
+      expect(row.disclosure.securityTxt?.found).toBe(true);
+    });
+
+    it("reproduces a plausible Aegis YUSD outcome: a website found via DefiLlama, but no published security.txt", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-aegis-yusd-disclosure",
+        name: "Aegis YUSD",
+      });
+      await seedDefiLlamaRawPayload({
+        securityTargetId: target.id,
+        sourceIdentifier: "test-aegis-yusd-disclosure",
+        payload: { url: "https://app.aegis.im", twitter: "aegis_im", audits: "0" },
+      });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "security-txt",
+        found: false,
+        recordedAt: BASE_DATE,
+        sourceUrl: "https://app.aegis.im/.well-known/security.txt",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.identity.websiteUrl).toBe("https://app.aegis.im");
+      expect(row.disclosure.securityTxt?.found).toBe(false);
+      // No disclosure route and no active bounty — still correctly
+      // classified as repository-research via the website, never
+      // silently promoted to disclosure-available.
+      expect(row.researchRoute.route).toBe("repository-research");
+    });
+  });
+
+  describe("listSecurityTargetPriority — researchRoute with disclosure evidence", () => {
+    it("is disclosure-available when a security.txt contact was found and no bounty is ready", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-route-disclosure-securitytxt",
+        name: "T",
+      });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "security-txt",
+        found: true,
+        recordedAt: BASE_DATE,
+        contacts: ["mailto:security@acme.xyz"],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchReadiness.status).not.toBe("ready");
+      expect(row.researchRoute.route).toBe("disclosure-available");
+      expect(row.researchRoute.nextAction).toContain("mailto:security@acme.xyz");
+    });
+
+    it("is disclosure-available when only the GitHub security policy was found", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-route-disclosure-github",
+        name: "T",
+        repositoryUrl: "https://github.com/acme/contracts",
+      });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "github-security-policy",
+        found: true,
+        recordedAt: BASE_DATE,
+        policyUrl: "https://github.com/acme/contracts/blob/main/SECURITY.md",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchRoute.route).toBe("disclosure-available");
+      expect(row.researchRoute.nextAction).toContain(
+        "https://github.com/acme/contracts/blob/main/SECURITY.md",
+      );
+    });
+
+    it("falls back to repository-research when the only disclosure check on record found nothing", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-route-disclosure-not-found-fallback",
+        name: "T",
+        repositoryUrl: "https://github.com/acme/contracts",
+      });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "security-txt",
+        found: false,
+        recordedAt: BASE_DATE,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchRoute.route).toBe("repository-research");
+    });
+
+    it("ranks a found disclosure route above repository-research even when a repositoryUrl is also present", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-route-disclosure-ranks-above-repo",
+        name: "T",
+        repositoryUrl: "https://github.com/acme/contracts",
+      });
+      await insertSecurityDisclosureEvent({
+        securityTargetId: target.id,
+        routeType: "security-txt",
+        found: true,
+        recordedAt: BASE_DATE,
+        contacts: ["mailto:security@acme.xyz"],
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchRoute.route).toBe("disclosure-available");
     });
   });
 

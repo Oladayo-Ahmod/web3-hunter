@@ -19,6 +19,7 @@ const READINESS_BADGE_VARIANT: Record<
 
 const ROUTE_LABEL: Record<SecurityTargetPriorityDTO["researchRoute"]["route"], string> = {
   "verified-bounty": "Verified bounty",
+  "disclosure-available": "Disclosure available",
   "repository-research": "Independent research",
   "needs-discovery": "Needs discovery",
 };
@@ -28,6 +29,7 @@ const ROUTE_BADGE_VARIANT: Record<
   "success" | "secondary" | "outline"
 > = {
   "verified-bounty": "success",
+  "disclosure-available": "success",
   "repository-research": "secondary",
   "needs-discovery": "outline",
 };

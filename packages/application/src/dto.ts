@@ -598,9 +598,49 @@ export interface SecurityTargetResearchReadinessDTO {
   nextAction: string | null;
 }
 
+/**
+ * One of this Collector's two checked locations (RFC 9116
+ * `security.txt`, GitHub's own Community Profile `SECURITY.md` check) —
+ * `null` means "never checked yet" (no Security Disclosure Collector run
+ * has covered this target), distinct from `found: false` ("checked, and
+ * the resource genuinely doesn't exist"). Never conflate the two:
+ * "not checked" carries no information about whether a route exists;
+ * "checked, not found" is itself real, timestamped evidence.
+ */
+export interface SecurityTargetDisclosureRouteDTO {
+  found: boolean;
+  /** The exact URL this Collector fetched — always present, whether or not it was `found`, so the UI can show what was actually checked. */
+  sourceUrl: string;
+  /** When this route was first observed in its current `found` state — the earliest stored observation, never recomputed or guessed. */
+  discoveredAt: string;
+  /** When this route's recorded state last genuinely changed — equal to `discoveredAt` if it never has. Not "last time we checked": an unchanged re-check produces no new Event (see `security-disclosure-events.ts`'s dedup discipline), so this reflects the last *change*, the same honest semantics `lastSignalAt` already uses elsewhere in this DTO. */
+  lastChangedAt: string;
+  /** RFC 9116 `Contact:` values, in the source's own preference order — always `[]` for the GitHub route, which has no equivalent field. */
+  contacts: string[];
+  /** Where the disclosure policy itself is published — `security.txt`'s `Policy:` value, or the `SECURITY.md` page's own URL for the GitHub route. */
+  policyUrl: string | null;
+  /** `security.txt`'s `Canonical:` value only — always `null` for the GitHub route. */
+  canonicalUrl: string | null;
+  /** `security.txt`'s own `Expires:` value, exactly as published — always `null` for the GitHub route. */
+  expires: string | null;
+  /** Derived at read time from `expires` vs. now — `false` whenever `expires` is `null` (no staleness claim can be made without one). Never implies the route is gone, only that its publisher's own staleness marker has passed. */
+  isExpired: boolean;
+}
+
+/**
+ * Both of the Security Disclosure Collector's checked routes for one
+ * target — `null` per field when that specific check has never run for
+ * this target (see `SecurityTargetDisclosureRouteDTO`'s doc comment on
+ * why that's distinct from "checked, not found").
+ */
+export interface SecurityTargetDisclosureEvidenceDTO {
+  securityTxt: SecurityTargetDisclosureRouteDTO | null;
+  githubSecurityPolicy: SecurityTargetDisclosureRouteDTO | null;
+}
+
 /** See `packages/application/src/security-priority.ts`'s `deriveResearchRoute` doc comment for the full rule. */
 export type SecurityTargetResearchRouteDTO =
-  "verified-bounty" | "repository-research" | "needs-discovery";
+  "verified-bounty" | "disclosure-available" | "repository-research" | "needs-discovery";
 
 /**
  * The practical "where do I actually go" classification, independent of
@@ -668,6 +708,7 @@ export interface SecurityTargetPriorityDTO {
   identity: SecurityTargetIdentityEvidenceDTO;
   audit: SecurityTargetAuditEvidenceDTO;
   actionability: SecurityTargetActionabilityDTO;
+  disclosure: SecurityTargetDisclosureEvidenceDTO;
   researchReadiness: SecurityTargetResearchReadinessDTO;
   researchRoute: SecurityTargetResearchRouteResultDTO;
 }

@@ -217,9 +217,21 @@ describe("deriveResearchRoute", () => {
       readinessNextAction: "Review the 2 smart-contract asset(s) currently in scope.",
       repositoryUrl: null,
       websiteUrl: null,
+      disclosureRoute: null,
     });
     expect(result.route).toBe("verified-bounty");
     expect(result.nextAction).toBe("Review the 2 smart-contract asset(s) currently in scope.");
+  });
+
+  it("is verified-bounty even when a disclosure route and identity evidence are also present", () => {
+    const result = deriveResearchRoute({
+      readinessStatus: "ready",
+      readinessNextAction: "Review the 2 smart-contract asset(s) currently in scope.",
+      repositoryUrl: "https://github.com/acme/contracts",
+      websiteUrl: "https://acme.xyz",
+      disclosureRoute: { contact: "mailto:security@acme.xyz", policyUrl: null },
+    });
+    expect(result.route).toBe("verified-bounty");
   });
 
   it("falls back to a generic bounty nextAction if readiness somehow supplied none", () => {
@@ -228,17 +240,46 @@ describe("deriveResearchRoute", () => {
       readinessNextAction: null,
       repositoryUrl: null,
       websiteUrl: null,
+      disclosureRoute: null,
     });
     expect(result.route).toBe("verified-bounty");
     expect(result.nextAction).toMatch(/active bounty program/i);
   });
 
-  it("is repository-research when not ready but a repository is on record", () => {
+  it("is disclosure-available when not ready but a disclosure contact was found", () => {
+    const result = deriveResearchRoute({
+      readinessStatus: "insufficient-evidence",
+      readinessNextAction: null,
+      repositoryUrl: "https://github.com/acme/contracts",
+      websiteUrl: "https://acme.xyz",
+      disclosureRoute: { contact: "mailto:security@acme.xyz", policyUrl: null },
+    });
+    expect(result.route).toBe("disclosure-available");
+    expect(result.nextAction).toContain("mailto:security@acme.xyz");
+  });
+
+  it("is disclosure-available with the policy url when no contact was found, only a policy", () => {
+    const result = deriveResearchRoute({
+      readinessStatus: "no-current-route",
+      readinessNextAction: null,
+      repositoryUrl: "https://github.com/acme/contracts",
+      websiteUrl: null,
+      disclosureRoute: {
+        contact: null,
+        policyUrl: "https://github.com/acme/contracts/blob/main/SECURITY.md",
+      },
+    });
+    expect(result.route).toBe("disclosure-available");
+    expect(result.nextAction).toContain("https://github.com/acme/contracts/blob/main/SECURITY.md");
+  });
+
+  it("is repository-research when not ready, no disclosure route was found, but a repository is on record", () => {
     const result = deriveResearchRoute({
       readinessStatus: "insufficient-evidence",
       readinessNextAction: null,
       repositoryUrl: "https://github.com/acme/contracts",
       websiteUrl: null,
+      disclosureRoute: null,
     });
     expect(result.route).toBe("repository-research");
     expect(result.nextAction).toContain("https://github.com/acme/contracts");
@@ -250,6 +291,7 @@ describe("deriveResearchRoute", () => {
       readinessNextAction: null,
       repositoryUrl: null,
       websiteUrl: "https://acme.xyz",
+      disclosureRoute: null,
     });
     expect(result.route).toBe("repository-research");
     expect(result.nextAction).toContain("https://acme.xyz");
@@ -261,17 +303,19 @@ describe("deriveResearchRoute", () => {
       readinessNextAction: null,
       repositoryUrl: "https://github.com/acme/contracts",
       websiteUrl: "https://acme.xyz",
+      disclosureRoute: null,
     });
     expect(result.nextAction).toContain("https://github.com/acme/contracts");
     expect(result.nextAction).not.toContain("https://acme.xyz");
   });
 
-  it("is needs-discovery when not ready and neither a repository nor a website is on record", () => {
+  it("is needs-discovery when not ready and nothing (repository, website, or disclosure route) is on record", () => {
     const result = deriveResearchRoute({
       readinessStatus: "no-current-route",
       readinessNextAction: null,
       repositoryUrl: null,
       websiteUrl: null,
+      disclosureRoute: null,
     });
     expect(result.route).toBe("needs-discovery");
     expect(result.nextAction).toMatch(/search for its official documentation/i);

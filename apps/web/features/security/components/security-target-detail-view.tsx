@@ -18,6 +18,7 @@ const READINESS_BADGE_VARIANT: Record<
 
 const ROUTE_LABEL: Record<SecurityTargetPriorityDTO["researchRoute"]["route"], string> = {
   "verified-bounty": "Verified bounty route",
+  "disclosure-available": "Disclosure route available",
   "repository-research": "Independent research route",
   "needs-discovery": "Needs further discovery",
 };
@@ -27,9 +28,71 @@ const ROUTE_BADGE_VARIANT: Record<
   "success" | "secondary" | "outline"
 > = {
   "verified-bounty": "success",
+  "disclosure-available": "success",
   "repository-research": "secondary",
   "needs-discovery": "outline",
 };
+
+function DisclosureRouteSection({
+  label,
+  route,
+}: {
+  label: string;
+  route: SecurityTargetPriorityDTO["disclosure"]["securityTxt"];
+}) {
+  if (!route) {
+    return (
+      <div className="space-y-1">
+        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
+        <p className="text-sm text-muted-foreground">Not checked yet for this target.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</p>
+      {route.found ? (
+        <div className="space-y-1 text-sm">
+          {route.contacts.map((contact) => (
+            <p key={contact}>
+              Contact:{" "}
+              <a
+                href={contact.startsWith("http") ? contact : undefined}
+                className={contact.startsWith("http") ? "text-primary hover:underline" : undefined}
+              >
+                {contact}
+              </a>
+            </p>
+          ))}
+          {route.policyUrl && (
+            <a
+              href={route.policyUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block text-primary hover:underline"
+            >
+              Disclosure policy
+            </a>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Source:{" "}
+            <a href={route.sourceUrl} target="_blank" rel="noreferrer" className="hover:underline">
+              {route.sourceUrl}
+            </a>
+            {" · "}last checked {new Date(route.lastChangedAt).toLocaleDateString()}
+            {route.isExpired && " · marked expired by its own publisher"}
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Checked {new Date(route.lastChangedAt).toLocaleDateString()} — not published at{" "}
+          <span className="font-mono text-xs">{route.sourceUrl}</span>.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function IdentityLink({ href, label }: { href: string; label: string }) {
   return (
@@ -95,7 +158,30 @@ export function SecurityTargetDetailView({ target }: { target: SecurityTargetPri
         </CardContent>
       </Card>
 
-      {/* 3. Scope + actionability, neutral framing */}
+      {/* 3. Disclosure & security contact — a published route is distinct
+          from, and ranked above, a bare repository: it is evidence
+          maintainers expect reports, not a guess. */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Disclosure & security contact</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <DisclosureRouteSection label="security.txt" route={target.disclosure.securityTxt} />
+          <div className="border-t pt-3">
+            <DisclosureRouteSection
+              label="GitHub security policy"
+              route={target.disclosure.githubSecurityPolicy}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            A published contact or policy is a legitimate reporting channel, not confirmation that
+            any specific finding is in scope or that testing is authorized — follow whatever scope
+            the route itself states.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* 4. Scope + actionability, neutral framing */}
       <Card>
         <CardHeader>
           <CardTitle>In-scope assets</CardTitle>
@@ -136,7 +222,7 @@ export function SecurityTargetDetailView({ target }: { target: SecurityTargetPri
         </CardContent>
       </Card>
 
-      {/* 4. Audit evidence, honest 3-state framing — Immunefi's structured
+      {/* 5. Audit evidence, honest 3-state framing — Immunefi's structured
           records and DefiLlama's bare links are kept visibly distinct, since
           the latter carry no auditor name or date and are never merged into
           the former. */}
@@ -214,7 +300,7 @@ export function SecurityTargetDetailView({ target }: { target: SecurityTargetPri
         </CardContent>
       </Card>
 
-      {/* 5. Stored detection reasoning, never framed as an independent audit finding */}
+      {/* 6. Stored detection reasoning, never framed as an independent audit finding */}
       {target.hasOpportunity && target.opportunityReasoning && (
         <Card>
           <CardHeader>
@@ -230,7 +316,7 @@ export function SecurityTargetDetailView({ target }: { target: SecurityTargetPri
         </Card>
       )}
 
-      {/* 6. Qualifying evidence, leads not confirmed vulnerabilities */}
+      {/* 7. Qualifying evidence, leads not confirmed vulnerabilities */}
       <Card>
         <CardHeader>
           <CardTitle>Qualifying signals</CardTitle>
