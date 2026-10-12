@@ -6,6 +6,7 @@ import {
 import { getDb, schema } from "@web3-hunter/db";
 import {
   getBugBountyByTargetAndPlatform,
+  getRawPayloadFromCollector,
   getSecurityTargetBySlug,
   getSecurityTargetIntelligence,
   isBountyProgramExpired,
@@ -23,6 +24,7 @@ import type {
 import {
   countDistinctTriggeringEvents,
   deriveResearchReadiness,
+  deriveResearchRoute,
   SECURITY_TARGET_PRIORITY_TIERS,
   SECURITY_TARGET_RESEARCH_READINESS_STATUSES,
   securityTargetPriorityTier,
@@ -75,6 +77,11 @@ const bountyEventMetadataSubsetSchema = z
     // competition from an ongoing one — `isPaused` stays `false` for a
     // concluded competition, so `bug_bounty.status` alone cannot tell.
     endDate: z.string().nullable().optional(),
+    // Already part of `BountyProgramFields`' diffable canonical shape
+    // (`packages/collectors/src/bounty-program-events.ts`) — just never
+    // parsed out for display before now. `null`/absent whenever Immunefi
+    // itself didn't supply one for this program.
+    websiteUrl: z.string().nullable().optional(),
   })
   .passthrough();
 
@@ -114,6 +121,8 @@ interface LatestBountyProgramFields {
   /** The `smart_contract`-typed subset of the latest Event's `assets`, in source order — `[]` whenever `assets` metadata is absent, never derived from `smartContractAssetIds` alone. */
   smartContractAssets: SecurityTargetScopeAssetDTO[];
   endDate: string | null;
+  /** Immunefi's own `websiteUrl` for this program, verbatim — `null` whenever Immunefi didn't supply one. */
+  websiteUrl: string | null;
 }
 
 /**
@@ -140,6 +149,7 @@ function parseBountyEventMetadata(metadata: unknown): LatestBountyProgramFields 
     smartContractAssetIds: parsed.data.smartContractAssetIds ?? [],
     smartContractAssets,
     endDate: parsed.data.endDate ?? null,
+    websiteUrl: parsed.data.websiteUrl ?? null,
   };
 }
 
@@ -167,14 +177,89 @@ async function getLatestBountyProgramFields(
   return parseBountyEventMetadata(latestEvent.metadata);
 }
 
+/**
+ * The subset of a DefiLlama protocol's raw, `.passthrough()`-preserved
+ * payload this read model surfaces — never the diffable canonical shape
+ * (`ProtocolFields`), which deliberately excludes these fields so they
+ * can never trigger a Signal (see `protocol-events.ts`'s doc comment).
+ * `url`/`twitter`/`audit_links` have always been captured and stored —
+ * this is the first time anything reads them back. Validated
+ * defensively for the same reason `bountyEventMetadataSubsetSchema` is:
+ * this reads a `jsonb` column at a system boundary.
+ */
+const defiLlamaProtocolPayloadSubsetSchema = z
+  .object({
+    url: z.string().nullable().optional(),
+    twitter: z.string().nullable().optional(),
+    // Bare report links DefiLlama itself lists — no auditor/date
+    // structure, unlike Immunefi's `audits`. DefiLlama only ever
+    // populates this alongside a non-zero `audits` count, so a target
+    // whose only qualifying Signal is `audit-coverage-gap` (which
+    // requires that count to be zero) will always see `[]` here too —
+    // not a gap in this lookup, a fact about the source data.
+    audit_links: z.array(z.string()).optional(),
+  })
+  .passthrough();
+
+interface DefiLlamaIdentityEnrichment {
+  websiteUrl: string | null;
+  twitterUrl: string | null;
+  auditLinks: string[];
+}
+
+const EMPTY_DEFILLAMA_ENRICHMENT: DefiLlamaIdentityEnrichment = {
+  websiteUrl: null,
+  twitterUrl: null,
+  auditLinks: [],
+};
+
+/**
+ * Reads back whatever DefiLlama already captured for this target's
+ * official website, Twitter/X handle, and audit-report links — via the
+ * existing `getRawPayloadFromCollector` primitive (reused unmodified,
+ * not re-implemented), never a fresh request to DefiLlama. Returns the
+ * empty/`null` shape, never throws, whenever this target has no DefiLlama
+ * identity at all or DefiLlama's own payload omitted a given field.
+ */
+async function getDefiLlamaIdentityEnrichment(
+  securityTargetId: string,
+): Promise<DefiLlamaIdentityEnrichment> {
+  const payload = await getRawPayloadFromCollector(securityTargetId, "defillama");
+  if (!payload) {
+    return EMPTY_DEFILLAMA_ENRICHMENT;
+  }
+
+  const parsed = defiLlamaProtocolPayloadSubsetSchema.safeParse(payload);
+  if (!parsed.success) {
+    return EMPTY_DEFILLAMA_ENRICHMENT;
+  }
+
+  return {
+    websiteUrl: parsed.data.url ?? null,
+    twitterUrl: parsed.data.twitter ? `https://x.com/${parsed.data.twitter}` : null,
+    auditLinks: parsed.data.audit_links ?? [],
+  };
+}
+
 function deriveAuditEvidence(
   bountyFields: { audits: BountyAuditFields[] } | null,
+  defiLlamaAuditLinks: string[],
 ): SecurityTargetAuditEvidenceDTO {
   if (!bountyFields) {
-    return { status: "unavailable", entries: [], limitation: AUDIT_EVIDENCE_LIMITATION };
+    return {
+      status: "unavailable",
+      entries: [],
+      limitation: AUDIT_EVIDENCE_LIMITATION,
+      defiLlamaAuditLinks,
+    };
   }
   if (bountyFields.audits.length === 0) {
-    return { status: "none", entries: [], limitation: AUDIT_EVIDENCE_LIMITATION };
+    return {
+      status: "none",
+      entries: [],
+      limitation: AUDIT_EVIDENCE_LIMITATION,
+      defiLlamaAuditLinks,
+    };
   }
   return {
     status: "present",
@@ -185,6 +270,7 @@ function deriveAuditEvidence(
       date: audit.date,
     })),
     limitation: AUDIT_EVIDENCE_LIMITATION,
+    defiLlamaAuditLinks,
   };
 }
 
@@ -287,23 +373,25 @@ async function buildSecurityTargetPriority(
 ): Promise<SecurityTargetPriorityDTO> {
   const db = getDb();
 
-  const [signals, intelligence, bountyFields, opportunityRows] = await Promise.all([
-    listSecuritySignalsForTarget(target.id),
-    getSecurityTargetIntelligence(target.id),
-    getLatestBountyProgramFields(target.id),
-    // Most recently *detected* Opportunity wins when more than one row
-    // exists for this target (one per detection window) — deterministic,
-    // never an arbitrary `.limit(1)` pick.
-    db
-      .select({
-        id: schema.securityOpportunity.id,
-        reasoning: schema.securityOpportunity.reasoning,
-      })
-      .from(schema.securityOpportunity)
-      .where(eq(schema.securityOpportunity.securityTargetId, target.id))
-      .orderBy(desc(schema.securityOpportunity.detectedAt), desc(schema.securityOpportunity.id))
-      .limit(1),
-  ]);
+  const [signals, intelligence, bountyFields, opportunityRows, defiLlamaEnrichment] =
+    await Promise.all([
+      listSecuritySignalsForTarget(target.id),
+      getSecurityTargetIntelligence(target.id),
+      getLatestBountyProgramFields(target.id),
+      // Most recently *detected* Opportunity wins when more than one row
+      // exists for this target (one per detection window) — deterministic,
+      // never an arbitrary `.limit(1)` pick.
+      db
+        .select({
+          id: schema.securityOpportunity.id,
+          reasoning: schema.securityOpportunity.reasoning,
+        })
+        .from(schema.securityOpportunity)
+        .where(eq(schema.securityOpportunity.securityTargetId, target.id))
+        .orderBy(desc(schema.securityOpportunity.detectedAt), desc(schema.securityOpportunity.id))
+        .limit(1),
+      getDefiLlamaIdentityEnrichment(target.id),
+    ]);
 
   const { tier, reason, qualifyingSignalTypes } = securityTargetPriorityTier(
     signals.map((signal) => signal.signalType),
@@ -329,6 +417,13 @@ async function buildSecurityTargetPriority(
     qualifyingSignalTypes,
     exampleAsset: actionability.assets[0] ?? null,
   });
+  const websiteUrl = defiLlamaEnrichment.websiteUrl ?? bountyFields?.websiteUrl ?? null;
+  const researchRoute = deriveResearchRoute({
+    readinessStatus: researchReadiness.status,
+    readinessNextAction: researchReadiness.nextAction,
+    repositoryUrl: target.repositoryUrl,
+    websiteUrl,
+  });
 
   return {
     id: target.id,
@@ -342,10 +437,19 @@ async function buildSecurityTargetPriority(
     lastSignalAt: intelligence?.lastSignalAt?.toISOString() ?? null,
     hasOpportunity: opportunityRows.length > 0,
     opportunityReasoning: opportunityRows[0]?.reasoning ?? null,
-    identity: { repositoryUrl: target.repositoryUrl },
-    audit: deriveAuditEvidence(bountyFields),
+    identity: {
+      repositoryUrl: target.repositoryUrl,
+      // DefiLlama's own `url` preferred (far higher real-world coverage
+      // — see `getDefiLlamaIdentityEnrichment`'s doc comment); Immunefi's
+      // `websiteUrl` only as a fallback, since most Immunefi-only targets
+      // (no DefiLlama identity at all) have no other source for this.
+      websiteUrl,
+      twitterUrl: defiLlamaEnrichment.twitterUrl,
+    },
+    audit: deriveAuditEvidence(bountyFields, defiLlamaEnrichment.auditLinks),
     actionability,
     researchReadiness,
+    researchRoute,
   };
 }
 

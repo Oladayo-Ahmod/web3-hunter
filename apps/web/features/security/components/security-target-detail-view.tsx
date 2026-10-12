@@ -16,39 +16,86 @@ const READINESS_BADGE_VARIANT: Record<
   "no-current-route": "outline",
 };
 
+const ROUTE_LABEL: Record<SecurityTargetPriorityDTO["researchRoute"]["route"], string> = {
+  "verified-bounty": "Verified bounty route",
+  "repository-research": "Independent research route",
+  "needs-discovery": "Needs further discovery",
+};
+
+const ROUTE_BADGE_VARIANT: Record<
+  SecurityTargetPriorityDTO["researchRoute"]["route"],
+  "success" | "secondary" | "outline"
+> = {
+  "verified-bounty": "success",
+  "repository-research": "secondary",
+  "needs-discovery": "outline",
+};
+
+function IdentityLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-accent hover:text-accent-foreground"
+    >
+      {label}
+    </a>
+  );
+}
+
 export function SecurityTargetDetailView({ target }: { target: SecurityTargetPriorityDTO }) {
+  const hasAnyIdentityLink =
+    target.identity.repositoryUrl || target.identity.websiteUrl || target.identity.twitterUrl;
+
   return (
     <div className="space-y-6">
       {/* 1. Identity + readiness */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{target.name}</h1>
           <Badge variant={READINESS_BADGE_VARIANT[target.researchReadiness.status]}>
             {READINESS_LABEL[target.researchReadiness.status]}
+          </Badge>
+          <Badge variant={ROUTE_BADGE_VARIANT[target.researchRoute.route]}>
+            {ROUTE_LABEL[target.researchRoute.route]}
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">
           Signal tier {target.tier} — {target.tierReason}
         </p>
         <p className="text-sm text-muted-foreground">{target.researchReadiness.reason}</p>
-        {target.researchReadiness.nextAction && (
-          <p className="text-sm font-medium text-primary">{target.researchReadiness.nextAction}</p>
-        )}
-        {target.identity.repositoryUrl ? (
-          <a
-            href={target.identity.repositoryUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-block text-sm text-primary hover:underline"
-          >
-            Repository
-          </a>
+
+        {hasAnyIdentityLink ? (
+          <div className="flex flex-wrap gap-2">
+            {target.identity.repositoryUrl && (
+              <IdentityLink href={target.identity.repositoryUrl} label="Repository" />
+            )}
+            {target.identity.websiteUrl && (
+              <IdentityLink href={target.identity.websiteUrl} label="Official website" />
+            )}
+            {target.identity.twitterUrl && (
+              <IdentityLink href={target.identity.twitterUrl} label="Twitter / X" />
+            )}
+          </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No repository on record for this target.</p>
+          <p className="text-sm text-muted-foreground">
+            No repository, official website, or Twitter/X account on record for this target.
+          </p>
         )}
       </div>
 
-      {/* 2. Scope + actionability, neutral framing */}
+      {/* 2. Research route — the concrete next step, always present */}
+      <Card className="border-primary/40 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="text-base">What to do next</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm font-medium text-primary">{target.researchRoute.nextAction}</p>
+        </CardContent>
+      </Card>
+
+      {/* 3. Scope + actionability, neutral framing */}
       <Card>
         <CardHeader>
           <CardTitle>In-scope assets</CardTitle>
@@ -89,47 +136,85 @@ export function SecurityTargetDetailView({ target }: { target: SecurityTargetPri
         </CardContent>
       </Card>
 
-      {/* 3. Audit evidence, honest 3-state framing */}
+      {/* 4. Audit evidence, honest 3-state framing — Immunefi's structured
+          records and DefiLlama's bare links are kept visibly distinct, since
+          the latter carry no auditor name or date and are never merged into
+          the former. */}
       <Card>
         <CardHeader>
           <CardTitle>Audit history</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {target.audit.status === "unavailable" && (
-            <p className="text-sm text-muted-foreground">
-              No audit data is available for this target.
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              Immunefi audit records
             </p>
-          )}
-          {target.audit.status === "none" && (
-            <p className="text-sm text-muted-foreground">
-              Audit data is available for this target, and it recorded no audits.
+            {target.audit.status === "unavailable" && (
+              <p className="text-sm text-muted-foreground">
+                No Immunefi bounty-program data has been recorded for this target, so there is
+                nothing to say about audits one way or the other.
+              </p>
+            )}
+            {target.audit.status === "none" && (
+              <p className="text-sm text-muted-foreground">
+                Immunefi bounty-program data is on record for this target, and it recorded no
+                audits. This does not by itself mean the target has never been audited — see the
+                note below.
+              </p>
+            )}
+            {target.audit.status === "present" && (
+              <ul className="space-y-2 text-sm">
+                {target.audit.entries.map((entry) => (
+                  <li key={entry.id} className="rounded-md border p-3">
+                    <p>{entry.auditor ?? "Unknown auditor"}</p>
+                    <p className="text-xs text-muted-foreground">{entry.date ?? "Date unknown"}</p>
+                    {entry.url && (
+                      <a
+                        href={entry.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        {entry.url}
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="space-y-2 border-t pt-3">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              DefiLlama audit links
             </p>
-          )}
-          {target.audit.status === "present" && (
-            <ul className="space-y-2 text-sm">
-              {target.audit.entries.map((entry) => (
-                <li key={entry.id} className="rounded-md border p-3">
-                  <p>{entry.auditor ?? "Unknown auditor"}</p>
-                  <p className="text-xs text-muted-foreground">{entry.date ?? "Date unknown"}</p>
-                  {entry.url && (
+            {target.audit.defiLlamaAuditLinks.length > 0 ? (
+              <ul className="space-y-1 text-sm">
+                {target.audit.defiLlamaAuditLinks.map((url) => (
+                  <li key={url}>
                     <a
-                      href={entry.url}
+                      href={url}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs text-primary hover:underline"
+                      className="text-primary hover:underline"
                     >
-                      {entry.url}
+                      {url}
                     </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No audit links are listed in DefiLlama&apos;s own record for this target.
+              </p>
+            )}
+          </div>
+
           <p className="text-xs text-muted-foreground">{target.audit.limitation}</p>
         </CardContent>
       </Card>
 
-      {/* 4. Stored detection reasoning, never framed as an independent audit finding */}
+      {/* 5. Stored detection reasoning, never framed as an independent audit finding */}
       {target.hasOpportunity && target.opportunityReasoning && (
         <Card>
           <CardHeader>
@@ -145,7 +230,7 @@ export function SecurityTargetDetailView({ target }: { target: SecurityTargetPri
         </Card>
       )}
 
-      {/* 5. Qualifying evidence, leads not confirmed vulnerabilities */}
+      {/* 6. Qualifying evidence, leads not confirmed vulnerabilities */}
       <Card>
         <CardHeader>
           <CardTitle>Qualifying signals</CardTitle>

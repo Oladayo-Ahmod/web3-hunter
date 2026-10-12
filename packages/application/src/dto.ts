@@ -465,13 +465,22 @@ export type SecurityTargetPriorityTierDTO = "A" | "B" | "C";
 
 /**
  * Identity evidence for a Security Target, represented honestly: `null`
- * means this target genuinely has no stored repository URL (either no
- * source ever supplied one, or it was never backfilled — see
- * `packages/security/src/security-target-store.ts`'s
+ * means this target genuinely has no stored value for that field (either
+ * no source ever supplied one, or — for `repositoryUrl` — it was never
+ * backfilled; see `packages/security/src/security-target-store.ts`'s
  * `updateSecurityTargetRepositoryUrlIfMissing`), never a guess.
+ *
+ * `websiteUrl`/`twitterUrl` are read straight from each source's own
+ * already-captured raw payload (DefiLlama's `url`/`twitter`, falling
+ * back to Immunefi's `websiteUrl` when DefiLlama has none) — no new
+ * external request is made to produce them; see
+ * `security-target-query-service.ts`'s `getDefiLlamaIdentityEnrichment`
+ * doc comment for the exact precedence rule and why.
  */
 export interface SecurityTargetIdentityEvidenceDTO {
   repositoryUrl: string | null;
+  websiteUrl: string | null;
+  twitterUrl: string | null;
 }
 
 /**
@@ -508,6 +517,18 @@ export interface SecurityTargetAuditEvidenceDTO {
   status: "unavailable" | "none" | "present";
   entries: SecurityTargetAuditEntryDTO[];
   limitation: string;
+  /**
+   * Bare audit-report URLs DefiLlama lists for this target (its own
+   * `audit_links` field) — distinct from `entries`, which are Immunefi's
+   * structured, attributed audit records. These carry no auditor name or
+   * date, only a link, and are never merged into `entries` so the two
+   * evidence qualities are never confused. Always `[]` when DefiLlama
+   * reports zero audits for this target — which, by construction, is
+   * every target whose only qualifying signal is `audit-coverage-gap`
+   * (that signal requires DefiLlama's own audit count to be zero, so
+   * DefiLlama never supplies links in that exact case either).
+   */
+  defiLlamaAuditLinks: string[];
 }
 
 /**
@@ -577,6 +598,21 @@ export interface SecurityTargetResearchReadinessDTO {
   nextAction: string | null;
 }
 
+/** See `packages/application/src/security-priority.ts`'s `deriveResearchRoute` doc comment for the full rule. */
+export type SecurityTargetResearchRouteDTO =
+  "verified-bounty" | "repository-research" | "needs-discovery";
+
+/**
+ * The practical "where do I actually go" classification, independent of
+ * `researchReadiness`'s evidence-based status — see `deriveResearchRoute`.
+ * Always present, even for `"needs-discovery"`, so the UI never has to
+ * infer a next step from the absence of one.
+ */
+export interface SecurityTargetResearchRouteResultDTO {
+  route: SecurityTargetResearchRouteDTO;
+  nextAction: string;
+}
+
 /**
  * One row of the Security Research Prioritization view (the approved
  * design) — composed read-time from a Security Target's Signals,
@@ -633,4 +669,5 @@ export interface SecurityTargetPriorityDTO {
   audit: SecurityTargetAuditEvidenceDTO;
   actionability: SecurityTargetActionabilityDTO;
   researchReadiness: SecurityTargetResearchReadinessDTO;
+  researchRoute: SecurityTargetResearchRouteResultDTO;
 }

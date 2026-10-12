@@ -28,6 +28,8 @@ async function insertBountyProgramEvent(input: {
   /** Omitted entirely (not just `[]`) when not supplied — matches a real payload captured before per-asset detail was tracked. */
   assets?: Array<{ id: string; type: string; description: string | null; url: string | null }>;
   endDate?: string | null;
+  /** Omitted entirely when not supplied — matches a real payload captured before `websiteUrl` was tracked in `BountyProgramFields`. */
+  websiteUrl?: string | null;
   /**
    * Overrides the Event's id. Production assigns
    * `deriveEventId(rawRecordId)` (a deterministic, content-hash-derived
@@ -59,6 +61,7 @@ async function insertBountyProgramEvent(input: {
         smartContractAssetIds: input.smartContractAssetIds ?? [],
         ...(input.assets ? { assets: input.assets } : {}),
         endDate: input.endDate ?? null,
+        ...(input.websiteUrl !== undefined ? { websiteUrl: input.websiteUrl } : {}),
       },
     });
 }
@@ -129,6 +132,51 @@ function findBySlug(rows: Awaited<ReturnType<typeof listSecurityTargetPriority>>
     throw new Error(`Expected a result for slug "${slug}"`);
   }
   return row;
+}
+
+// A single shared "defillama" Collector row, created lazily on first use —
+// `collector.slug` is unique, so every test in this file that needs a
+// DefiLlama Raw Record payload must reuse the same Collector id rather
+// than each creating its own.
+let cachedDefiLlamaCollectorId: string | undefined;
+async function getOrCreateDefiLlamaCollectorId() {
+  if (cachedDefiLlamaCollectorId) {
+    return cachedDefiLlamaCollectorId;
+  }
+  const [collector] = await getDb()
+    .insert(schema.collector)
+    .values({ slug: "defillama", sourceType: "test" })
+    .returning();
+  cachedDefiLlamaCollectorId = collector!.id;
+  return cachedDefiLlamaCollectorId;
+}
+
+/**
+ * Seeds a real `security_target_source_identity` + `raw_record` pair for
+ * the "defillama" Collector, exactly as `getRawPayloadFromCollector`
+ * expects to read it back — mirrors
+ * `security-target-identity-collision.integration.test.ts`'s own fixture
+ * for the same function, since both exercise the identical read path.
+ */
+async function seedDefiLlamaRawPayload(input: {
+  securityTargetId: string;
+  sourceIdentifier: string;
+  payload: Record<string, unknown>;
+}) {
+  const collectorId = await getOrCreateDefiLlamaCollectorId();
+  await getDb().insert(schema.securityTargetSourceIdentity).values({
+    collectorId,
+    sourceIdentifier: input.sourceIdentifier,
+    securityTargetId: input.securityTargetId,
+  });
+  await getDb()
+    .insert(schema.rawRecord)
+    .values({
+      collectorId,
+      contentHash: `hash-${input.sourceIdentifier}`,
+      sourceIdentifier: input.sourceIdentifier,
+      payload: input.payload,
+    });
 }
 
 describe("security-target-query-service (integration)", () => {
@@ -1112,6 +1160,190 @@ describe("security-target-query-service (integration)", () => {
       // An Opportunity's existence is independent of tier — Tier B here is
       // still driven solely by the qualifying Signal, not by this flag.
       expect(row.tier).toBe("B");
+    });
+  });
+
+  describe("listSecurityTargetPriority — DefiLlama identity enrichment and audit links", () => {
+    it("is null for websiteUrl/twitterUrl and [] for defiLlamaAuditLinks when no DefiLlama Raw Record exists", async () => {
+      const target = await createSecurityTarget({ slug: "test-defillama-no-record", name: "T" });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.identity.websiteUrl).toBeNull();
+      expect(row.identity.twitterUrl).toBeNull();
+      expect(row.audit.defiLlamaAuditLinks).toEqual([]);
+    });
+
+    it("surfaces DefiLlama's own url/twitter/audit_links from the already-captured Raw Record payload", async () => {
+      const target = await createSecurityTarget({ slug: "test-defillama-enriched", name: "T" });
+      await seedDefiLlamaRawPayload({
+        securityTargetId: target.id,
+        sourceIdentifier: "test-defillama-enriched",
+        payload: {
+          url: "https://app.aegis.im",
+          twitter: "aegis_im",
+          audits: "2",
+          audit_links: ["https://audit.example/report-1.pdf"],
+        },
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.identity.websiteUrl).toBe("https://app.aegis.im");
+      expect(row.identity.twitterUrl).toBe("https://x.com/aegis_im");
+      expect(row.audit.defiLlamaAuditLinks).toEqual(["https://audit.example/report-1.pdf"]);
+    });
+
+    it("reproduces the real Aegis YUSD case: a website and twitter handle, but no audit links, since DefiLlama's own audit count is zero", async () => {
+      const target = await createSecurityTarget({ slug: "test-aegis-yusd", name: "Aegis YUSD" });
+      await seedDefiLlamaRawPayload({
+        securityTargetId: target.id,
+        sourceIdentifier: "test-aegis-yusd",
+        payload: {
+          url: "https://app.aegis.im",
+          twitter: "aegis_im",
+          audits: "0",
+          // DefiLlama never supplies audit_links when audits === "0" —
+          // the field is omitted entirely in a real payload, not `[]`.
+        },
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.identity.websiteUrl).toBe("https://app.aegis.im");
+      expect(row.identity.twitterUrl).toBe("https://x.com/aegis_im");
+      expect(row.audit.defiLlamaAuditLinks).toEqual([]);
+      // Previously the only route this target had to offer was its stored
+      // detection reasoning — it now also has a concrete independent
+      // research route via the newly-surfaced website.
+      expect(row.researchRoute.route).toBe("repository-research");
+      expect(row.researchRoute.nextAction).toContain("https://app.aegis.im");
+    });
+
+    it("prefers DefiLlama's url over Immunefi's websiteUrl when both sources are present", async () => {
+      const target = await createSecurityTarget({ slug: "test-defillama-precedence", name: "T" });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        websiteUrl: "https://immunefi-fallback.example",
+      });
+      await seedDefiLlamaRawPayload({
+        securityTargetId: target.id,
+        sourceIdentifier: "test-defillama-precedence",
+        payload: { url: "https://defillama-preferred.example" },
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.identity.websiteUrl).toBe("https://defillama-preferred.example");
+    });
+
+    it("falls back to Immunefi's websiteUrl when DefiLlama has none on record", async () => {
+      const target = await createSecurityTarget({ slug: "test-immunefi-fallback", name: "T" });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        websiteUrl: "https://immunefi-only.example",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.identity.websiteUrl).toBe("https://immunefi-only.example");
+    });
+
+    it("degrades to the empty enrichment, never throwing, when the stored Raw Record payload doesn't match the expected shape", async () => {
+      const target = await createSecurityTarget({ slug: "test-defillama-malformed", name: "T" });
+      await seedDefiLlamaRawPayload({
+        securityTargetId: target.id,
+        sourceIdentifier: "test-defillama-malformed",
+        payload: { url: 12345, twitter: ["not", "a", "string"] },
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.identity.websiteUrl).toBeNull();
+      expect(row.identity.twitterUrl).toBeNull();
+      expect(row.audit.defiLlamaAuditLinks).toEqual([]);
+    });
+  });
+
+  describe("listSecurityTargetPriority — researchRoute", () => {
+    it("is verified-bounty when researchReadiness is ready, regardless of identity evidence", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-route-verified-bounty",
+        name: "T",
+        repositoryUrl: "https://github.com/acme",
+      });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        smartContractAssetIds: ["asset-1"],
+        assets: [{ id: "asset-1", type: "contract", description: "Vault.sol", url: null }],
+        endDate: null,
+      });
+      await upsertBugBounty({
+        securityTargetId: target.id,
+        platform: "immunefi",
+        status: "active",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchReadiness.status).toBe("ready");
+      expect(row.researchRoute.route).toBe("verified-bounty");
+      expect(row.researchRoute.nextAction).toBe(row.researchReadiness.nextAction);
+    });
+
+    it("is repository-research when not ready but a repositoryUrl is on record", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-route-repository",
+        name: "T",
+        repositoryUrl: "https://github.com/acme/contracts",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchReadiness.status).not.toBe("ready");
+      expect(row.researchRoute.route).toBe("repository-research");
+      expect(row.researchRoute.nextAction).toContain("https://github.com/acme/contracts");
+    });
+
+    it("is needs-discovery when not ready and no repository or website is on record", async () => {
+      const target = await createSecurityTarget({ slug: "test-route-needs-discovery", name: "T" });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.researchReadiness.status).not.toBe("ready");
+      expect(row.identity.repositoryUrl).toBeNull();
+      expect(row.identity.websiteUrl).toBeNull();
+      expect(row.researchRoute.route).toBe("needs-discovery");
+    });
+
+    it("is present and consistent on both the single-slug lookup and the paginated listing", async () => {
+      const target = await createSecurityTarget({
+        slug: "test-route-page-parity",
+        name: "T",
+        repositoryUrl: "https://github.com/acme/parity",
+      });
+
+      const bySlug = await getSecurityTargetPriorityBySlug(target.slug);
+      const page = await listSecurityTargetPriorityPage({ page: 1, pageSize: 500, sort: "slug" });
+      const pageRow = page.items.find((item) => item.slug === target.slug);
+
+      expect(bySlug?.researchRoute).toEqual({
+        route: "repository-research",
+        nextAction: expect.stringContaining("https://github.com/acme/parity"),
+      });
+      expect(pageRow?.researchRoute).toEqual(bySlug?.researchRoute);
     });
   });
 

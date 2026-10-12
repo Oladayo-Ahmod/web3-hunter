@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   countDistinctTriggeringEvents,
   deriveResearchReadiness,
+  deriveResearchRoute,
   securityTargetPriorityTier,
 } from "./security-priority";
 
@@ -206,5 +207,73 @@ describe("deriveResearchReadiness", () => {
     expect(result.nextAction).toContain("for example");
     expect(result.nextAction).toContain("https://github.com/acme/contracts");
     expect(result.nextAction).toContain("one of the listed assets");
+  });
+});
+
+describe("deriveResearchRoute", () => {
+  it("is verified-bounty and reuses readiness's nextAction verbatim when readiness is ready", () => {
+    const result = deriveResearchRoute({
+      readinessStatus: "ready",
+      readinessNextAction: "Review the 2 smart-contract asset(s) currently in scope.",
+      repositoryUrl: null,
+      websiteUrl: null,
+    });
+    expect(result.route).toBe("verified-bounty");
+    expect(result.nextAction).toBe("Review the 2 smart-contract asset(s) currently in scope.");
+  });
+
+  it("falls back to a generic bounty nextAction if readiness somehow supplied none", () => {
+    const result = deriveResearchRoute({
+      readinessStatus: "ready",
+      readinessNextAction: null,
+      repositoryUrl: null,
+      websiteUrl: null,
+    });
+    expect(result.route).toBe("verified-bounty");
+    expect(result.nextAction).toMatch(/active bounty program/i);
+  });
+
+  it("is repository-research when not ready but a repository is on record", () => {
+    const result = deriveResearchRoute({
+      readinessStatus: "insufficient-evidence",
+      readinessNextAction: null,
+      repositoryUrl: "https://github.com/acme/contracts",
+      websiteUrl: null,
+    });
+    expect(result.route).toBe("repository-research");
+    expect(result.nextAction).toContain("https://github.com/acme/contracts");
+  });
+
+  it("is repository-research when not ready but only a website is on record", () => {
+    const result = deriveResearchRoute({
+      readinessStatus: "no-current-route",
+      readinessNextAction: null,
+      repositoryUrl: null,
+      websiteUrl: "https://acme.xyz",
+    });
+    expect(result.route).toBe("repository-research");
+    expect(result.nextAction).toContain("https://acme.xyz");
+  });
+
+  it("prefers the repository url over the website url when both are present", () => {
+    const result = deriveResearchRoute({
+      readinessStatus: "no-current-route",
+      readinessNextAction: null,
+      repositoryUrl: "https://github.com/acme/contracts",
+      websiteUrl: "https://acme.xyz",
+    });
+    expect(result.nextAction).toContain("https://github.com/acme/contracts");
+    expect(result.nextAction).not.toContain("https://acme.xyz");
+  });
+
+  it("is needs-discovery when not ready and neither a repository nor a website is on record", () => {
+    const result = deriveResearchRoute({
+      readinessStatus: "no-current-route",
+      readinessNextAction: null,
+      repositoryUrl: null,
+      websiteUrl: null,
+    });
+    expect(result.route).toBe("needs-discovery");
+    expect(result.nextAction).toMatch(/search for its official documentation/i);
   });
 });

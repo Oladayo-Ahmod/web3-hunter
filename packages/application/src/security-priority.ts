@@ -197,3 +197,74 @@ export function deriveResearchReadiness(
     nextAction: null,
   };
 }
+
+export const SECURITY_TARGET_RESEARCH_ROUTES = [
+  "verified-bounty",
+  "repository-research",
+  "needs-discovery",
+] as const;
+export type SecurityTargetResearchRoute = (typeof SECURITY_TARGET_RESEARCH_ROUTES)[number];
+
+export interface SecurityTargetResearchRouteResult {
+  route: SecurityTargetResearchRoute;
+  nextAction: string;
+}
+
+export interface SecurityTargetResearchRouteInput {
+  /** The already-derived readiness status — never recomputed here. */
+  readinessStatus: SecurityTargetResearchReadinessStatus;
+  /** The already-derived readiness `nextAction` — reused verbatim when `readinessStatus === "ready"`. */
+  readinessNextAction: string | null;
+  repositoryUrl: string | null;
+  websiteUrl: string | null;
+}
+
+/**
+ * The practical "where do I actually go" classification for a researcher —
+ * a separate concern from `deriveResearchReadiness`'s evidence-based
+ * status. That function says whether a *verified* route (an active bounty)
+ * exists; this one says what's still possible when it doesn't, so a target
+ * with a public repository or official site is never presented identically
+ * to one with nothing at all. Never recomputes readiness — takes its
+ * `status`/`nextAction` as already-decided input, so the tested readiness
+ * rule stays the single source of truth for whether a bounty route is
+ * verified.
+ *
+ * - `"verified-bounty"`: readiness is already `"ready"` — the bounty
+ *   program itself is the route; its `nextAction` is reused verbatim.
+ * - `"repository-research"`: no verified bounty route, but a public
+ *   repository or official website is on record — independent code
+ *   review is still a real, concrete option, even without a paid bounty.
+ * - `"needs-discovery"`: neither — nothing stored yet points anywhere a
+ *   researcher could start; the honest next action is to say so and
+ *   suggest where to look, never to imply nothing exists.
+ */
+export function deriveResearchRoute(
+  input: SecurityTargetResearchRouteInput,
+): SecurityTargetResearchRouteResult {
+  if (input.readinessStatus === "ready") {
+    return {
+      route: "verified-bounty",
+      nextAction:
+        input.readinessNextAction ?? "Review the active bounty program's in-scope assets.",
+    };
+  }
+
+  if (input.repositoryUrl || input.websiteUrl) {
+    const where = input.repositoryUrl ?? input.websiteUrl!;
+    return {
+      route: "repository-research",
+      nextAction:
+        "No active, verified bounty program currently applies — review the public repository " +
+        `or official site directly (${where}) as independent research.`,
+    };
+  }
+
+  return {
+    route: "needs-discovery",
+    nextAction:
+      "No repository, official website, or verified bounty route is on record for this " +
+      "target yet — search for its official documentation, GitHub organization, or disclosure " +
+      "page before starting research.",
+  };
+}

@@ -17,6 +17,21 @@ const READINESS_BADGE_VARIANT: Record<
   "no-current-route": "outline",
 };
 
+const ROUTE_LABEL: Record<SecurityTargetPriorityDTO["researchRoute"]["route"], string> = {
+  "verified-bounty": "Verified bounty",
+  "repository-research": "Independent research",
+  "needs-discovery": "Needs discovery",
+};
+
+const ROUTE_BADGE_VARIANT: Record<
+  SecurityTargetPriorityDTO["researchRoute"]["route"],
+  "success" | "secondary" | "outline"
+> = {
+  "verified-bounty": "success",
+  "repository-research": "secondary",
+  "needs-discovery": "outline",
+};
+
 export function SecurityTargetCard({ target }: { target: SecurityTargetPriorityDTO }) {
   return (
     <Link href={`/security/${target.slug}`} className="block focus-visible:outline-none">
@@ -29,8 +44,13 @@ export function SecurityTargetCard({ target }: { target: SecurityTargetPriorityD
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-1 text-sm text-muted-foreground">
-          <p>Signal tier: {target.tier}</p>
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <div className="flex items-center justify-between gap-2">
+            <span>Signal tier: {target.tier}</span>
+            <Badge variant={ROUTE_BADGE_VARIANT[target.researchRoute.route]}>
+              {ROUTE_LABEL[target.researchRoute.route]}
+            </Badge>
+          </div>
           <p>
             {target.qualifyingSignalTypes.length > 0
               ? target.qualifyingSignalTypes.join(", ").replaceAll("-", " ")
