@@ -34,7 +34,7 @@ export function SecurityTargetDetailView({ target }: { target: SecurityTargetPri
         {target.researchReadiness.nextAction && (
           <p className="text-sm font-medium text-primary">{target.researchReadiness.nextAction}</p>
         )}
-        {target.identity.repositoryUrl && (
+        {target.identity.repositoryUrl ? (
           <a
             href={target.identity.repositoryUrl}
             target="_blank"
@@ -43,6 +43,8 @@ export function SecurityTargetDetailView({ target }: { target: SecurityTargetPri
           >
             Repository
           </a>
+        ) : (
+          <p className="text-sm text-muted-foreground">No repository on record for this target.</p>
         )}
       </div>
 
