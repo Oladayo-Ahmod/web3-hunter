@@ -102,7 +102,7 @@ Run the app:
 pnpm dev
 ```
 
-Visit `http://localhost:3000` and `http://localhost:3000/health` to confirm the app and database are both reachable.
+Visit `http://localhost:3000` and `http://localhost:3000/health` to confirm the app and database are both reachable. Once the Security collectors below have run, `http://localhost:3000/security` is the Security Research Feed.
 
 ### Populating data
 
@@ -116,6 +116,10 @@ pnpm --filter @web3-hunter/web collect:greenhouse         # ingest job postings
 pnpm --filter @web3-hunter/web collect:lever              # ingest job postings
 pnpm --filter @web3-hunter/web collect:ashby              # ingest job postings
 pnpm --filter @web3-hunter/web collect:github              # ingest repository data
+
+pnpm --filter @web3-hunter/web collect:defillama          # ingest DeFi protocol snapshots (Security Research Feed)
+pnpm --filter @web3-hunter/web collect:immunefi            # ingest bug-bounty programs (Security Research Feed)
+pnpm --filter @web3-hunter/web score:security              # detect Security Signals, score Security Opportunities
 
 pnpm --filter @web3-hunter/web score:companies            # detect Signals, score Opportunities
 pnpm --filter @web3-hunter/web classify:opportunities     # tag Opportunities with Skills
@@ -176,11 +180,11 @@ Running the commands above by hand every time isn't required. There is still no 
 
 Real measured durations, each job's `timeout-minutes` set with headroom above them: Lever 5m31s, Greenhouse 24m35s, Ashby 23m40s, Job classification 11m46s over ~1,500 open postings against the current curated directory (~500 companies) — all well past any Vercel serverless function's execution ceiling (Hobby: 60s hard cap; Pro: 300s standard), which is why GitHub Actions (no such ceiling; up to 6h on the free tier) remains the recommendation over the `/api/cron/*` routes below for the recurring schedule.
 
-**[`.github/workflows/enrichment.yml`](.github/workflows/enrichment.yml) — everything else, once daily.** GitHub repository collection and the Company-level Scoring/Classification/Technology/Matching/Decision pipelines — none of which make job data fresher, so none of which need the 6h cadence:
+**[`.github/workflows/enrichment.yml`](.github/workflows/enrichment.yml) — everything else, once daily.** GitHub repository collection, the Company-level Scoring/Classification/Technology/Matching/Decision pipelines, and the Security Research Feed's own collection + scoring — none of which make job data fresher, so none of which need the 6h cadence:
 
-`collect:github` → `score:companies` → `classify:opportunities` → `detect:technology` → `match:users` → `decide:recommendations` → prune old `pipeline_run` history
+`collect:github` → `collect:defillama` → `collect:immunefi` → `score:companies` → `score:security` → `classify:opportunities` → `detect:technology` → `match:users` → `decide:recommendations` → prune old `pipeline_run` history
 
-Each step has `continue-on-error: true` and this entire workflow is a separate file from `job-ingestion.yml`, not just a separate job within it — a slowdown or failure here can never affect the core job feed. GitHub collection in particular moved here (not just to a slower cadence) because it contributes to Technology Detection only — zero rows read by `/jobs`, `/today`, or `/outreach` — so it has no business sharing a schedule, or a failure blast radius, with the data that actually needs to be fresh every few hours.
+Each step has `continue-on-error: true` and this entire workflow is a separate file from `job-ingestion.yml`, not just a separate job within it — a slowdown or failure here can never affect the core job feed. GitHub collection in particular moved here (not just to a slower cadence) because it contributes to Technology Detection only — zero rows read by `/jobs`, `/today`, or `/outreach` — so it has no business sharing a schedule, or a failure blast radius, with the data that actually needs to be fresh every few hours. The DefiLlama/Immunefi/security-scoring steps are each given their own step `id` and explicitly checked by a final "Fail if required security enrichment steps failed" step — unlike every other step here, a failure in any of these three fails the whole workflow run loudly, since `continue-on-error: true` alone would otherwise mask it.
 
 **Setup (both workflows):**
 
@@ -242,3 +246,5 @@ curl -i -X POST "https://<your-deployment>/api/cron/collect-greenhouse" \
 ## Status
 
 The full deterministic pipeline is implemented and working end-to-end — Collectors (Greenhouse, Lever, Ashby, and GitHub, all four wired to runnable commands), Scoring, Classification, Technology Detection, Matching, and Decision — along with the AI Enrichment Layer, Pipeline Run Observability, and a curated, data-driven company directory (see "Tracked companies" above) that scales to new companies on an already-supported source without any code change. See [docs/ROADMAP.md](docs/ROADMAP.md) for how this was originally sequenced; note that document predates several of the milestones above and isn't maintained as a live status tracker. See [docs/adr/](docs/adr/) for architectural decisions made since, including a correctness fix to how the Ingestion Pipeline attributes Raw Records for Collectors tracking more than one company.
+
+**Security Research Feed** (not covered by the original roadmap): a second, independent read surface at `/security`, built on its own event-sourced pipeline — DefiLlama and Immunefi Collectors feed Security Signal detection and Security Opportunity qualification, surfaced as a tiered, filterable, paginated feed (`/security`) with per-target evidence pages (`/security/[slug]`) showing audit history, bug-bounty scope, and honestly-framed research readiness. Verified against real production data: 1,566 Security Targets, 2,110 Security Signals, 518 Security Opportunities. Collector freshness (including a known-degraded DefiLlama state from a past ingestion timeout) is surfaced directly on the feed rather than hidden.
