@@ -5,8 +5,14 @@ import {
   createSecurityDisclosureRouteNormalizer,
   type CanonicalSecurityDisclosureRoute,
 } from "../security-disclosure-events";
+import { readTextWithLimit } from "./url-safety";
 
 const GITHUB_API_BASE = "https://api.github.com/repos";
+const FETCH_TIMEOUT_MS = 5_000;
+/** GitHub's Community Profile response is a small, fixed-shape JSON document — bounds memory against an unexpected response. */
+const MAX_RESPONSE_BYTES = 100 * 1024;
+/** GitHub's own login/repo-name character rules — see https://docs.github.com/en/repositories/creating-and-managing-repositories/repository-name — rejecting anything else here means `owner`/`repo` can never carry path-traversal or header-injection characters into the fetched URL, whatever their original source. */
+const GITHUB_NAME_PATTERN = /^[A-Za-z0-9._-]+$/;
 
 const githubCommunityProfileSchema = z
   .object({
@@ -58,6 +64,9 @@ export function parseGithubRepoUrl(url: string): { owner: string; repo: string }
   if (!owner || !repo) {
     return null;
   }
+  if (!GITHUB_NAME_PATTERN.test(owner) || !GITHUB_NAME_PATTERN.test(repo)) {
+    return null;
+  }
 
   return { owner, repo };
 }
@@ -75,14 +84,32 @@ export async function fetchGithubSecurityPolicy(
   owner: string,
   repo: string,
 ): Promise<GithubSecurityPolicyFetchResult> {
+  if (!GITHUB_NAME_PATTERN.test(owner) || !GITHUB_NAME_PATTERN.test(repo)) {
+    throw new Error(
+      `GitHub community profile request refused: invalid owner/repo "${owner}/${repo}"`,
+    );
+  }
+
   const env = getGithubCollectorEnv();
   const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
   if (env.GITHUB_TOKEN) {
     headers.Authorization = `Bearer ${env.GITHUB_TOKEN}`;
   }
 
-  const sourceUrl = `${GITHUB_API_BASE}/${owner}/${repo}/community/profile`;
-  const response = await fetch(sourceUrl, { headers });
+  const sourceUrl = `${GITHUB_API_BASE}/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/community/profile`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(sourceUrl, { headers, signal: controller.signal });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`GitHub community profile request failed for "${owner}/${repo}": ${reason}`);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     throw new Error(
@@ -90,8 +117,8 @@ export async function fetchGithubSecurityPolicy(
     );
   }
 
-  const body: unknown = await response.json();
-  const parsed = githubCommunityProfileSchema.parse(body);
+  const text = await readTextWithLimit(response, MAX_RESPONSE_BYTES, "GitHub community profile");
+  const parsed = githubCommunityProfileSchema.parse(JSON.parse(text));
   const policyUrl = parsed.files.security_policy?.html_url ?? null;
 
   return { found: policyUrl !== null, sourceUrl, policyUrl };

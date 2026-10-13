@@ -115,9 +115,20 @@ async function checkSecurityTxt(
     // lookup to work at all (see `findPreviousPayload`'s guard) — this
     // Collector has exactly one entity per `sourceIdentifier`, so the
     // target's own id serves as a stable, always-present externalId.
+    //
+    // `_trackedSecurityTargetId` is embedded in the *stored* payload (never
+    // part of `SecurityTxtFetchResult`, and ignored by the normalizer) for
+    // one reason: `storeRawRecord`'s cross-source-collision guard assumes
+    // "two different sources never produce a byte-identical payload"
+    // because every other Collector's payload already embeds its own
+    // identifying data. Two distinct Security Targets can legitimately
+    // share one website (e.g. two chains of the same protocol), which
+    // makes their fetch results byte-identical with no identifying field
+    // of their own — this restores that assumption instead of relying on
+    // (and breaking) the dedup across genuinely different targets.
     await storeRawRecord({
       collectorId,
-      payload: result,
+      payload: { ...result, _trackedSecurityTargetId: target.securityTargetId },
       externalId: target.securityTargetId,
       sourceIdentifier,
     });
@@ -149,9 +160,12 @@ async function checkGithubSecurityPolicy(
   const sourceIdentifier = `${target.securityTargetId}:github-security-policy`;
   try {
     const result = await securityDisclosure.fetchGithubSecurityPolicy(repoRef.owner, repoRef.repo);
+    // See `checkSecurityTxt`'s identical comment on `_trackedSecurityTargetId`
+    // — two distinct Security Targets can share one repository just as
+    // easily as one website.
     await storeRawRecord({
       collectorId,
-      payload: result,
+      payload: { ...result, _trackedSecurityTargetId: target.securityTargetId },
       externalId: target.securityTargetId,
       sourceIdentifier,
     });

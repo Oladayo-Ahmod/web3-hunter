@@ -50,7 +50,7 @@ function stubFetch() {
           ok: state.status < 400,
           status: state.status,
           statusText: state.status < 400 ? "OK" : "Error",
-          json: async () => state.body,
+          text: async () => JSON.stringify(state.body),
         } as Response;
       }
 
@@ -165,6 +165,53 @@ describe("runSecurityDisclosureCollector (integration)", () => {
 
     expect(result.skippedNoCandidateRoute).toBe(1);
     expect(result.checks).toHaveLength(0);
+  });
+
+  it("refuses a websiteUrl pointing at a private/internal address, never fetching it", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const target: SecurityDisclosureCollectorTarget = {
+      securityTargetId: randomUUID(),
+      websiteUrl: "http://169.254.169.254/latest/meta-data",
+      repositoryUrl: null,
+    };
+
+    const result = await runSecurityDisclosureCollector([target]);
+
+    expect(result.checks).toEqual([
+      expect.objectContaining({ routeType: "security-txt", status: "error" }),
+    ]);
+    expect(result.checks[0]?.message).toMatch(/private\/reserved/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("succeeds for two distinct targets that genuinely share the same website, without a storage collision", async () => {
+    const targetA = randomUUID();
+    const targetB = randomUUID();
+    mocks.set("https://shared-site.xyz", { securityTxt: { status: 404 } });
+    stubFetch();
+
+    const result = await runSecurityDisclosureCollector([
+      { securityTargetId: targetA, websiteUrl: "https://shared-site.xyz", repositoryUrl: null },
+      { securityTargetId: targetB, websiteUrl: "https://shared-site.xyz", repositoryUrl: null },
+    ]);
+
+    expect(result.checks).toEqual([
+      expect.objectContaining({ securityTargetId: targetA, status: "published" }),
+      expect.objectContaining({ securityTargetId: targetB, status: "published" }),
+    ]);
+
+    const eventsA = await getDb()
+      .select()
+      .from(schema.event)
+      .where(eq(schema.event.relatedEntityId, targetA));
+    const eventsB = await getDb()
+      .select()
+      .from(schema.event)
+      .where(eq(schema.event.relatedEntityId, targetB));
+    expect(eventsA).toHaveLength(1);
+    expect(eventsB).toHaveLength(1);
   });
 
   it("records a per-target fetch failure without aborting the run for other targets", async () => {

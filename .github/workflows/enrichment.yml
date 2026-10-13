@@ -95,6 +95,20 @@ jobs:
         run: pnpm --filter @web3-hunter/web collect:immunefi
         continue-on-error: true
 
+      # Checks each Security Target's already-known website/repository for
+      # a published RFC 9116 `security.txt` or GitHub `SECURITY.md` —
+      # optional, like "Collect - GitHub" above: a fraction of the
+      # external websites it checks being unreachable, rate-limited, or
+      # blocking non-browser requests on any given day is routine, not a
+      # pipeline failure, and this never feeds /jobs, /today, or
+      # /outreach. Its own Collector Health row (`security-disclosure`)
+      # still records every run's real outcome, visible via the existing
+      # `/api/collectors` endpoint, independently of this step's
+      # `continue-on-error`.
+      - name: Collect - Security disclosure routes (security.txt, GitHub policy)
+        run: pnpm --filter @web3-hunter/web collect:security-disclosure
+        continue-on-error: true
+
       - name: Score companies
         run: pnpm --filter @web3-hunter/web score:companies
         continue-on-error: true

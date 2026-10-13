@@ -3,8 +3,11 @@ import {
   createSecurityDisclosureRouteNormalizer,
   type CanonicalSecurityDisclosureRoute,
 } from "../security-disclosure-events";
+import { assertSafePublicHttpUrl, fetchWithHostValidation, readTextWithLimit } from "./url-safety";
 
 const FETCH_TIMEOUT_MS = 5_000;
+/** RFC 9116 places no hard size limit on `security.txt`, but a legitimate one is always small — bounds memory against an unexpectedly large or malicious response. */
+const MAX_RESPONSE_BYTES = 100 * 1024;
 
 /**
  * The fields this Collector extracts from an RFC 9116 `security.txt` —
@@ -99,9 +102,15 @@ const NOT_FOUND_RESULT: Omit<SecurityTxtFetchResult, "sourceUrl"> = {
  * failure mode (timeout, DNS failure, 5xx, malformed URL), which throw —
  * callers must not conflate "this target has no security.txt" with "we
  * couldn't check."
+ *
+ * `websiteUrl` is source-supplied, third-party data (DefiLlama/Immunefi),
+ * never fully trusted — both the initial request and every redirect hop
+ * are validated against `assertSafePublicHttpUrl`/`fetchWithHostValidation`
+ * before being followed, so a stored or redirected URL can never reach a
+ * private, loopback, or link-local address (SSRF).
  */
 export async function fetchSecurityTxt(websiteUrl: string): Promise<SecurityTxtFetchResult> {
-  const origin = new URL(websiteUrl).origin;
+  const origin = assertSafePublicHttpUrl(websiteUrl, "security.txt").origin;
   const sourceUrl = `${origin}/.well-known/security.txt`;
 
   const controller = new AbortController();
@@ -109,7 +118,11 @@ export async function fetchSecurityTxt(websiteUrl: string): Promise<SecurityTxtF
 
   let response: Response;
   try {
-    response = await fetch(sourceUrl, { signal: controller.signal, redirect: "follow" });
+    response = await fetchWithHostValidation(
+      sourceUrl,
+      { signal: controller.signal },
+      "security.txt",
+    );
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
     throw new Error(`security.txt request failed for "${sourceUrl}": ${reason}`);
@@ -127,7 +140,7 @@ export async function fetchSecurityTxt(websiteUrl: string): Promise<SecurityTxtF
     );
   }
 
-  const text = await response.text();
+  const text = await readTextWithLimit(response, MAX_RESPONSE_BYTES, "security.txt");
   return { found: true, sourceUrl, ...parseSecurityTxt(text) };
 }
 

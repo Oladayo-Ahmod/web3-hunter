@@ -1312,6 +1312,35 @@ describe("security-target-query-service (integration)", () => {
       expect(row.identity.twitterUrl).toBeNull();
       expect(row.audit.defiLlamaAuditLinks).toEqual([]);
     });
+
+    it("treats a blank or whitespace-only DefiLlama url/twitter as null, never a broken link", async () => {
+      const target = await createSecurityTarget({ slug: "test-defillama-blank-url", name: "T" });
+      await seedDefiLlamaRawPayload({
+        securityTargetId: target.id,
+        sourceIdentifier: "test-defillama-blank-url",
+        payload: { url: " ", twitter: "   " },
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.identity.websiteUrl).toBeNull();
+      expect(row.identity.twitterUrl).toBeNull();
+    });
+
+    it("treats a blank Immunefi websiteUrl as null, never a broken link", async () => {
+      const target = await createSecurityTarget({ slug: "test-immunefi-blank-url", name: "T" });
+      await insertBountyProgramEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        websiteUrl: "  ",
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.identity.websiteUrl).toBeNull();
+    });
   });
 
   describe("listSecurityTargetPriority — researchRoute", () => {

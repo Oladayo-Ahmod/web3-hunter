@@ -54,13 +54,14 @@ describe("fetchGithubSecurityPolicy", () => {
       vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({
-          files: {
-            security_policy: {
-              html_url: "https://github.com/acme/contracts/blob/main/SECURITY.md",
+        text: async () =>
+          JSON.stringify({
+            files: {
+              security_policy: {
+                html_url: "https://github.com/acme/contracts/blob/main/SECURITY.md",
+              },
             },
-          },
-        }),
+          }),
       } as Response),
     );
 
@@ -79,7 +80,7 @@ describe("fetchGithubSecurityPolicy", () => {
       vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ files: { security_policy: null } }),
+        text: async () => JSON.stringify({ files: { security_policy: null } }),
       } as Response),
     );
 
@@ -105,7 +106,7 @@ describe("fetchGithubSecurityPolicy", () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({ files: {} }),
+      text: async () => JSON.stringify({ files: {} }),
     } as Response);
     vi.stubGlobal("fetch", fetchMock);
 
@@ -113,5 +114,11 @@ describe("fetchGithubSecurityPolicy", () => {
 
     const headers = fetchMock.mock.calls[0]?.[1]?.headers as Record<string, string>;
     expect(headers.Authorization).toBe("Bearer test-token");
+  });
+
+  it("refuses an owner/repo containing characters outside GitHub's naming rules", async () => {
+    await expect(fetchGithubSecurityPolicy("acme/evil", "contracts")).rejects.toThrow(
+      /invalid owner\/repo/,
+    );
   });
 });

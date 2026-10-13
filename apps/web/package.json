@@ -16,6 +16,7 @@
     "collect:ashby": "tsx --env-file=.env scripts/run-ashby.ts",
     "collect:defillama": "tsx --env-file=.env scripts/run-defillama.ts",
     "collect:immunefi": "tsx --env-file=.env scripts/run-immunefi.ts",
+    "collect:security-disclosure": "tsx --env-file=.env scripts/run-security-disclosure.ts",
     "seed:skills": "tsx --env-file=.env scripts/seed-skills.ts",
     "seed:companies": "tsx --env-file=.env scripts/seed-companies.ts",
     "score:companies": "tsx --env-file=.env scripts/run-scoring.ts",

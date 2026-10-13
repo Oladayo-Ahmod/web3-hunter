@@ -139,6 +139,23 @@ interface LatestBountyProgramFields {
  * Never throws: `.safeParse` degrades to `null` on a malformed payload,
  * same discipline as before this was extracted.
  */
+/**
+ * Treats a blank or whitespace-only source value as `null` — a real,
+ * observed case (DefiLlama's own `url` field has been seen set to a
+ * literal single space for at least one target), never previously
+ * guarded against. Without this, a blank value reads as "truthy" to
+ * every caller that does `value ?? null`, rendering as a broken link
+ * in the UI and leaking into derived text (e.g. `researchRoute.nextAction`)
+ * instead of being treated as "no value published."
+ */
+function blankToNull(value: string | null | undefined): string | null {
+  if (value == null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 function parseBountyEventMetadata(metadata: unknown): LatestBountyProgramFields | null {
   const parsed = bountyEventMetadataSubsetSchema.safeParse(metadata);
   if (!parsed.success) {
@@ -154,7 +171,7 @@ function parseBountyEventMetadata(metadata: unknown): LatestBountyProgramFields 
     smartContractAssetIds: parsed.data.smartContractAssetIds ?? [],
     smartContractAssets,
     endDate: parsed.data.endDate ?? null,
-    websiteUrl: parsed.data.websiteUrl ?? null,
+    websiteUrl: blankToNull(parsed.data.websiteUrl),
   };
 }
 
@@ -239,9 +256,12 @@ async function getDefiLlamaIdentityEnrichment(
     return EMPTY_DEFILLAMA_ENRICHMENT;
   }
 
+  const website = blankToNull(parsed.data.url);
+  const twitter = blankToNull(parsed.data.twitter);
+
   return {
-    websiteUrl: parsed.data.url ?? null,
-    twitterUrl: parsed.data.twitter ? `https://x.com/${parsed.data.twitter}` : null,
+    websiteUrl: website,
+    twitterUrl: twitter ? `https://x.com/${twitter}` : null,
     auditLinks: parsed.data.audit_links ?? [],
   };
 }
