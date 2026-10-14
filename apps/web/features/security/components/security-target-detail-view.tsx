@@ -94,6 +94,54 @@ function DisclosureRouteSection({
   );
 }
 
+const usdCompactFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 2,
+});
+
+function formatChangePercent(value: number): string {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(1)}%`;
+}
+
+function ProtocolMetricsLine({
+  metrics,
+}: {
+  metrics: SecurityTargetPriorityDTO["protocolMetrics"];
+}) {
+  if (metrics.tvlUsd === null) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No DefiLlama TVL figure on record for this target.
+      </p>
+    );
+  }
+
+  return (
+    <p className="text-sm text-muted-foreground">
+      TVL (DefiLlama):{" "}
+      <span className="font-medium text-foreground">
+        {usdCompactFormatter.format(metrics.tvlUsd)}
+      </span>
+      {metrics.change1dPercent !== null && (
+        <span className={metrics.change1dPercent >= 0 ? "text-success" : "text-destructive"}>
+          {" "}
+          {formatChangePercent(metrics.change1dPercent)} (1d)
+        </span>
+      )}
+      {metrics.change7dPercent !== null && (
+        <span className={metrics.change7dPercent >= 0 ? "text-success" : "text-destructive"}>
+          {" "}
+          {formatChangePercent(metrics.change7dPercent)} (7d)
+        </span>
+      )}
+      {metrics.asOf && ` · as of ${new Date(metrics.asOf).toLocaleDateString()}`}
+    </p>
+  );
+}
+
 function IdentityLink({ href, label }: { href: string; label: string }) {
   return (
     <a
@@ -128,6 +176,7 @@ export function SecurityTargetDetailView({ target }: { target: SecurityTargetPri
           Signal tier {target.tier} — {target.tierReason}
         </p>
         <p className="text-sm text-muted-foreground">{target.researchReadiness.reason}</p>
+        <ProtocolMetricsLine metrics={target.protocolMetrics} />
 
         {hasAnyIdentityLink ? (
           <div className="flex flex-wrap gap-2">

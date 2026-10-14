@@ -34,6 +34,13 @@ const ROUTE_BADGE_VARIANT: Record<
   "needs-discovery": "outline",
 };
 
+const usdCompactFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
 export function SecurityTargetCard({ target }: { target: SecurityTargetPriorityDTO }) {
   return (
     <Link href={`/security/${target.slug}`} className="block focus-visible:outline-none">
@@ -53,6 +60,9 @@ export function SecurityTargetCard({ target }: { target: SecurityTargetPriorityD
               {ROUTE_LABEL[target.researchRoute.route]}
             </Badge>
           </div>
+          {target.protocolMetrics.tvlUsd !== null && (
+            <p>TVL: {usdCompactFormatter.format(target.protocolMetrics.tvlUsd)}</p>
+          )}
           <p>
             {target.qualifyingSignalTypes.length > 0
               ? target.qualifyingSignalTypes.join(", ").replaceAll("-", " ")

@@ -484,6 +484,24 @@ export interface SecurityTargetIdentityEvidenceDTO {
 }
 
 /**
+ * DefiLlama's own reported Total Value Locked for this target, read from
+ * the latest `ProtocolSnapshotRecorded`/`Updated` Event — `null` whenever
+ * no DefiLlama protocol-snapshot Event has ever been recorded (e.g. an
+ * Immunefi-only target) or DefiLlama itself reports no TVL. `asOf` is the
+ * triggering Event's own `occurredAt` (DefiLlama's own snapshot time,
+ * never wall-clock "now"), so a stale figure is identifiable as such
+ * rather than implied to be current. `change1d`/`change7d` are DefiLlama's
+ * own reported percentage changes, passed through verbatim — never
+ * recomputed from successive snapshots here.
+ */
+export interface SecurityTargetProtocolMetricsDTO {
+  tvlUsd: number | null;
+  change1dPercent: number | null;
+  change7dPercent: number | null;
+  asOf: string | null;
+}
+
+/**
  * One preserved Immunefi audit-history entry, exactly as the source
  * supplied it (see `packages/collectors/src/bounty-program-events.ts`'s
  * `BountyAuditFields`) — never interpreted. `auditor`/`url`/`date` are
@@ -706,6 +724,7 @@ export interface SecurityTargetPriorityDTO {
   lastSignalAt: string | null;
   hasOpportunity: boolean;
   identity: SecurityTargetIdentityEvidenceDTO;
+  protocolMetrics: SecurityTargetProtocolMetricsDTO;
   audit: SecurityTargetAuditEvidenceDTO;
   actionability: SecurityTargetActionabilityDTO;
   disclosure: SecurityTargetDisclosureEvidenceDTO;

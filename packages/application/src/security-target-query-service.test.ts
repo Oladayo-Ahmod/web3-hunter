@@ -119,6 +119,8 @@ async function insertProtocolSnapshotEvent(input: {
   occurredAt: Date;
   type?: "ProtocolSnapshotRecorded" | "ProtocolSnapshotUpdated";
   tvl?: number | null;
+  change1d?: number | null;
+  change7d?: number | null;
   audits?: string | null;
   category?: string | null;
   changedFrom?: Record<string, unknown>;
@@ -128,8 +130,8 @@ async function insertProtocolSnapshotEvent(input: {
     name: "Stage 6 Protocol",
     category: input.category ?? null,
     tvl: input.tvl ?? 10_000_000,
-    change1d: null,
-    change7d: null,
+    change1d: input.change1d ?? null,
+    change7d: input.change7d ?? null,
     listedAt: null,
     audits: input.audits ?? "0",
     auditLinks: [],
@@ -1414,6 +1416,83 @@ describe("security-target-query-service (integration)", () => {
         nextAction: expect.stringContaining("https://github.com/acme/parity"),
       });
       expect(pageRow?.researchRoute).toEqual(bySlug?.researchRoute);
+    });
+  });
+
+  describe("listSecurityTargetPriority — protocolMetrics (TVL)", () => {
+    it("is all-null when no DefiLlama protocol-snapshot Event has ever been recorded", async () => {
+      const target = await createSecurityTarget({ slug: "test-tvl-never-checked", name: "T" });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.protocolMetrics).toEqual({
+        tvlUsd: null,
+        change1dPercent: null,
+        change7dPercent: null,
+        asOf: null,
+      });
+    });
+
+    it("surfaces DefiLlama's own tvl/change1d/change7d, with asOf reused from the Event's occurredAt", async () => {
+      const target = await createSecurityTarget({ slug: "test-tvl-present", name: "T" });
+      const asOf = new Date("2026-02-01T00:00:00Z");
+      await insertProtocolSnapshotEvent({
+        securityTargetId: target.id,
+        occurredAt: asOf,
+        tvl: 42_500_000,
+        change1d: 1.25,
+        change7d: -3.4,
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.protocolMetrics).toEqual({
+        tvlUsd: 42_500_000,
+        change1dPercent: 1.25,
+        change7dPercent: -3.4,
+        asOf: asOf.toISOString(),
+      });
+    });
+
+    it("reflects the most recently recorded snapshot, not the first one, after an Update", async () => {
+      const target = await createSecurityTarget({ slug: "test-tvl-updated", name: "T" });
+      await insertProtocolSnapshotEvent({
+        securityTargetId: target.id,
+        occurredAt: new Date("2026-01-01T00:00:00Z"),
+        tvl: 10_000_000,
+      });
+      const latest = new Date("2026-03-01T00:00:00Z");
+      await insertProtocolSnapshotEvent({
+        securityTargetId: target.id,
+        occurredAt: latest,
+        type: "ProtocolSnapshotUpdated",
+        tvl: 55_000_000,
+        changedFrom: { tvl: 10_000_000 },
+      });
+
+      const rows = await listSecurityTargetPriority();
+      const row = findBySlug(rows, target.slug);
+
+      expect(row.protocolMetrics.tvlUsd).toBe(55_000_000);
+      expect(row.protocolMetrics.asOf).toBe(latest.toISOString());
+    });
+
+    it("is present and consistent on both the single-slug lookup and the paginated listing", async () => {
+      const target = await createSecurityTarget({ slug: "test-tvl-page-parity", name: "T" });
+      await insertProtocolSnapshotEvent({
+        securityTargetId: target.id,
+        occurredAt: BASE_DATE,
+        tvl: 1_000_000,
+      });
+
+      const bySlug = await getSecurityTargetPriorityBySlug(target.slug);
+      const page = await listSecurityTargetPriorityPage({ page: 1, pageSize: 500, sort: "slug" });
+      const pageRow = page.items.find((item) => item.slug === target.slug);
+
+      expect(bySlug?.protocolMetrics.tvlUsd).toBe(1_000_000);
+      expect(pageRow?.protocolMetrics).toEqual(bySlug?.protocolMetrics);
     });
   });
 

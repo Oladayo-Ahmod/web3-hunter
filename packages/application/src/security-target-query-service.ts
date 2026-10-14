@@ -1,6 +1,8 @@
 import {
   BountyProgramRecorded,
   BountyProgramUpdated,
+  ProtocolSnapshotRecorded,
+  ProtocolSnapshotUpdated,
   SecurityDisclosureRouteRecorded,
   SecurityDisclosureRouteUpdated,
   type BountyAuditFields,
@@ -24,6 +26,7 @@ import type {
   SecurityTargetDisclosureEvidenceDTO,
   SecurityTargetDisclosureRouteDTO,
   SecurityTargetPriorityDTO,
+  SecurityTargetProtocolMetricsDTO,
   SecurityTargetScopeAssetDTO,
 } from "./dto";
 import {
@@ -197,6 +200,65 @@ async function getLatestBountyProgramFields(
   }
 
   return parseBountyEventMetadata(latestEvent.metadata);
+}
+
+const protocolSnapshotMetadataSubsetSchema = z
+  .object({
+    tvl: z.number().nullable().optional(),
+    change1d: z.number().nullable().optional(),
+    change7d: z.number().nullable().optional(),
+  })
+  .passthrough();
+
+const EMPTY_PROTOCOL_METRICS: SecurityTargetProtocolMetricsDTO = {
+  tvlUsd: null,
+  change1dPercent: null,
+  change7dPercent: null,
+  asOf: null,
+};
+
+/**
+ * DefiLlama's own reported TVL (and 1d/7d change), read from the latest
+ * `ProtocolSnapshotRecorded`/`Updated` Event — these fields are already
+ * part of `ProtocolFields`, the canonical *diffable* shape (unlike
+ * `url`/`twitter`, which live only in the raw payload — see
+ * `getDefiLlamaIdentityEnrichment`'s doc comment for why), so this reads
+ * the Event table directly rather than `getRawPayloadFromCollector`.
+ * `null` for every field whenever this target has no DefiLlama protocol-
+ * snapshot Event at all (e.g. an Immunefi-only target).
+ */
+async function getLatestProtocolSnapshotFields(
+  securityTargetId: string,
+): Promise<SecurityTargetProtocolMetricsDTO> {
+  const db = getDb();
+  const [latestEvent] = await db
+    .select()
+    .from(schema.event)
+    .where(
+      and(
+        eq(schema.event.relatedEntityType, "security_target"),
+        eq(schema.event.relatedEntityId, securityTargetId),
+        inArray(schema.event.type, [ProtocolSnapshotRecorded.name, ProtocolSnapshotUpdated.name]),
+      ),
+    )
+    .orderBy(desc(schema.event.recordedAt), desc(schema.event.id))
+    .limit(1);
+
+  if (!latestEvent) {
+    return EMPTY_PROTOCOL_METRICS;
+  }
+
+  const parsed = protocolSnapshotMetadataSubsetSchema.safeParse(latestEvent.metadata);
+  if (!parsed.success) {
+    return EMPTY_PROTOCOL_METRICS;
+  }
+
+  return {
+    tvlUsd: parsed.data.tvl ?? null,
+    change1dPercent: parsed.data.change1d ?? null,
+    change7dPercent: parsed.data.change7d ?? null,
+    asOf: latestEvent.occurredAt.toISOString(),
+  };
 }
 
 /**
@@ -486,26 +548,34 @@ async function buildSecurityTargetPriority(
 ): Promise<SecurityTargetPriorityDTO> {
   const db = getDb();
 
-  const [signals, intelligence, bountyFields, opportunityRows, defiLlamaEnrichment, disclosure] =
-    await Promise.all([
-      listSecuritySignalsForTarget(target.id),
-      getSecurityTargetIntelligence(target.id),
-      getLatestBountyProgramFields(target.id),
-      // Most recently *detected* Opportunity wins when more than one row
-      // exists for this target (one per detection window) — deterministic,
-      // never an arbitrary `.limit(1)` pick.
-      db
-        .select({
-          id: schema.securityOpportunity.id,
-          reasoning: schema.securityOpportunity.reasoning,
-        })
-        .from(schema.securityOpportunity)
-        .where(eq(schema.securityOpportunity.securityTargetId, target.id))
-        .orderBy(desc(schema.securityOpportunity.detectedAt), desc(schema.securityOpportunity.id))
-        .limit(1),
-      getDefiLlamaIdentityEnrichment(target.id),
-      getLatestSecurityDisclosureEvidence(target.id),
-    ]);
+  const [
+    signals,
+    intelligence,
+    bountyFields,
+    opportunityRows,
+    defiLlamaEnrichment,
+    disclosure,
+    protocolMetrics,
+  ] = await Promise.all([
+    listSecuritySignalsForTarget(target.id),
+    getSecurityTargetIntelligence(target.id),
+    getLatestBountyProgramFields(target.id),
+    // Most recently *detected* Opportunity wins when more than one row
+    // exists for this target (one per detection window) — deterministic,
+    // never an arbitrary `.limit(1)` pick.
+    db
+      .select({
+        id: schema.securityOpportunity.id,
+        reasoning: schema.securityOpportunity.reasoning,
+      })
+      .from(schema.securityOpportunity)
+      .where(eq(schema.securityOpportunity.securityTargetId, target.id))
+      .orderBy(desc(schema.securityOpportunity.detectedAt), desc(schema.securityOpportunity.id))
+      .limit(1),
+    getDefiLlamaIdentityEnrichment(target.id),
+    getLatestSecurityDisclosureEvidence(target.id),
+    getLatestProtocolSnapshotFields(target.id),
+  ]);
 
   const { tier, reason, qualifyingSignalTypes } = securityTargetPriorityTier(
     signals.map((signal) => signal.signalType),
@@ -568,6 +638,7 @@ async function buildSecurityTargetPriority(
       websiteUrl,
       twitterUrl: defiLlamaEnrichment.twitterUrl,
     },
+    protocolMetrics,
     audit: deriveAuditEvidence(bountyFields, defiLlamaEnrichment.auditLinks),
     actionability,
     disclosure,

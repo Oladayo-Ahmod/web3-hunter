@@ -40,6 +40,7 @@ export type {
   SecurityTargetIdentityEvidenceDTO,
   SecurityTargetPriorityDTO,
   SecurityTargetPriorityTierDTO,
+  SecurityTargetProtocolMetricsDTO,
   SecurityTargetResearchReadinessDTO,
   SecurityTargetResearchReadinessStatusDTO,
   SecurityTargetResearchRouteDTO,
