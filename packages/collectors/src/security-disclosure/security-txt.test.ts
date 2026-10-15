@@ -104,13 +104,11 @@ describe("fetchSecurityTxt", () => {
   it("throws, never silently returning 'not found', on a non-404 error status", async () => {
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValue({
-          ok: false,
-          status: 503,
-          statusText: "Service Unavailable",
-        } as Response),
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+        statusText: "Service Unavailable",
+      } as Response),
     );
 
     await expect(fetchSecurityTxt("https://acme.xyz")).rejects.toThrow(/503/);
